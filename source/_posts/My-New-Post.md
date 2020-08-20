@@ -29,7 +29,7 @@ public class Test1 {
 	public static void main(String[] args) {
 		
 		final Map<String, Integer> map = new HashMap<String, Integer>(4);
-		//使用了CyclicBarrier来实现。这个类的功能就是指定特定的线程数，等到这些线程都执行完毕之后，才会执行它的await()方法后面的代码，如果在构造器里设定了一个线程类，那么会在业务线程执行完毕之后，先执行构造器里的线程，然后执行await方法后面的线程。
+		/* 使用了CyclicBarrier来实现。这个类的功能就是指定特定的线程数，等到这些线程都执行完毕之后，才会执行它的await()方法后面的代码，如果在构造器里设定了一个线程类，那么会在业务线程执行完毕之后，先执行构造器里的线程，然后执行await方法后面的线程。*/
 		CyclicBarrier cb = new CyclicBarrier(4, new Runnable(){
 			public void run() {
 				Integer count1 = map.get("1");
@@ -44,7 +44,7 @@ public class Test1 {
 		new Thread(new TestThread(map, "3", cb,1000)).start();
 		new Thread(new TestThread(map, "4", cb,1000)).start();
 		
-		//线程池实现方式
+		/*线程池实现方式*/
 		int sum = 0;
 		for(int i = 0; i < 4; i++) {
 			Future<Integer> data = service.submit(new Callable<Integer>(){
@@ -62,10 +62,8 @@ public class Test1 {
 			try {
 				sum += data.get().intValue();
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (ExecutionException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -97,10 +95,8 @@ class TestThread implements Runnable {
 		try {
 			cb.await();
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (BrokenBarrierException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	
