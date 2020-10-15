@@ -15,7 +15,7 @@ JVM虚拟机数据区包含了堆，本地方法栈，虚拟机栈和程序计�
 本地内存包含了元数据区和直接内存。
 这其中堆内存和本地内存是所有线程共享的，栈内存和程序计数器是线程私有的。
 
-[![Java8内存模型](https://img2018.cnblogs.com/blog/1743446/201907/1743446-20190731144659459-260296720.png "Java8内存模型")](https://img2018.cnblogs.com/blog/1743446/201907/1743446-20190731144659459-260296720.png "Java8内存模型")
+![Java8内存模型](http://m.qpic.cn/psc?/V51lIF8R3HS9sa4GVlzK1thDGf39F65U/ruAMsa53pVQWN7FLK88i5krnoQNs1ND7YDnJI*fA0BDktH3rJcLx6eRzBg2MFSIWkl9sblSlYgDA29XF8K1zRJD6kPiqKyF2prUQd9GvqZQ!/b&bo=0AIXAwAAAAADB.Q!&rf=viewer_4 "Java8内存模型")
 
 #### 堆内存（heap）
 堆内存在虚拟机启动的时候被创建，这个内存区域***唯一的作用是存放对象的实例***。堆内存主要分成两个部分：
@@ -58,6 +58,13 @@ Java8中我们经常用java.nio.DirectByteBuffer对象进行堆外内存的管�
 
 缺点：
 1. 同样任何一个事物使用起来有优点就会有缺点，堆外内存的缺点就是内存难以控制，使用了堆外内存就间接失去了JVM管理内存的可行性，改由自己来管理，当发生内存溢出时排查起来非常困难。
+
+堆外内存的OOM：
+1. java.nio.DirectByteBuffer对象在创建过程中会先通过Unsafe接口直接通过os::malloc来分配内存，每个DirectByteBuffer对象在初始化时，都会创建一个对应的Cleaner对象。这个Cleaner对象会在合适的时候执行unsafe.freeMemory(address)，从而回收这块堆外内存。
+2. 这些内存只有在DirectByteBuffer回收掉之后才有机会被回收，因此如果这些对象大部分都移到了old，当下一次FGC执行时，Cleaner对象会将自身Cleaner链表上删除，并触发clean方法清理堆外内存。但是一直没有触发CMS GC或者Full GC，那么悲剧将会发生，因为你的物理内存被他们耗尽了
+3. 因此为了避免这种悲剧的发生，通过-XX:MaxDirectMemorySize来指定最大的堆外内存大小，当使用达到了阈值的时候将调用System.gc来做一次full gc，以此来回收掉没有被使用的堆外内存。
+1. 其实，在ByteBuffer.allocateDirect方式中，会主动调用System.gc()强制执行FGC。
+
 
 堆内和堆外内存相关链接：
 1. https://blog.csdn.net/ZYC88888/article/details/80228531
