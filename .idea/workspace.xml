@@ -1,12 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="BranchesTreeState">
+    <expand>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="LOCAL_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="GROUP_NODE:origin" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+    </expand>
+    <select />
+  </component>
   <component name="ChangeListManager">
     <list default="true" id="dfeb5666-78df-4c84-9185-038975e07b62" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/hexo-theme-arknights" beforeDir="false" afterPath="$PROJECT_DIR$/hexo-theme-arknights" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/hexo-theme-arknights/source/_posts/markdown.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/source/_posts/JVM内存模型和参数配置的学习（一）.md" beforeDir="false" afterPath="$PROJECT_DIR$/source/_posts/JVM内存模型和参数配置的学习（一）.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/source/_posts/Java多线程(一) - 三种实现方式（不包括线程池）.md" beforeDir="false" afterPath="$PROJECT_DIR$/source/_posts/Java多线程(一) - 三种实现方式（不包括线程池）.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/source/_posts/My-New-Post.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/_drafts/资料.md" beforeDir="false" afterPath="$PROJECT_DIR$/source/_drafts/资料.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/themes/arknights" beforeDir="false" afterPath="$PROJECT_DIR$/themes/arknights" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/themes/arknights/_config.yml" beforeDir="false" afterPath="$PROJECT_DIR$/themes/arknights/_config.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/themes/arknights/layout/post.pug" beforeDir="false" afterPath="$PROJECT_DIR$/themes/arknights/layout/post.pug" afterDir="false" />
@@ -20,6 +38,7 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="ROOT_SYNC" value="DONT_SYNC" />
   </component>
   <component name="ProjectId" id="1ivCtMhRUSo9NqkLoeziAt7f3By" />
   <component name="ProjectViewState">
@@ -27,10 +46,16 @@
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
+    <property name="ASKED_SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="nodejs_package_manager_path" value="yarn" />
+    <property name="project.structure.last.edited" value="Facets" />
+    <property name="project.structure.proportion" value="0.15" />
+    <property name="project.structure.side.proportion" value="0.2" />
     <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
@@ -41,7 +66,14 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1602778918122</updated>
-      <workItem from="1602778918577" duration="685000" />
+      <workItem from="1602778918577" duration="1135000" />
+      <workItem from="1602950958471" duration="304000" />
+      <workItem from="1602951782519" duration="123000" />
+      <workItem from="1609593702820" duration="109000" />
+      <workItem from="1609593931761" duration="235000" />
+      <workItem from="1609594188998" duration="17000" />
+      <workItem from="1609594406330" duration="19000" />
+      <workItem from="1609595132543" duration="12000" />
     </task>
     <servers />
   </component>
@@ -53,10 +85,47 @@
       </list>
     </option>
   </component>
-  <component name="WindowStateProjectService">
-    <state x="591" y="270" key="SettingsEditor" timestamp="1602779234095">
-      <screen x="0" y="0" width="2560" height="1400" />
-    </state>
-    <state x="591" y="270" key="SettingsEditor/0.0.2560.1400@0.0.2560.1400" timestamp="1602779234095" />
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="origin/master" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="RECENT_FILTERS">
+      <map>
+        <entry key="Branch">
+          <value>
+            <list>
+              <RecentGroup>
+                <option name="FILTER_VALUES">
+                  <option value="master" />
+                </option>
+              </RecentGroup>
+            </list>
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="oldMeFiltersMigrated" value="true" />
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
   </component>
 </project>
