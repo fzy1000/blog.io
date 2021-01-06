@@ -19,40 +19,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="dfeb5666-78df-4c84-9185-038975e07b62" name="Default Changelist" comment="&lt;new&gt;:&lt;事务的四种隔离级别&gt;">
-      <change afterPath="$PROJECT_DIR$/source/_drafts/hello-world.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/_posts/四种事务的隔离级别.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/themes/hexo-theme-arknights" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/themes/hexo-theme-arknights/_config.arknights.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/themes/hexo-theme-arknights/package-lock.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/themes/hexo-theme-arknights/scaffolds/draft.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/themes/hexo-theme-arknights/scaffolds/page.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/themes/hexo-theme-arknights/scaffolds/post.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/themes/hexo-theme-arknights/source/_drafts/devlog.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/themes/hexo-theme-arknights/source/_drafts/music.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/themes/hexo-theme-arknights/source/_posts/encrypt.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/themes/hexo-theme-arknights/source/_posts/helloworld.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/themes/hexo-theme-arknights/source/_posts/kotlin-basic-types.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/themes/hexo-theme-arknights/source/_posts/longindex.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/themes/hexo-theme-arknights/source/_posts/longtext.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/themes/hexo-theme-arknights/source/_posts/markdown.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/themes/hexo-theme-arknights/source/_posts/mermaid.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/themes/hexo-theme-arknights/source/_posts/news.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/themes/hexo-theme-arknights/source/_posts/nihonngo.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/themes/hexo-theme-arknights/source/_posts/unixtime.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/themes/hexo-theme-arknights/yarn.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/_config.yml" beforeDir="false" afterPath="$PROJECT_DIR$/_config.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/hexo-theme-arknights" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/hexo-theme-arknights-1.0.0.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/source/_posts/hello-world.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/themes/arknights" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/themes/hexo-theme-arknights/source/img/Alipay.png" beforeDir="false" afterPath="$PROJECT_DIR$/themes/hexo-theme-arknights/source/img/Alipay.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/themes/hexo-theme-arknights/source/img/WeChat.png" beforeDir="false" afterPath="$PROJECT_DIR$/themes/hexo-theme-arknights/source/img/WeChat.png" afterDir="false" />
-    </list>
+    <list default="true" id="dfeb5666-78df-4c84-9185-038975e07b62" name="Default Changelist" comment="&lt;new&gt;:&lt;事务的四种隔离级别&gt;" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -107,6 +74,14 @@
       <workItem from="1609594406330" duration="19000" />
       <workItem from="1609595132543" duration="12000" />
     </task>
+    <task id="LOCAL-00001" summary="&lt;new&gt;:&lt;事务的四种隔离级别&gt;">
+      <created>1609931298890</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1609931298890</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
