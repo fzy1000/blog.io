@@ -19,17 +19,39 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="dfeb5666-78df-4c84-9185-038975e07b62" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
+    <list default="true" id="dfeb5666-78df-4c84-9185-038975e07b62" name="Default Changelist" comment="&lt;new&gt;:&lt;事务的四种隔离级别&gt;">
+      <change afterPath="$PROJECT_DIR$/source/_drafts/hello-world.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/_posts/四种事务的隔离级别.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/themes/hexo-theme-arknights" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/themes/hexo-theme-arknights/_config.arknights.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/themes/hexo-theme-arknights/package-lock.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/themes/hexo-theme-arknights/scaffolds/draft.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/themes/hexo-theme-arknights/scaffolds/page.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/themes/hexo-theme-arknights/scaffolds/post.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/themes/hexo-theme-arknights/source/_drafts/devlog.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/themes/hexo-theme-arknights/source/_drafts/music.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/themes/hexo-theme-arknights/source/_posts/encrypt.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/themes/hexo-theme-arknights/source/_posts/helloworld.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/themes/hexo-theme-arknights/source/_posts/kotlin-basic-types.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/themes/hexo-theme-arknights/source/_posts/longindex.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/themes/hexo-theme-arknights/source/_posts/longtext.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/themes/hexo-theme-arknights/source/_posts/markdown.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/themes/hexo-theme-arknights/source/_posts/mermaid.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/themes/hexo-theme-arknights/source/_posts/news.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/themes/hexo-theme-arknights/source/_posts/nihonngo.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/themes/hexo-theme-arknights/source/_posts/unixtime.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/themes/hexo-theme-arknights/yarn.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/hexo-theme-arknights" beforeDir="false" afterPath="$PROJECT_DIR$/hexo-theme-arknights" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/hexo-theme-arknights/source/_posts/markdown.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/source/_drafts/资料.md" beforeDir="false" afterPath="$PROJECT_DIR$/source/_drafts/资料.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/themes/arknights" beforeDir="false" afterPath="$PROJECT_DIR$/themes/arknights" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/themes/arknights/_config.yml" beforeDir="false" afterPath="$PROJECT_DIR$/themes/arknights/_config.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/themes/arknights/layout/post.pug" beforeDir="false" afterPath="$PROJECT_DIR$/themes/arknights/layout/post.pug" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/themes/arknights/source/img/Alipay.png" beforeDir="false" afterPath="$PROJECT_DIR$/themes/arknights/source/img/Alipay.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/themes/arknights/source/img/WeChat.png" beforeDir="false" afterPath="$PROJECT_DIR$/themes/arknights/source/img/WeChat.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/_config.yml" beforeDir="false" afterPath="$PROJECT_DIR$/_config.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hexo-theme-arknights" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/hexo-theme-arknights-1.0.0.zip" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/_posts/hello-world.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/themes/arknights" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/themes/hexo-theme-arknights/source/img/Alipay.png" beforeDir="false" afterPath="$PROJECT_DIR$/themes/hexo-theme-arknights/source/img/Alipay.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/themes/hexo-theme-arknights/source/img/WeChat.png" beforeDir="false" afterPath="$PROJECT_DIR$/themes/hexo-theme-arknights/source/img/WeChat.png" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -37,15 +59,19 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/themes/hexo-theme-arknights" />
     <option name="ROOT_SYNC" value="DONT_SYNC" />
   </component>
   <component name="ProjectId" id="1ivCtMhRUSo9NqkLoeziAt7f3By" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
+    <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
     <property name="ASKED_SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
@@ -53,10 +79,16 @@
     <property name="aspect.path.notification.shown" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="nodejs_package_manager_path" value="yarn" />
-    <property name="project.structure.last.edited" value="Facets" />
+    <property name="project.structure.last.edited" value="SDKs" />
     <property name="project.structure.proportion" value="0.15" />
     <property name="project.structure.side.proportion" value="0.2" />
-    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
+    <property name="settings.editor.selected.configurable" value="project.propVCSSupport.Mappings" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="F:\Project\blog\source\_drafts" />
+      <recent name="F:\Project\blog\themes" />
+    </key>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
@@ -96,7 +128,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="origin/master" />
+                        <option value="master" />
                       </list>
                     </value>
                   </entry>
@@ -123,6 +155,11 @@
       </map>
     </option>
     <option name="oldMeFiltersMigrated" value="true" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
+    <MESSAGE value="&lt;new&gt;:&lt;事务的四种隔离级别&gt;" />
+    <option name="LAST_COMMIT_MESSAGE" value="&lt;new&gt;:&lt;事务的四种隔离级别&gt;" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
