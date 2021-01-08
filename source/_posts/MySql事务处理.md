@@ -101,6 +101,8 @@ COMMIT WORK/ROLLBACK WORK/ROLLBACK TO SAVEPOINT t1;
 
 https://www.cnblogs.com/jing99/p/11769093.html
 
+https://www.cnblogs.com/barrywxx/p/8506512.html
+
 ## 4.事务的隔离
 之所以使用事务，是因为事务具有一定的隔离性。因为我们的MySQL是并发执行的。同一时刻可以有多条SQL语句要被我们的数据库管理系统执行。那么为了让他们之间保持一种相互独立的状态，这就需要事务去完成。
 
