@@ -20,9 +20,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="dfeb5666-78df-4c84-9185-038975e07b62" name="Default Changelist" comment="&lt;new&gt;:&lt;MySQL事务处理&gt;">
+      <change afterPath="$PROJECT_DIR$/source/_drafts/MySQL-锁.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/_posts/JAVA8-函数式接口-Function-Predicate-Supplier-Cosumer.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/_posts/MySql-优化 (一).md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/_posts/MySql-优化 (二).md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/source/_posts/MySql事务处理.md" beforeDir="false" afterPath="$PROJECT_DIR$/source/_posts/MySql事务处理.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/source/_posts/MySql小记.md" beforeDir="false" afterPath="$PROJECT_DIR$/source/_posts/MySql小记.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/_posts/四种事务的隔离级别.md" beforeDir="false" afterPath="$PROJECT_DIR$/source/_posts/四种事务的隔离级别.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -114,7 +120,14 @@
       <option name="project" value="LOCAL" />
       <updated>1610095397754</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="&lt;new&gt;:&lt;MySQL事务处理&gt;">
+      <created>1610102307595</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1610102307595</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -166,6 +179,11 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
+    <ignored-roots>
+      <path value="$PROJECT_DIR$/Hexo/themes/arknights" />
+      <path value="$PROJECT_DIR$/hexo-theme-arknights" />
+      <path value="$PROJECT_DIR$/themes/arknights" />
+    </ignored-roots>
     <MESSAGE value="&lt;new&gt;:&lt;事务的四种隔离级别&gt;" />
     <MESSAGE value="&lt;new&gt;:&lt;MySQL事务处理&gt;" />
     <option name="LAST_COMMIT_MESSAGE" value="&lt;new&gt;:&lt;MySQL事务处理&gt;" />

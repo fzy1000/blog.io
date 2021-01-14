@@ -5,7 +5,6 @@ tags:
 - MySQL
 category: MySQL
 ---
-# MySQL事务处理
 事务(Transaction)是MySQL对SQL用户操作数据库的一种抽象。我们执行的每一条SQL语句都可以被看作是事务。一般来说，我们的MySQL在执行SQL语句时采用自动提交的模式，这就让我感觉不到事务的存在。其实，事务是为了保障多个SQL操作的一致性。MySQL的事务主要用于处理操作量大，复杂度高的数据。
 
 同时，在MySQL中只有InnoDB引擎是支持事务处理的。通过SHOW ENGINES;可以查询到，我们数据库的存储引擎相关的信息。
