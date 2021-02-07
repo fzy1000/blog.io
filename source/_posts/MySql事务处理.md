@@ -80,15 +80,16 @@ COMMIT WORK/ROLLBACK WORK/ROLLBACK TO SAVEPOINT t1;
 链式事务是在提交一个事务时，释放不必要的数据对象，同时将必要的上下文隐式传递给下一个事务。
 提交事务和下一个事务操作将被视为原子操作，就是下一个事务可以看到上一个事务的执行结果。
 不过链式事务在回滚时，只能回滚到就近的上一个保存点。
-![链式事务](http://m.qpic.cn/psc?/V51lIF8R3HS9sa4GVlzK1thDGf39F65U/ruAMsa53pVQWN7FLK88i5rj9TxzNzoNEMKztzgZEflWZpJGf4N5TFhFMKdTm4Pa76pHvSNGqLyzKjWq17ksWGpyG4PIqAVQL8mibbYuPtBo!/b&bo=CQN4AQAAAAADB1E!&rf=viewer_4 "链式事务")
 
+<img src="/blog.io/img/链式事务.png">
 
 #### 3.4嵌套事务
 
 嵌套事务顾名思义便是多个事务嵌套在一起，如下图所示。这种情况下，我们一般把最外层事务称之为顶层事务，一个事务的前驱事务为父事务、后继事务为子事务。
 
 嵌套事务的特点便是，任何一个节点的子事务都可以提交或回滚。但是只有在其父事务提交或回滚后，其事务才能算的上是真正意义上的提交或回滚。由此便可得出结论，只有在顶层事务提交或回滚后，所有的事务才生效。
-![嵌套事务](http://a1.qpic.cn/psc?/V51lIF8R3HS9sa4GVlzK1thDGf39F65U/ruAMsa53pVQWN7FLK88i5krnoQNs1ND7YDnJI*fA0BCozaq56OD7rCLTeo9P*AJARCNJNOsXIAwCFhY*SPv6qAAEwt9X2BhuLf.4us91CAc!/c&ek=1&kp=1&pt=0&bo=twL4AQAAAAADF34!&tl=1&vuin=2581170206&tm=1610089200&sce=60-2-2&rf=newphoto&t=5 "嵌套事务") 
+
+<img src="/blog.io/img/嵌套事务.png">
 
 #### 3.5分布式事务
 
