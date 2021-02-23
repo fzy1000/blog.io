@@ -15,7 +15,7 @@ JVM虚拟机数据区包含了堆，本地方法栈，虚拟机栈和程序计�
 本地内存包含了元数据区和直接内存。
 这其中堆内存和本地内存是所有线程共享的，栈内存和程序计数器是线程私有的。
 
-![Java8内存模型](http://m.qpic.cn/psc?/V51lIF8R3HS9sa4GVlzK1thDGf39F65U/ruAMsa53pVQWN7FLK88i5krnoQNs1ND7YDnJI*fA0BDktH3rJcLx6eRzBg2MFSIWkl9sblSlYgDA29XF8K1zRJD6kPiqKyF2prUQd9GvqZQ!/b&bo=0AIXAwAAAAADB.Q!&rf=viewer_4 "Java8内存模型")
+<img src="/blog.io/img/JVM内存模型.png">
 
 #### 堆内存（heap）
 堆内存在虚拟机启动的时候被创建，这个内存区域***唯一的作用是存放对象的实例***。堆内存主要分成两个部分：
@@ -72,6 +72,9 @@ Java8中我们经常用java.nio.DirectByteBuffer对象进行堆外内存的管�
 
 1. https://www.cnblogs.com/reload-sun/p/12216931.html
 （including gc）
+   
+1. https://blog.51cto.com/15065850/2603114
+（gc）
 
 
 #### 程序计数器
