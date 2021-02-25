@@ -19,34 +19,12 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="dfeb5666-78df-4c84-9185-038975e07b62" name="Default Changelist" comment="&lt;new&gt;:&lt;处理图片&gt;">
-      <change afterPath="$PROJECT_DIR$/source/_posts/【Mysql数据库的优化】主从读写分离、分库分表.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/_posts/如何减少频繁创建数据库连接的性能损耗？.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/_posts/数据库优化方案（一）：查询请求增加时，如何做到主从分离.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/_posts/系统设计目标（一）：如何提升系统性能.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/_posts/系统设计目标（三）：如何让系统易于扩展.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/_posts/系统设计目标（二）：系统怎样做到高可用.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/JDK线程池.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/JVM内存模型.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/Nginx连接Tomcat.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/psc.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/主从延迟影响.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/主从异步复制.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/分为置示意图.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/区间拆分.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/哈希分库分表.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/嵌套事务.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/性能测试的拐点模型.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/数据库代理层.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/系统可用性.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/链式事务.png" afterDir="false" />
+    <list default="true" id="dfeb5666-78df-4c84-9185-038975e07b62" name="Default Changelist" comment="&lt;new&gt;:&lt;20210223&gt;">
+      <change afterPath="$PROJECT_DIR$/source/_posts/数据库优化方案（二）：写入数据量增加时，如何实现分库分表.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/img/垂直拆分.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/img/读写分库系统架构图.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/source/_drafts/资料.md" beforeDir="false" afterPath="$PROJECT_DIR$/source/_drafts/资料.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/source/_posts/JVM内存模型和参数配置的学习（一）.md" beforeDir="false" afterPath="$PROJECT_DIR$/source/_posts/JVM内存模型和参数配置的学习（一）.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/themes/hexo-theme-arknights" beforeDir="false" afterPath="$PROJECT_DIR$/themes/hexo-theme-arknights" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/themes/hexo-theme-arknights/source/img/psc.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/themes/hexo-theme-arknights/source/img/嵌套事务.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/themes/hexo-theme-arknights/source/img/链式事务.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/_posts/数据库优化方案（一）：查询请求增加时，如何做到主从分离.md" beforeDir="false" afterPath="$PROJECT_DIR$/source/_posts/数据库优化方案（一）：查询请求增加时，如何做到主从分离.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -172,7 +150,14 @@
       <option name="project" value="LOCAL" />
       <updated>1612681326776</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="&lt;new&gt;:&lt;20210223&gt;">
+      <created>1614081505926</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1614081505926</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -234,7 +219,8 @@
     <MESSAGE value="&lt;new&gt;:&lt;MySQL和函数式接口&gt;" />
     <MESSAGE value="&lt;new&gt;:&lt;架构分层&gt;" />
     <MESSAGE value="&lt;new&gt;:&lt;处理图片&gt;" />
-    <option name="LAST_COMMIT_MESSAGE" value="&lt;new&gt;:&lt;处理图片&gt;" />
+    <MESSAGE value="&lt;new&gt;:&lt;20210223&gt;" />
+    <option name="LAST_COMMIT_MESSAGE" value="&lt;new&gt;:&lt;20210223&gt;" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
