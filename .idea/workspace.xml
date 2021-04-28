@@ -19,34 +19,41 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="dfeb5666-78df-4c84-9185-038975e07b62" name="Default Changelist" comment="&lt;new&gt;:&lt;20210406&gt;">
-      <change afterPath="$PROJECT_DIR$/source/_posts/23丨RPC框架：10万QPS下如何实现毫秒级的服务调用？.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/_posts/微服务架构：微服务化后系统架构要如何改造.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/_posts/消息队列：如何降低消息队列系统中消息的延迟？.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/_posts/系统架构：每秒1万次请求的系统要做服务化拆分吗？.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/21系统架构图.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/22系统架构图.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/23RPC调用过程.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/23网络调用示意图.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/JXM消息堆积示意图.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/Kafka-consumer-group.sh命令结果示意图.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/kafka消费示意图.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/一体化架构业务池.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/使用sendFile.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/多线程消费队列示意图.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/数据从磁盘写入网络的过程.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/服务化部署.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/消息监控程序示意图.png" afterDir="false" />
+    <list default="true" id="dfeb5666-78df-4c84-9185-038975e07b62" name="Default Changelist" comment="&lt;new&gt;:&lt;20210421&gt;">
+      <change afterPath="$PROJECT_DIR$/source/_posts/24丨注册中心：微服务架构结合RPC框架如何做到分布式系统寻址？.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/_posts/25丨分布式Trace：横跨几十个分布式组件的慢请求要如何排查？.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/_posts/26丨负载均衡：怎样提升系统的横向扩展能力？.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/_posts/27丨API网关：系统的门面要如何做呢？.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/_posts/28丨多机房部署：跨地域的分布式系统如何做？.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/_posts/29丨ServiceMesh：如何屏蔽服务化系统的服务治理细节？.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/_posts/30丨给系统加上眼睛：服务端监控要怎么做？.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/img/24RPC通信过程.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/img/24主动探测方式.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/img/24心跳机制.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/img/24混合云部署图.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/img/25RPC调用关系图.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/img/25代理负载均衡服务.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/img/25客户端负载均衡服务.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/img/25排查程序架构图.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/img/25系统架构图.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/img/27Zuu1责任链示意图.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/img/27入口网关.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/img/27出口网关.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/img/27系统架构图.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/img/27网关部署示意图.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/img/28同城双活.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/img/28异地多活.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/img/28跨机房读取.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/img/28跨机房读取数据.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/img/29Istio架构.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/img/29Sidecar传输.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/img/29数据包再iptable中的五条默认链.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/img/29流入流量示意图.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/img/29流出流量示意图.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/img/29请客户端调用示意图.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/img/30监控指标.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/source/_drafts/资料.md" beforeDir="false" afterPath="$PROJECT_DIR$/source/_posts/资料.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/source/_posts/数据库优化方案（一）：查询请求增加时，如何做到主从分离.md" beforeDir="false" afterPath="$PROJECT_DIR$/source/_posts/数据库优化方案（一）：查询请求增加时，如何做到主从分离.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/source/_posts/消息投递：如何保证消息仅仅被消费一次？.md" beforeDir="false" afterPath="$PROJECT_DIR$/source/_posts/消息投递：如何保证消息仅仅被消费一次？.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/source/img/主从延迟影响.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/source/img/主从延迟影响.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/source/img/主从异步复制.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/source/img/主从异步复制.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/source/img/数据库代理层.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/source/img/数据库代理层.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/themes/hexo-theme-arknights" beforeDir="false" afterPath="$PROJECT_DIR$/themes/hexo-theme-arknights" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/themes/hexo-theme-arknights/_config.arknights.yml" beforeDir="false" afterPath="$PROJECT_DIR$/themes/hexo-theme-arknights/_config.arknights.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/themes/hexo-theme-arknights/_config.yml" beforeDir="false" afterPath="$PROJECT_DIR$/themes/hexo-theme-arknights/_config.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/_posts/CDN：静态资源如何加速？.md" beforeDir="false" afterPath="$PROJECT_DIR$/source/_posts/CDN：静态资源如何加速？.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -201,7 +208,14 @@
       <option name="project" value="LOCAL" />
       <updated>1617781339747</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL-00013" summary="&lt;new&gt;:&lt;20210421&gt;">
+      <created>1619007970902</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1619007970902</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -267,7 +281,8 @@
     <MESSAGE value="&lt;new&gt;:&lt;20210225&gt;" />
     <MESSAGE value="&lt;new&gt;:&lt;20210303&gt;" />
     <MESSAGE value="&lt;new&gt;:&lt;20210406&gt;" />
-    <option name="LAST_COMMIT_MESSAGE" value="&lt;new&gt;:&lt;20210406&gt;" />
+    <MESSAGE value="&lt;new&gt;:&lt;20210421&gt;" />
+    <option name="LAST_COMMIT_MESSAGE" value="&lt;new&gt;:&lt;20210421&gt;" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
