@@ -19,41 +19,15 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="dfeb5666-78df-4c84-9185-038975e07b62" name="Default Changelist" comment="&lt;new&gt;:&lt;20210421&gt;">
-      <change afterPath="$PROJECT_DIR$/source/_posts/24丨注册中心：微服务架构结合RPC框架如何做到分布式系统寻址？.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/_posts/25丨分布式Trace：横跨几十个分布式组件的慢请求要如何排查？.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/_posts/26丨负载均衡：怎样提升系统的横向扩展能力？.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/_posts/27丨API网关：系统的门面要如何做呢？.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/_posts/28丨多机房部署：跨地域的分布式系统如何做？.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/_posts/29丨ServiceMesh：如何屏蔽服务化系统的服务治理细节？.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/_posts/30丨给系统加上眼睛：服务端监控要怎么做？.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/24RPC通信过程.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/24主动探测方式.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/24心跳机制.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/24混合云部署图.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/25RPC调用关系图.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/25代理负载均衡服务.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/25客户端负载均衡服务.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/25排查程序架构图.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/25系统架构图.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/27Zuu1责任链示意图.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/27入口网关.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/27出口网关.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/27系统架构图.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/27网关部署示意图.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/28同城双活.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/28异地多活.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/28跨机房读取.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/28跨机房读取数据.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/29Istio架构.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/29Sidecar传输.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/29数据包再iptable中的五条默认链.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/29流入流量示意图.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/29流出流量示意图.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/29请客户端调用示意图.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/30监控指标.png" afterDir="false" />
+    <list default="true" id="dfeb5666-78df-4c84-9185-038975e07b62" name="Default Changelist" comment="&lt;new&gt;:&lt;20210428&gt;">
+      <change afterPath="$PROJECT_DIR$/.idea/leetcode/editor.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/_posts/31丨应用性能管理：用户的使用体验应该如何监控？.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/_posts/32丨压力测试：怎样设计全链路压力测试平台？.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/img/31APM系统示意图.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/img/31网络等待时间.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/img/32全链路压测.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/source/_posts/CDN：静态资源如何加速？.md" beforeDir="false" afterPath="$PROJECT_DIR$/source/_posts/CDN：静态资源如何加速？.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/_posts/30丨给系统加上眼睛：服务端监控要怎么做？.md" beforeDir="false" afterPath="$PROJECT_DIR$/source/_posts/30丨给系统加上眼睛：服务端监控要怎么做？.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -85,6 +59,7 @@
     <property name="ASKED_SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/source/img" />
@@ -92,7 +67,7 @@
     <property name="project.structure.last.edited" value="SDKs" />
     <property name="project.structure.proportion" value="0.15" />
     <property name="project.structure.side.proportion" value="0.2" />
-    <property name="settings.editor.selected.configurable" value="project.propVCSSupport.Mappings" />
+    <property name="settings.editor.selected.configurable" value="leetcode.id" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
@@ -215,7 +190,14 @@
       <option name="project" value="LOCAL" />
       <updated>1619007970902</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="&lt;new&gt;:&lt;20210421&gt;">
+      <created>1619609031803</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1619609031803</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -283,6 +265,16 @@
     <MESSAGE value="&lt;new&gt;:&lt;20210406&gt;" />
     <MESSAGE value="&lt;new&gt;:&lt;20210421&gt;" />
     <option name="LAST_COMMIT_MESSAGE" value="&lt;new&gt;:&lt;20210421&gt;" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../java/leetcode/leetcode/editor/cn/[872]叶子相似的树.java</url>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
