@@ -3,6 +3,30 @@
   <component name="LeetcodeEditor">
     <option name="projectConfig">
       <map>
+        <entry key="$PROJECT_DIR$/../java/leetcode/leetcode/editor/cn/[1190]反转每对括号间的子串.java">
+          <value>
+            <LeetcodeEditor>
+              <option name="path" value="$PROJECT_DIR$/../java/leetcode/leetcode/editor/cn/[1190]反转每对括号间的子串.java" />
+              <option name="questionId" value="1298" />
+            </LeetcodeEditor>
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/../java/leetcode/leetcode/editor/cn/[12]整数转罗马数字.java">
+          <value>
+            <LeetcodeEditor>
+              <option name="path" value="$PROJECT_DIR$/../java/leetcode/leetcode/editor/cn/[12]整数转罗马数字.java" />
+              <option name="questionId" value="12" />
+            </LeetcodeEditor>
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/../java/leetcode/leetcode/editor/cn/[1310]子数组异或查询.java">
+          <value>
+            <LeetcodeEditor>
+              <option name="path" value="$PROJECT_DIR$/../java/leetcode/leetcode/editor/cn/[1310]子数组异或查询.java" />
+              <option name="questionId" value="1435" />
+            </LeetcodeEditor>
+          </value>
+        </entry>
         <entry key="$PROJECT_DIR$/../java/leetcode/leetcode/editor/cn/[1723]完成所有工作的最短时间.java">
           <value>
             <LeetcodeEditor>
@@ -11,11 +35,51 @@
             </LeetcodeEditor>
           </value>
         </entry>
+        <entry key="$PROJECT_DIR$/../java/leetcode/leetcode/editor/cn/[1738]找出第 K 大的异或坐标值.java">
+          <value>
+            <LeetcodeEditor>
+              <option name="path" value="$PROJECT_DIR$/../java/leetcode/leetcode/editor/cn/[1738]找出第 K 大的异或坐标值.java" />
+              <option name="questionId" value="1860" />
+            </LeetcodeEditor>
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/../java/leetcode/leetcode/editor/cn/[1744]你能在你最喜欢的那天吃到你最喜欢的糖果吗？.java">
+          <value>
+            <LeetcodeEditor>
+              <option name="path" value="$PROJECT_DIR$/../java/leetcode/leetcode/editor/cn/[1744]你能在你最喜欢的那天吃到你最喜欢的糖果吗？.java" />
+              <option name="questionId" value="1872" />
+            </LeetcodeEditor>
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/../java/leetcode/leetcode/editor/cn/[342]4的幂.java">
+          <value>
+            <LeetcodeEditor>
+              <option name="path" value="$PROJECT_DIR$/../java/leetcode/leetcode/editor/cn/[342]4的幂.java" />
+              <option name="questionId" value="342" />
+            </LeetcodeEditor>
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/../java/leetcode/leetcode/editor/cn/[523]连续的子数组和.java">
+          <value>
+            <LeetcodeEditor>
+              <option name="path" value="$PROJECT_DIR$/../java/leetcode/leetcode/editor/cn/[523]连续的子数组和.java" />
+              <option name="questionId" value="523" />
+            </LeetcodeEditor>
+          </value>
+        </entry>
         <entry key="$PROJECT_DIR$/../java/leetcode/leetcode/editor/cn/[872]叶子相似的树.java">
           <value>
             <LeetcodeEditor>
               <option name="path" value="$PROJECT_DIR$/../java/leetcode/leetcode/editor/cn/[872]叶子相似的树.java" />
               <option name="questionId" value="904" />
+            </LeetcodeEditor>
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/../java/leetcode/leetcode/editor/cn/[993]二叉树的堂兄弟节点.java">
+          <value>
+            <LeetcodeEditor>
+              <option name="path" value="$PROJECT_DIR$/../java/leetcode/leetcode/editor/cn/[993]二叉树的堂兄弟节点.java" />
+              <option name="questionId" value="1035" />
             </LeetcodeEditor>
           </value>
         </entry>
