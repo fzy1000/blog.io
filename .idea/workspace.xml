@@ -19,44 +19,13 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="dfeb5666-78df-4c84-9185-038975e07b62" name="Default Changelist" comment="&lt;new&gt;:&lt;20210510&gt;">
-      <change afterPath="$PROJECT_DIR$/source/_posts/33丨配置管理：成千上万的配置项要如何管理？.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/_posts/34丨降级熔断：如何屏蔽非核心系统故障的影响？.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/_posts/35丨流量控制：高并发系统中我们如何操纵流量？.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/_posts/37丨计数系统设计（一）：面对海量数据的计数器要如何做？.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/_posts/38丨计数系统设计（二）：50万QPS下如何设计未读数系统？.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/_posts/39丨信息流设计（一）：通用信息流系统的推模式要如何做？.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/_posts/40丨信息流设计（二）：通用信息流系统的拉模式要如何做？.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/_posts/kafka设计与原理详解.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/_posts/理解zookeeper选举机制.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/34熔断状态.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/34系统示意图.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/35TCP滑动窗口.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/35令牌桶算法示意图.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/35滑动窗口算法示意图.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/35漏桶算法示意图.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/37计数服务存储示意图.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/37计数系统分库分表.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/37计数系统缓存设计示意图.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/38微博红点.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/38消息流未读数方案示意图.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/38系统通知未读数示意图.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/39微博分库分表示意图.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/39推模式发微博.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/40多副本部署缓存降低带宽.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/40推拉结合模式.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/Topic结构组织.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/ZK选举流程图.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/ZK选举状态图.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/ZK集群.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/consumer-groups.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/kafka架构.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/kafka结构图.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/固定窗口算法缺陷示意图.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/source/img/轮询查询实现变更推动示意图.png" afterDir="false" />
+    <list default="true" id="dfeb5666-78df-4c84-9185-038975e07b62" name="Default Changelist" comment="&lt;new&gt;:&lt;20210628&gt;">
+      <change afterPath="$PROJECT_DIR$/source/_posts/JVM垃圾回收.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/img/gc概要.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/img/堆内存常见分配策略.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/img/堆空间的基本结构.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/leetcode/editor.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/leetcode/editor.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/source/_posts/32丨压力测试：怎样设计全链路压力测试平台？.md" beforeDir="false" afterPath="$PROJECT_DIR$/source/_posts/32丨压力测试：怎样设计全链路压力测试平台？.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -233,7 +202,14 @@
       <option name="project" value="LOCAL" />
       <updated>1620646611841</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="&lt;new&gt;:&lt;20210628&gt;">
+      <created>1624881576485</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1624881576485</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -301,7 +277,8 @@
     <MESSAGE value="&lt;new&gt;:&lt;20210406&gt;" />
     <MESSAGE value="&lt;new&gt;:&lt;20210421&gt;" />
     <MESSAGE value="&lt;new&gt;:&lt;20210510&gt;" />
-    <option name="LAST_COMMIT_MESSAGE" value="&lt;new&gt;:&lt;20210510&gt;" />
+    <MESSAGE value="&lt;new&gt;:&lt;20210628&gt;" />
+    <option name="LAST_COMMIT_MESSAGE" value="&lt;new&gt;:&lt;20210628&gt;" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
