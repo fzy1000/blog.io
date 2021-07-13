@@ -4,6 +4,7 @@ date: 2020-08-20 15:06:01
 tags: 
 - Java
 - 虚拟机
+- JVM
 category: Java小技巧
 ---
 

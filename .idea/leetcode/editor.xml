@@ -67,6 +67,22 @@
             </LeetcodeEditor>
           </value>
         </entry>
+        <entry key="$PROJECT_DIR$/../java/leetcode/leetcode/editor/cn/[218]天际线问题.java">
+          <value>
+            <LeetcodeEditor>
+              <option name="path" value="$PROJECT_DIR$/../java/leetcode/leetcode/editor/cn/[218]天际线问题.java" />
+              <option name="questionId" value="218" />
+            </LeetcodeEditor>
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/../java/leetcode/leetcode/editor/cn/[275]H 指数 II.java">
+          <value>
+            <LeetcodeEditor>
+              <option name="path" value="$PROJECT_DIR$/../java/leetcode/leetcode/editor/cn/[275]H 指数 II.java" />
+              <option name="questionId" value="275" />
+            </LeetcodeEditor>
+          </value>
+        </entry>
         <entry key="$PROJECT_DIR$/../java/leetcode/leetcode/editor/cn/[342]4的幂.java">
           <value>
             <LeetcodeEditor>
@@ -91,11 +107,27 @@
             </LeetcodeEditor>
           </value>
         </entry>
+        <entry key="$PROJECT_DIR$/../java/leetcode/leetcode/editor/cn/[930]和相同的二元子数组.java">
+          <value>
+            <LeetcodeEditor>
+              <option name="path" value="$PROJECT_DIR$/../java/leetcode/leetcode/editor/cn/[930]和相同的二元子数组.java" />
+              <option name="questionId" value="966" />
+            </LeetcodeEditor>
+          </value>
+        </entry>
         <entry key="$PROJECT_DIR$/../java/leetcode/leetcode/editor/cn/[993]二叉树的堂兄弟节点.java">
           <value>
             <LeetcodeEditor>
               <option name="path" value="$PROJECT_DIR$/../java/leetcode/leetcode/editor/cn/[993]二叉树的堂兄弟节点.java" />
               <option name="questionId" value="1035" />
+            </LeetcodeEditor>
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/../java/leetcode/leetcode/editor/cn/[面试题 17.10]主要元素.java">
+          <value>
+            <LeetcodeEditor>
+              <option name="path" value="$PROJECT_DIR$/../java/leetcode/leetcode/editor/cn/[面试题 17.10]主要元素.java" />
+              <option name="questionId" value="1000038" />
             </LeetcodeEditor>
           </value>
         </entry>
