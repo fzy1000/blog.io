@@ -19,12 +19,20 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="dfeb5666-78df-4c84-9185-038975e07b62" name="Default Changelist" comment="&lt;new&gt;:&lt;20210707&gt;">
-      <change afterPath="$PROJECT_DIR$/source/_posts/JVM内存模型和参数配置的学习（二）.md" afterDir="false" />
+    <list default="true" id="dfeb5666-78df-4c84-9185-038975e07b62" name="Default Changelist" comment="&lt;new&gt;:&lt;20210713&gt;">
+      <change afterPath="$PROJECT_DIR$/source/_posts/HotSpot-虚拟机对象探秘.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/img/Java创建对象的过程.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/img/jvm1.7内存模型.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/img/jvm1.8内存模型.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/img/jvm1.8常量池.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/img/内存分配的两种方式.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/img/对象的访问定位-使用句柄.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/img/对象的访问定位-直接指针.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/img/永久代.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/leetcode/editor.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/leetcode/editor.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/source/_posts/JVM内存模型和参数配置的学习（一）.md" beforeDir="false" afterPath="$PROJECT_DIR$/source/_posts/JVM内存模型和参数配置的学习（一）.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/source/_posts/JVM垃圾回收.md" beforeDir="false" afterPath="$PROJECT_DIR$/source/_posts/JVM内存模型和垃圾回收（三）.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/_posts/JVM内存模型和参数配置的学习（二）.md" beforeDir="false" afterPath="$PROJECT_DIR$/source/_posts/JVM内存模型和参数配置的学习（二）.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/_posts/JVM内存模型和垃圾回收（三）.md" beforeDir="false" afterPath="$PROJECT_DIR$/source/_posts/JVM内存模型和垃圾回收（三）.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -64,7 +72,7 @@
     <property name="project.structure.last.edited" value="SDKs" />
     <property name="project.structure.proportion" value="0.15" />
     <property name="project.structure.side.proportion" value="0.2" />
-    <property name="settings.editor.selected.configurable" value="leetcode.id" />
+    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
@@ -215,7 +223,14 @@
       <option name="project" value="LOCAL" />
       <updated>1625661201476</updated>
     </task>
-    <option name="localTasksCounter" value="18" />
+    <task id="LOCAL-00018" summary="&lt;new&gt;:&lt;20210713&gt;">
+      <created>1626174103618</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1626174103618</updated>
+    </task>
+    <option name="localTasksCounter" value="19" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -285,7 +300,8 @@
     <MESSAGE value="&lt;new&gt;:&lt;20210510&gt;" />
     <MESSAGE value="&lt;new&gt;:&lt;20210628&gt;" />
     <MESSAGE value="&lt;new&gt;:&lt;20210707&gt;" />
-    <option name="LAST_COMMIT_MESSAGE" value="&lt;new&gt;:&lt;20210707&gt;" />
+    <MESSAGE value="&lt;new&gt;:&lt;20210713&gt;" />
+    <option name="LAST_COMMIT_MESSAGE" value="&lt;new&gt;:&lt;20210713&gt;" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
