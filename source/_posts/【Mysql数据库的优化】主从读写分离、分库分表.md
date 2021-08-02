@@ -1,7 +1,8 @@
 ---
 title: 八：【Mysql数据库的优化】主从读写分离、分库分表
 date: 2021-02-23 18:47:31
-tags:
+- MySQL
+category: MySQL
 ---
 
 ### <font color = "dd0000">主从读写分离</font>
