@@ -21,7 +21,8 @@
   <component name="ChangeListManager">
     <list default="true" id="dfeb5666-78df-4c84-9185-038975e07b62" name="Default Changelist" comment="&lt;new&gt;:&lt;20210802&gt;">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/source/_drafts/资料.md" beforeDir="false" afterPath="$PROJECT_DIR$/source/_drafts/资料.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/_posts/【Mysql数据库的优化】主从读写分离、分库分表.md" beforeDir="false" afterPath="$PROJECT_DIR$/source/_posts/【Mysql数据库的优化】主从读写分离、分库分表.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/themes/hexo-theme-arknights" beforeDir="false" afterPath="$PROJECT_DIR$/themes/hexo-theme-arknights" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
