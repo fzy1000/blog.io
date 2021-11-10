@@ -1,0 +1,41 @@
+<!DOCTYPE html><html lang="zh-Hans"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>高并发系统的通用设计方法 | 如何做到年薪百万</title><script src="https://cdn.bootcss.com/valine/1.4.4/Valine.min.js"></script><link rel="stylesheet" href="/blog.io/css/arknights.css"><link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/highlight.js/10.1.2/styles/atom-one-dark-reasonable.min.css"><style>@font-face {
+ font-family: BenderLight;
+ src: local('Bender'), url("/blog.io/font/BenderLight.ttf");
+}
+@font-face {
+ font-family: 'JetBrains Mono';
+ src: local('JetBrains Mono'), url('/blog.io/font/JetBrainsMono-Regular.woff2') format('woff2');
+}</style><meta name="generator" content="Hexo 5.4.0"></head><body><header><nav><a href="/blog.io/">Home</a><a href="/blog.io/archives/">Archives</a></nav></header><main><article><div id="post-bg"><div id="post-title"><h1>高并发系统的通用设计方法</h1><hr></div><div id="post-content"><p> 我们在抵御高并发大流量的时候会采用类似“抵御洪水”的方案，归纳起来有三种</p>
+<ul>
+<li>Scale-out（横向扩展）：分而治之是一种常见的高并发系统设计方案，采用分布式部署把流量分开，让每个服务器承担一部分并发和流量</li>
+<li>缓存： 使用缓存来提高系统的性能，就好比拓宽河道，抵抗高并发大流量的冲击。</li>
+<li>异步： 在某些场景下，未处理完成之前，可以让请求先返回，在准备好之后再通知请求方。这样可以在单位时间内处理更多的请求。</li>
+</ul>
+<p>我们先来说第一个</p>
+<h3 id="1-Scale-Up-vs-Scale-Out"><a href="#1-Scale-Up-vs-Scale-Out" class="headerlink" title="1. Scale-Up vs Scale-Out"></a>1. Scale-Up vs Scale-Out</h3><p>   著名的“摩尔定律”是Intel的创始人之一提出的，它提到集成电路上可容纳的晶体管没两年都会涨一倍。</br><br>   <br/>我们在高并发系统设计上也沿用了同样的思路，将类似追逐摩尔定律不断提升CPU的方案叫做Scale-Up（纵向扩展），把类似CPU多核心的方案叫做<br>   Scale-Out,这两种思路在实现上完全不同。</p>
+<ul>
+<li>Scale-Up  通过购买性能更好的硬件来提升系统的并发处理能力。比如目前系统4核4G每秒可以处理200次请求，那么换成8核8G就可以处理更多<br>（硬件提升可能不是线性的）</li>
+<li>Scale-Up  通过多个低性能的机器组成分布式集群来共同抵御高并发的流量。比如刚才那个就部署两台4核4G的机器</li>
+</ul>
+<p><br/>那么怎么选择Scale-Out 和 Scale-Up呢， 一般来说在系统设计的初期会考虑Scale-Up的方式，因为这样简单，所谓能用堆砌硬件解决的问题就用硬件<br>    解决，但是当系统并发超过了单机的极限，那就只能Scale-Out。</p>
+<p><br/>Scale-Out虽然能突破单机的限制，但是也会造成很多复杂的问题，比如某个节点挂了如何保证整体的可用性？当多个节点需要状态同步时，如何保证<br>    状态信息的一致性？如何做到使用方无感增删节点？</p>
+<p><br/>说完了Scale-Out，我们来说缓存。</p>
+<h3 id="2-使用缓存"><a href="#2-使用缓存" class="headerlink" title="2. 使用缓存"></a>2. 使用缓存</h3><p>   Web 2.0是缓存的时代，它遍布在系统设计的每个角落，从操作系统到浏览器，从数据库到消息队列，到任何略微复杂的服务和组件中，都可以看到缓存的影子。我们<br>   使用缓存主要是为了提升系统的访问性能。在高并发的情况下可以支持更多用户同时访问。</p>
+<p>   <br/>那么为什么缓存可以提升性能？我们知道数据是放在持久化存储中的，一般的持久化存储都是使用磁盘存储的，二普通磁盘数据有机械手臂，磁头，转轴，盘片组成。<br>   盘片是存储介质，每个盘片都被划分成多个同心圆，信息被存储在同心圆中，这些园就是磁道。磁盘工作的时候会高速旋转，机械手臂驱动磁头沿着径向移动，<br>   在磁道上读取所需要的数据。我们把磁头寻找信息花费的时间叫寻道时间。</p>
+<p>   <br/>普通磁盘的寻道时间10ms左右，而CPU执行指令和内存寻址的时间都是ns级别的，从千兆网卡网卡上读取数据的时间在us级别。所以在整个计算机体系中。<br>   磁盘是最慢的一环。因此，内存经常作为存储介质的缓存，以此提升性能。</p>
+<p>   <br/>当然，缓存的语义很多，我们可以将任何减低响应时间的中间存储都叫缓存。缓存的思想遍布设计领域，比如操作系统中CPU有多级缓存，文件有Page Cache缓存。</p>
+<h3 id="3-异步处理"><a href="#3-异步处理" class="headerlink" title="3. 异步处理"></a>3. 异步处理</h3><p>   异步也是一种常见的高并发设计方法。比如分布式服务框架Dubbo中有同步调用和异步调用，IO中也有同步IO和异步IO。异步在大规模高并发系统中被大量使用，<br>   例如12306，例如我们订票时，页面会显示正在排队，这个提示就代表系统在异步处理我们的订单。在12306中，查询余票，下单和更改余票状态都是比较耗时的操作。<br>   可能涉及多个内部系统的互相调用，如果是同步，那么高峰期永远不可能调的通。</p>
+<p>   <br/>而采用异步的方式，后端处理时会把请求扔到消息队列，同时快速相应用户。告诉我们在排队。然后释放资源处理更多请求，在订单处理完毕后再通知用户。<br>   <br/>异步处理逻辑，会使Web服务的压力减小，占用资源减小，系统承受高并发的能力也就提升了。</p>
+<p><br/>这三种方法并不意味着都要用，不同重量级的系统有不同的痛点，也就有不同的侧重点。盲目的模仿淘宝，qq那样的系统虽然能解决百万千万同时在线的需求，<br>但内部太过复杂，很难维护。所以设计系统应该遵循一下思路：</p>
+<ol>
+<li> 最简单的系统设计满足业务需求和流量现状，选择最熟悉的技术体系。</li>
+<li>随着流量的增加和业务的变化，修正框架中的问题，如单点问题，横向扩展问题，性能无法满足需求的组件。在这个过程中，选择社区最成熟的，团队最熟悉的组件帮我们解决问题。<br>尽量不要自己造轮子。</li>
+<li>对框架的小修小补无法满足需求时，才考虑重构</li>
+</ol>
+<p>以淘宝为例，也是慢慢增加高并发处理能力，比如数据库引擎从MylSAM迁移到InnoDB，数据库分表分库，增加缓存，启动中间件研发等。</p>
+<div id="paginator"></div></div><div id="post-footer"><hr><a href="/blog.io/2021/02/02/%E6%9E%B6%E6%9E%84%E5%88%86%E5%B1%82/">← Prev 架构分层</a><span style="color: #fe2"> | </span><a href="/blog.io/2021/01/14/JAVA8-%E5%87%BD%E6%95%B0%E5%BC%8F%E6%8E%A5%E5%8F%A3-Function-Predicate-Supplier-Cosumer/">JAVA8 函数式接口 Function/Predicate/Supplier/Consumer Next →</a><hr></div><div id="bottom-btn"><a id="to-index" href="#post-index" title="index">≡</a><a id="to-top" href="#post-title" title="to top">∧</a></div><div id="Valine"></div><script>new Valine({
+ el: '#Valine'
+ , appId: 's9ieIT2hA5ChVBjBufKhyfnK-gzGzoHsz'
+ , appKey: 'a8LAJbmO7wJi6fj9T85KMJid'
+ , placeholder: '此条评论委托企鹅物流发送'
+})</script></div></article><aside><div id="about"><a href="/blog.io/" id="logo"><img src="https://ak.hypergryph.com/assets/index/images/ak/pc/faction/1.png" alt="Logo"></a><h1 id="Dr"><a href="/"> Dr.Allen Feng</a></h1><section id="total"><a id="total-archives" href="/blog.io/archives"><span class="total-title">Archives Total:</span><span class="total-number">58</span></a><div id="total-tags"><span class="total-title">Tags:</span><span class="total-number">52</span></div><div id="total-categories"><span class="total-title">Categories:</span><span class="total-number">6</span></div></section></div><div id="aside-block"><h1>INDEX</h1><div id="post-index"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-Scale-Up-vs-Scale-Out"><span class="toc-number">1.</span> <span class="toc-text">1. Scale-Up vs Scale-Out</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E4%BD%BF%E7%94%A8%E7%BC%93%E5%AD%98"><span class="toc-number">2.</span> <span class="toc-text">2. 使用缓存</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E5%BC%82%E6%AD%A5%E5%A4%84%E7%90%86"><span class="toc-number">3.</span> <span class="toc-text">3. 异步处理</span></a></li></ol></div></div><footer><nobr><span class="text-title">©</span><span class="text-content">1970 to 2020</span></nobr><wbr><nobr><span class="text-title">ICP</span><span class="text-content">——备案号——</span></nobr><wbr><wbr><nobr>published with&nbsp;<a target="_blank" rel="noopener" href="http://hexo.io">Hexo&nbsp;</a></nobr><wbr><nobr>Theme&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus/hexo-theme-arknights">Arknight&nbsp;</a></nobr><wbr><nobr>by&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus">Yue_plus</a></nobr></footer></aside></main><canvas id="canvas-dust"></canvas><script src="/blog.io/js/arknights.js"></script><script src="https://cdn.bootcdn.net/ajax/libs/highlight.js/10.1.2/highlight.min.js"></script></body></html>

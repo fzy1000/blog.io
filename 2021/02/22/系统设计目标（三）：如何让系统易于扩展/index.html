@@ -1,0 +1,47 @@
+<!DOCTYPE html><html lang="zh-Hans"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>五：系统设计目标（三）：如何让系统易于扩展 | 如何做到年薪百万</title><script src="https://cdn.bootcss.com/valine/1.4.4/Valine.min.js"></script><link rel="stylesheet" href="/blog.io/css/arknights.css"><link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/highlight.js/10.1.2/styles/atom-one-dark-reasonable.min.css"><style>@font-face {
+ font-family: BenderLight;
+ src: local('Bender'), url("/blog.io/font/BenderLight.ttf");
+}
+@font-face {
+ font-family: 'JetBrains Mono';
+ src: local('JetBrains Mono'), url('/blog.io/font/JetBrainsMono-Regular.woff2') format('woff2');
+}</style><meta name="generator" content="Hexo 5.4.0"></head><body><header><nav><a href="/blog.io/">Home</a><a href="/blog.io/archives/">Archives</a></nav></header><main><article><div id="post-bg"><div id="post-title"><h1>五：系统设计目标（三）：如何让系统易于扩展</h1><hr></div><div id="post-content"><p>当我们面对突发流量的时候，架构改造已经来不及了，通常的解决方案就是扩容。</p>
+<h3 id="为什么提升扩展性会很复杂"><a href="#为什么提升扩展性会很复杂" class="headerlink" title=" 为什么提升扩展性会很复杂 "></a><font color = "dd0000"> 为什么提升扩展性会很复杂 </font></h3><p>之前我们讲到过，增加系统的并行处理能力时有拐点的，当并行任务过多，系统会因为争夺资源而达到性能拐点。</p>
+<p>而对于多台机器组成的集群来说也是如此，集群系统中，不同的系统分层上可能存在一些“瓶颈点”，这些瓶颈点制约着系统的横向扩张能力。</p>
+<p>比方说，你系统的流量时每秒1000次请求，对数据库的请求量也是每秒1000次。如果流量增加10倍，虽然系统可以通过扩容正常服务，数据库却成为了净瓶。<br>再比如说，单机网络带宽是50Mbps，那么扩容到30台机器，前端负载均衡的带宽就超过了千兆带宽的限制，也会成为瓶颈点。那么，我们的系统中存在哪些服务<br>会成为制约系统扩展的重要因素呢？</p>
+<p>其实，无状态的服务和组件更易于扩展，而像Mysql这种存储服务是有状态的，就比较难扩展。因为向存储集群中增加或者减少机器的时候，会涉及到数据的迁徙，<br>而一般传统的关系型数据库都不支持。这就是为什么提升系统扩展性会很复杂的原因。</p>
+<p>除此之外，我们需要站在整体架构的角度，而不仅仅是业务服务器的角度来考虑扩展性。所以说，数据库，缓存，依赖的第三方，负载均衡，交换机带宽等等都是系统扩展时<br>需要考虑的因素。我们要知道系统并发到了某一个量级之后，哪一个因素会成为我们的瓶颈点，从而针对性的进行扩展。</p>
+<h3 id="高可扩展性的设计思路"><a href="#高可扩展性的设计思路" class="headerlink" title=" 高可扩展性的设计思路 "></a><font color = "dd0000"> 高可扩展性的设计思路 </font></h3><p>拆分是提升系统扩展性最重要的思路。他会把庞杂的系统拆分成独立的，由单一负责的模块。这样一个一个小模块的扩展性就像对于简单一点。</p>
+<p>对于不同类型的模块，我们拆分上遵循的原则是不一样的。举例来说，加入一个社区，就有可能有5个模块。</p>
+<ul>
+<li>用户：负责维护社区用户信息，注册和登录等：</li>
+<li>关系：用户之间关注，好友，拉黑等关系的维护；</li>
+<li>内容：社区发的内容，就像朋友圈或微博；</li>
+<li>评论，赞：用户常用的互动措施等；</li>
+<li>搜索：用户的搜索，内容的搜索等；</li>
+</ul>
+<p>而部署方式遵照最简单的三层部署架构，负载均衡负责请求的分发，应用服务器负责业务逻辑处理，数据库负责数据的存储落地。这时，所有的模块的业务代码都混在一起，<br>数据也都在一个库里。</p>
+<ol>
+<li><p>存储层的扩展性</p>
+<p><br/>无论是存储的数据量，还是并发访问量，不同的业务模块之间的量级相差很大，比如说成熟社区中，关系的数据量是远远大于用户数量的，但是用户数据的访问量<br>却远比关系数据要大。所以假如存储目前的瓶颈点是容量，那么我们只针对关系模块的数据做拆分就好了，而不需要拆分用户模块的数据。所以存储拆分首先考虑的维度是业务为度。</p>
+<p><br/>拆分之后，这个简单的社区系统，数据库就分成了用户库，内容库，评论库，点赞库和关系库。这么做还能隔离故障，不会互相影响。按照业务拆分，在某一定的<br>程度上提升了系统的扩展性，但系统运行时间长了之后，单一的业务数据在容量和并发请求量上仍会超过单机的限制。这时，我们就需要针对数据库进行二次拆分。</p>
+<p><br/>这次拆分是按照数据库特征做水平拆分，比如说我们可以用用户库增加两个节点，然后按照某些算法将用户的数据拆分到三个库里面，具体的分表分库算法<br>会在后面细讲。</p>
+<p><br/>水平拆分之后，就可以让数据库突破单机的限制了，但要注意，频繁的增加节点会需要多次手动地迁移数据，成本会非常高，所以扩容这种事最好一次到位。</p>
+<p><br/>当数据库按照业务和数据维度拆分之后，我们尽量不要使用事务。因为当一个事务中同时更新不同数据库时，需要使用二阶段提交，来协调所有数据库，要么全部完成，<br>要么全部失败，这个协调成本会随着资源的扩展不断提高，最终到达无法承受的成都。</p>
+</li>
+</ol>
+<ol start="2">
+<li><p>业务层的扩展性</p>
+<p><br/>我们一般从三个维度考虑业务层的拆分方案，分别是业务维度，重要性维度和请求来源维度。</p>
+<p><br/>首先，我们需要把相同业务的服务拆分成单独的业务池，比如社区系统，我们按照业务维度，拆分成用户池，内容池，关系池，评论池，点赞池和搜索池。</p>
+<p><br/>每个业务依赖独立的数据库资源，不会依赖其他业务的数据库资源。这样当某一个业务的接口成为瓶颈的时候，我们只需要扩展业务的池子，以及确认上下游<br>的依赖方就好了，这样就减少了扩容的复杂度。</p>
+<p><br/>除此之外，我们还可以根据业务接口的重要程度，把业务分成核心池和非核心池。比方说，就关系池而言，关注，取消关注接口相对重要，拉黑和取消拉黑就不那么<br>重要。这样我们可以优先保持核心池的性能，当整体流量上升的时候优先扩容核心池，降级非核心池接口，从而保证稳定性。</p>
+<p><br/>最后还可以根据接入客户端类型的不同拆分业务池，比如，服务于客户端接口的业务可以定义为外网池，服务于小程序或者HTML5页面的业务可以定位为H5池，<br>服务于内部其他部门的业务员可以定义为内网池等等。</p>
+</li>
+</ol>
+<div id="paginator"></div></div><div id="post-footer"><hr><a href="/blog.io/2021/02/23/%E5%A6%82%E4%BD%95%E5%87%8F%E5%B0%91%E9%A2%91%E7%B9%81%E5%88%9B%E5%BB%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5%E7%9A%84%E6%80%A7%E8%83%BD%E6%8D%9F%E8%80%97%EF%BC%9F/">← Prev 七：如何减少频繁创建数据库连接的性能损耗？</a><span style="color: #fe2"> | </span><a href="/blog.io/2021/02/10/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E7%9B%AE%E6%A0%87%EF%BC%88%E4%BA%8C%EF%BC%89%EF%BC%9A%E7%B3%BB%E7%BB%9F%E6%80%8E%E6%A0%B7%E5%81%9A%E5%88%B0%E9%AB%98%E5%8F%AF%E7%94%A8/">四：系统设计目标（二）：系统怎样做到高可用 Next →</a><hr></div><div id="bottom-btn"><a id="to-index" href="#post-index" title="index">≡</a><a id="to-top" href="#post-title" title="to top">∧</a></div><div id="Valine"></div><script>new Valine({
+ el: '#Valine'
+ , appId: 's9ieIT2hA5ChVBjBufKhyfnK-gzGzoHsz'
+ , appKey: 'a8LAJbmO7wJi6fj9T85KMJid'
+ , placeholder: '此条评论委托企鹅物流发送'
+})</script></div></article><aside><div id="about"><a href="/blog.io/" id="logo"><img src="https://ak.hypergryph.com/assets/index/images/ak/pc/faction/1.png" alt="Logo"></a><h1 id="Dr"><a href="/"> Dr.Allen Feng</a></h1><section id="total"><a id="total-archives" href="/blog.io/archives"><span class="total-title">Archives Total:</span><span class="total-number">58</span></a><div id="total-tags"><span class="total-title">Tags:</span><span class="total-number">52</span></div><div id="total-categories"><span class="total-title">Categories:</span><span class="total-number">6</span></div></section></div><div id="aside-block"><h1>INDEX</h1><div id="post-index"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E6%8F%90%E5%8D%87%E6%89%A9%E5%B1%95%E6%80%A7%E4%BC%9A%E5%BE%88%E5%A4%8D%E6%9D%82"><span class="toc-number">1.</span> <span class="toc-text"> 为什么提升扩展性会很复杂 </span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%AB%98%E5%8F%AF%E6%89%A9%E5%B1%95%E6%80%A7%E7%9A%84%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF"><span class="toc-number">2.</span> <span class="toc-text"> 高可扩展性的设计思路 </span></a></li></ol></div></div><footer><nobr><span class="text-title">©</span><span class="text-content">1970 to 2020</span></nobr><wbr><nobr><span class="text-title">ICP</span><span class="text-content">——备案号——</span></nobr><wbr><wbr><nobr>published with&nbsp;<a target="_blank" rel="noopener" href="http://hexo.io">Hexo&nbsp;</a></nobr><wbr><nobr>Theme&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus/hexo-theme-arknights">Arknight&nbsp;</a></nobr><wbr><nobr>by&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus">Yue_plus</a></nobr></footer></aside></main><canvas id="canvas-dust"></canvas><script src="/blog.io/js/arknights.js"></script><script src="https://cdn.bootcdn.net/ajax/libs/highlight.js/10.1.2/highlight.min.js"></script></body></html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html><html lang="zh-Hans"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>kafka结构学习 | 如何做到年薪百万</title><script src="https://cdn.bootcss.com/valine/1.4.4/Valine.min.js"></script><link rel="stylesheet" href="/blog.io/css/arknights.css"><link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/highlight.js/10.1.2/styles/atom-one-dark-reasonable.min.css"><style>@font-face {
+ font-family: BenderLight;
+ src: local('Bender'), url("/blog.io/font/BenderLight.ttf");
+}
+@font-face {
+ font-family: 'JetBrains Mono';
+ src: local('JetBrains Mono'), url('/blog.io/font/JetBrainsMono-Regular.woff2') format('woff2');
+}</style><meta name="generator" content="Hexo 5.4.0"></head><body><header><nav><a href="/blog.io/">Home</a><a href="/blog.io/archives/">Archives</a></nav></header><main><article><div id="post-bg"><div id="post-title"><h1>kafka结构学习</h1><hr></div><div id="post-content"><h2 id="主题的分区数设置"><a href="#主题的分区数设置" class="headerlink" title="主题的分区数设置"></a>主题的分区数设置</h2><p>在server.properties配置文件中可以指定一个全局的分区数设置，这是对每个主题下的分区数的默认设置，默认是1。</p>
+<p><font color = ff00><b>生产者将消息投递到分区有没有规律？如果有，那么它是如何决定一条消息该投递到哪个分区的呢？<br></b></font></p>
+<p>默认的分区策略是：</p>
+<ol>
+<li>如果在发消息的时候指定了分区，则消息投递到指定的分区</li>
+</ol>
+<ol start="2">
+<li>如果没有指定分区，但是消息的key不为空，则基于key的哈希值来选择一个分区</li>
+</ol>
+<ol start="4">
+<li>如果既没有指定分区，且消息的key也是空，则用轮询的方式选择一个分区</li>
+</ol>
+<h2 id="分区与消费者"><a href="#分区与消费者" class="headerlink" title="分区与消费者"></a>分区与消费者</h2><p>消费者以组的名义订阅主题，主题有多个分区，消费者组中有多个消费者实例，那么消费者实例和分区之前的对应关系是怎样的呢？</p>
+<font color = ff00>
+同一时刻，一条消息只能被组中的一个消费者实例消费
+
+<p>消费者组</font>订阅这个主题，意味着主题下的所有分区都会被组中的消费者消费到，如果按照从属关系来说的话就是，主题下的每个分区只从属于组中的一个消费者，不可能出现组中的两个消费者负责同一个分区。</p>
+<p>那么，问题来了。如果分区数大于或者等于组中的消费者实例数，那自然没有什么问题，无非一个消费者会负责多个分区，<br>（PS：当然，最理想的情况是二者数量相等，这样就相当于一个消费者负责一个分区）</p>
+<p>但是，如果消费者实例的数量大于分区数，那么按照默认的策略（PS：之所以强调默认策略是因为你也可以自定义策略），有一些消费者是多余的，一直接不到消息而处于空闲状态。</p>
+<p>话又说回来，假设多个消费者负责同一个分区，那么会有什么问题呢？</p>
+<p>我们知道，Kafka它在设计的时候就是要保证分区下消息的顺序，也就是说消息在一个分区中的顺序是怎样的，那么消费者在消费的时候看到的就是什么样的顺序，那么要做到这一点就首先要保证消息是由消费者主动拉取的（pull），其次还要保证一个分区只能由一个消费者负责。倘若，两个消费者负责同一个分区，那么就意味着两个消费者同时读取分区的消息，由于消费者自己可以控制读取消息的offset，就有可能C1才读到2，而C1读到1，C1还没处理完，C2已经读到3了，则会造成很多浪费，因为这就相当于多线程读取同一个消息，会造成消息处理的重复，且不能保证消息的顺序，这就跟主动推送（push）无异。</p>
+<h2 id="消费者分区分配策略"><a href="#消费者分区分配策略" class="headerlink" title="消费者分区分配策略"></a>消费者分区分配策略</h2><p>range策略对应的实现类是org.apache.kafka.clients.consumer.RangeAssignor</p>
+<p>这是默认的分配策略</p>
+<p><font color=ff00>range策略</font>是基于每个主题的</p>
+<p>对于每个主题，我们以数字顺序排列可用分区，以字典顺序排列消费者。然后，将分区数量除以消费者总数，以确定分配给每个消费者的分区数量。如果没有平均划分（PS：除不尽），那么最初的几个消费者将有一个额外的分区。</p>
+<p><font color=ff00>roundronbin分配策略</font>的具体实现是org.apache.kafka.clients.consumer.RoundRobinAssignor</p>
+<p>轮询分配策略是基于所有可用的消费者和所有可用的分区的</p>
+<p>与前面的range策略最大的不同就是它不再局限于某个主题</p>
+<p>如果所有的消费者实例的订阅都是相同的，那么这样最好了，可用统一分配，均衡分配</p>
+<p>例如，假设有两个消费者C0和C1，两个主题t0和t1，每个主题有3个分区，分别是t0p0，t0p1，t0p2，t1p0，t1p1，t1p2</p>
+<p>那么，最终分配的结果是这样的：</p>
+<p>C0: [t0p0, t0p2, t1p1]</p>
+<p>C1: [t0p1, t1p0, t1p2]</p>
+<h2 id="Kafka-Rebalance机制分析"><a href="#Kafka-Rebalance机制分析" class="headerlink" title="Kafka Rebalance机制分析"></a>Kafka Rebalance机制分析</h2><p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/yoke/p/11405397.html">https://www.cnblogs.com/yoke/p/11405397.html</a></p>
+<h2 id="什么是-Rebalance"><a href="#什么是-Rebalance" class="headerlink" title="什么是 Rebalance"></a>什么是 Rebalance</h2><p>Rebalance 本质上是一种协议，规定了一个 Consumer Group 下的所有 consumer 如何达成一致，来分配订阅 Topic 的每个分区。</p>
+<p>例如：某 Group 下有 20 个 consumer 实例，它订阅了一个具有 100 个 partition 的 Topic 。正常情况下，kafka 会为每个 Consumer 平均的分配 5 个分区。这个分配的过程就是 Rebalance。</p>
+<p>Ref: <a target="_blank" rel="noopener" href="https://www.jianshu.com/p/7fba3ed388f9">https://www.jianshu.com/p/7fba3ed388f9</a></p>
+<div id="paginator"></div></div><div id="post-footer"><hr><a href="/blog.io/2021/09/27/%E8%B5%84%E6%96%99/">← Prev 资料</a><span style="color: #fe2"> | </span><a href="/blog.io/2021/07/27/Sql%E7%B4%A2%E5%BC%95%E4%BB%A5%E5%8F%8A%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">Sql索引以及数据结构 Next →</a><hr></div><div id="bottom-btn"><a id="to-index" href="#post-index" title="index">≡</a><a id="to-top" href="#post-title" title="to top">∧</a></div><div id="Valine"></div><script>new Valine({
+ el: '#Valine'
+ , appId: 's9ieIT2hA5ChVBjBufKhyfnK-gzGzoHsz'
+ , appKey: 'a8LAJbmO7wJi6fj9T85KMJid'
+ , placeholder: '此条评论委托企鹅物流发送'
+})</script></div></article><aside><div id="about"><a href="/blog.io/" id="logo"><img src="https://ak.hypergryph.com/assets/index/images/ak/pc/faction/1.png" alt="Logo"></a><h1 id="Dr"><a href="/"> Dr.Allen Feng</a></h1><section id="total"><a id="total-archives" href="/blog.io/archives"><span class="total-title">Archives Total:</span><span class="total-number">58</span></a><div id="total-tags"><span class="total-title">Tags:</span><span class="total-number">52</span></div><div id="total-categories"><span class="total-title">Categories:</span><span class="total-number">6</span></div></section></div><div id="aside-block"><h1>INDEX</h1><div id="post-index"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%BB%E9%A2%98%E7%9A%84%E5%88%86%E5%8C%BA%E6%95%B0%E8%AE%BE%E7%BD%AE"><span class="toc-number">1.</span> <span class="toc-text">主题的分区数设置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E5%8C%BA%E4%B8%8E%E6%B6%88%E8%B4%B9%E8%80%85"><span class="toc-number">2.</span> <span class="toc-text">分区与消费者</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B6%88%E8%B4%B9%E8%80%85%E5%88%86%E5%8C%BA%E5%88%86%E9%85%8D%E7%AD%96%E7%95%A5"><span class="toc-number">3.</span> <span class="toc-text">消费者分区分配策略</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Kafka-Rebalance%E6%9C%BA%E5%88%B6%E5%88%86%E6%9E%90"><span class="toc-number">4.</span> <span class="toc-text">Kafka Rebalance机制分析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF-Rebalance"><span class="toc-number">5.</span> <span class="toc-text">什么是 Rebalance</span></a></li></ol></div></div><footer><nobr><span class="text-title">©</span><span class="text-content">1970 to 2020</span></nobr><wbr><nobr><span class="text-title">ICP</span><span class="text-content">——备案号——</span></nobr><wbr><wbr><nobr>published with&nbsp;<a target="_blank" rel="noopener" href="http://hexo.io">Hexo&nbsp;</a></nobr><wbr><nobr>Theme&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus/hexo-theme-arknights">Arknight&nbsp;</a></nobr><wbr><nobr>by&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus">Yue_plus</a></nobr></footer></aside></main><canvas id="canvas-dust"></canvas><script src="/blog.io/js/arknights.js"></script><script src="https://cdn.bootcdn.net/ajax/libs/highlight.js/10.1.2/highlight.min.js"></script></body></html>

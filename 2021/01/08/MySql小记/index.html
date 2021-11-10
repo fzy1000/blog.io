@@ -1,0 +1,20 @@
+<!DOCTYPE html><html lang="zh-Hans"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>MySql小记 | 如何做到年薪百万</title><script src="https://cdn.bootcss.com/valine/1.4.4/Valine.min.js"></script><link rel="stylesheet" href="/blog.io/css/arknights.css"><link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/highlight.js/10.1.2/styles/atom-one-dark-reasonable.min.css"><style>@font-face {
+ font-family: BenderLight;
+ src: local('Bender'), url("/blog.io/font/BenderLight.ttf");
+}
+@font-face {
+ font-family: 'JetBrains Mono';
+ src: local('JetBrains Mono'), url('/blog.io/font/JetBrainsMono-Regular.woff2') format('woff2');
+}</style><meta name="generator" content="Hexo 5.4.0"></head><body><header><nav><a href="/blog.io/">Home</a><a href="/blog.io/archives/">Archives</a></nav></header><main><article><div id="post-bg"><div id="post-title"><h1>MySql小记</h1><hr></div><div id="post-content"><h3 id="冷知识"><a href="#冷知识" class="headerlink" title="冷知识"></a>冷知识</h3><ol>
+<li>unique key（唯一键） 和 primary key（主键）的区别：<br>主键必须是唯一且非空， 唯一键必须是唯一但是可能是空</li>
+<li>主键（UK）和外键（FK）： 外键是建立在一张二维表上可以引用另一张二维表上对应的主键</li>
+<li>select count(*) 和 select (1) 是相等的。<br>是求符合条件的总数，其中包含null。</li>
+<li>但是如果是select count（col）就会不计算null的记录。<br>如果有主键的情况下， select count（主键）最快。</li>
+<li>如果使用@Transcation（rollback = Exception.class） 这个注解，记得标注的方法必须是public。否则将不会回滚</li>
+</ol>
+<div id="paginator"></div></div><div id="post-footer"><hr><a href="/blog.io/2021/01/11/MySql-%E4%BC%98%E5%8C%96%20(%E4%B8%80)/">← Prev MySql 优化（一）</a><span style="color: #fe2"> | </span><a href="/blog.io/2021/01/08/MySql%E4%BA%8B%E5%8A%A1%E5%A4%84%E7%90%86/">MySql事务处理 Next →</a><hr></div><div id="bottom-btn"><a id="to-index" href="#post-index" title="index">≡</a><a id="to-top" href="#post-title" title="to top">∧</a></div><div id="Valine"></div><script>new Valine({
+ el: '#Valine'
+ , appId: 's9ieIT2hA5ChVBjBufKhyfnK-gzGzoHsz'
+ , appKey: 'a8LAJbmO7wJi6fj9T85KMJid'
+ , placeholder: '此条评论委托企鹅物流发送'
+})</script></div></article><aside><div id="about"><a href="/blog.io/" id="logo"><img src="https://ak.hypergryph.com/assets/index/images/ak/pc/faction/1.png" alt="Logo"></a><h1 id="Dr"><a href="/"> Dr.Allen Feng</a></h1><section id="total"><a id="total-archives" href="/blog.io/archives"><span class="total-title">Archives Total:</span><span class="total-number">58</span></a><div id="total-tags"><span class="total-title">Tags:</span><span class="total-number">52</span></div><div id="total-categories"><span class="total-title">Categories:</span><span class="total-number">6</span></div></section></div><div id="aside-block"><h1>INDEX</h1><div id="post-index"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%B7%E7%9F%A5%E8%AF%86"><span class="toc-number">1.</span> <span class="toc-text">冷知识</span></a></li></ol></div></div><footer><nobr><span class="text-title">©</span><span class="text-content">1970 to 2020</span></nobr><wbr><nobr><span class="text-title">ICP</span><span class="text-content">——备案号——</span></nobr><wbr><wbr><nobr>published with&nbsp;<a target="_blank" rel="noopener" href="http://hexo.io">Hexo&nbsp;</a></nobr><wbr><nobr>Theme&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus/hexo-theme-arknights">Arknight&nbsp;</a></nobr><wbr><nobr>by&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus">Yue_plus</a></nobr></footer></aside></main><canvas id="canvas-dust"></canvas><script src="/blog.io/js/arknights.js"></script><script src="https://cdn.bootcdn.net/ajax/libs/highlight.js/10.1.2/highlight.min.js"></script></body></html>

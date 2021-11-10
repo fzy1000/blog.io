@@ -1,0 +1,70 @@
+<!DOCTYPE html><html lang="zh-Hans"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>17 | 消息队列：秒杀时如何处理每秒上万次的下单请求？ | 如何做到年薪百万</title><script src="https://cdn.bootcss.com/valine/1.4.4/Valine.min.js"></script><link rel="stylesheet" href="/blog.io/css/arknights.css"><link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/highlight.js/10.1.2/styles/atom-one-dark-reasonable.min.css"><style>@font-face {
+ font-family: BenderLight;
+ src: local('Bender'), url("/blog.io/font/BenderLight.ttf");
+}
+@font-face {
+ font-family: 'JetBrains Mono';
+ src: local('JetBrains Mono'), url('/blog.io/font/JetBrainsMono-Regular.woff2') format('woff2');
+}</style><meta name="generator" content="Hexo 5.4.0"></head><body><header><nav><a href="/blog.io/">Home</a><a href="/blog.io/archives/">Archives</a></nav></header><main><article><div id="post-bg"><div id="post-title"><h1>17 | 消息队列：秒杀时如何处理每秒上万次的下单请求？</h1><hr></div><div id="post-content"><p>在课程一开始，我就带你了解了高并发系统设计的三个目标：性能、可用性和可扩展性，而在提升系统性能方面我们一直关注的是系统的查询性能，也用了很多的篇幅去讲解数据库的分布式改造，各类缓存的原理和使用技巧。究其原因在于我们遇到的大部分场景都是读多写少，尤其是在一个系统的初级阶段。</p>
+<p>比如一个社区的系统初期一定是只有少量的种子用户在生产内容，而大部分的用户都在“围观”别人在说什么。此时，整体的流量比较小，而写流量可能只占整体流量的百分之一，那么即使整体的 QPS 到了 10000 次 / 秒，写请求也只是到了每秒 100 次，如果要对写请求做性能优化，它的性价比确实不太高。</p>
+<p>但随着业务发展，你可能会遇到一些存在高并发写请求的场景，其中秒杀抢购就是最典型的场景。假设你的商城策划了一期秒杀活动，活动在第五天的 00:00 开始，仅限前 200 名，那么秒杀即将开始时，后台会显示用户正在疯狂地刷新 APP 或者浏览器来保证自己能够尽量早的看到商品。</p>
+<p>这时，你面对的依旧是读请求过高，那么应对的措施有哪些呢？</p>
+<p>因为用户查询的是少量的商品数据，属于查询的热点数据，你可以采用缓存策略将请求尽量挡在上层的缓存中，能被静态化的数据（比如商城里的图片和视频数据）尽量做到静态化，这样就可以命中 CDN 节点缓存减少 Web 服务器的查询量和带宽负担。Web 服务器比如 Nginx 可以直接访问分布式缓存节点，从而避免请求到达 Tomcat 等业务服务器。</p>
+<p>当然，你可以加上一些限流的策略，比如对短时间之内来自某一个用户、某一个 IP 或者某一台设备的重复请求做丢弃处理。</p>
+<p>通过这几种方式，请求就可以尽量挡在数据库之外了。</p>
+<p>稍微缓解了读请求之后，00:00 分秒杀活动准时开始，用户瞬间向电商系统请求生成订单，扣减库存，用户的这些写操作都是不经过缓存直达数据库的。1 秒钟之内，有 1 万个数据库连接同时达到，系统的数据库濒临崩溃，寻找能够应对如此高并发的写请求方案迫在眉睫。这时你想到了消息队列。</p>
+<h3 id="我所理解的消息队列"><a href="#我所理解的消息队列" class="headerlink" title="我所理解的消息队列"></a><font color = "dd0000">我所理解的消息队列</font></h3><p>你应该已经了解消息队列到底是什么了，所以我不再讲解它的概念，只聊聊自己对消息队列的看法。我在历年的工作经历中，一直把消息队列看作暂时存储数据的一个容器，认为它是一个平衡低速系统和高速系统处理任务时间差的工具，我给你举个形象的例子。</p>
+<p>比如古代的臣子经常去朝见皇上陈述一些国家大事，等着皇上拍板做决策。但是大臣很多，如果同时去找皇上，你说一句我说一句，皇上肯定会崩溃。后来变成臣子到了午门之后要原地等着皇上将他们一个一个地召见进大殿商议国事，这样就可以缓解皇上处理事情的压力了。你可以把午门看作一个暂时容纳臣子的容器，也就是我们所说的消息队列。</p>
+<p>其实你在一些组件中都会看到消息队列的影子：</p>
+<ul>
+<li>在 Java 线程池中我们就会使用一个队列来暂时存储提交的任务，等待有空闲的线程处理这些任务；</li>
+<li>操作系统中，中断的下半部分也会使用工作队列来实现延后执行；</li>
+<li>我们在实现一个 RPC 框架时，也会将从网络上接收到的请求写到队列里，再启动若干个工作线程来处理</li>
+</ul>
+<p>总之，队列是在系统设计时一种常见的组件。</p>
+<p>那么我们如何用消息队列解决秒杀场景下的问题呢？接下来，我们结合具体的例子来看看消息队列在秒杀场景下起到的作用。</p>
+<h3 id="削去秒杀场景下的峰值写流量"><a href="#削去秒杀场景下的峰值写流量" class="headerlink" title="削去秒杀场景下的峰值写流量"></a><font color = "dd0000">削去秒杀场景下的峰值写流量</font></h3><p>刚才提到，在秒杀场景下短时间之内数据库的写流量会很高，那么依照我们以前的思路应该对数据做分库分表。如果已经做了分库分表，那么就需要扩展更多的数据库来应对更高的写流量。但是无论是分库分表还是扩充更多的数据库都会比较复杂，原因是你需要将数据库中的数据做迁移，这个时间就要按天甚至按周来计算了。</p>
+<p>而在秒杀场景下高并发的写请求并不是持续的，也不是经常发生的，而只有在秒杀活动开始后的几秒或者十几秒时间内才会存在。为了应对这十几秒的瞬间写高峰花费几天甚至几周的时间来扩容数据库，再在秒杀之后花费几天的时间来做缩容，这无疑是得不偿失的。</p>
+<p>所以我们的思路是：将秒杀请求暂存在消息队列中，然后业务服务器会响应用户“秒杀结果正在计算中”，释放了系统资源之后再处理其它用户的请求。</p>
+<p>我们会在后台启动若干个队列处理程序消费消息队列中的消息，再执行校验库存、下单等逻辑。因为只有有限个队列处理线程在执行，所以落入后端数据库上的并发请求是有限的。而请求是可以在消息队列中被短暂地堆积，当库存被消耗完之后，消息队列中堆积的请求就可以被丢弃了。</p>
+<img src="/blog.io/img/削峰在秒杀活动中的应用.png">
+
+<p>这就是消息队列在秒杀系统中最主要的作用：削峰填谷，也就是说它可以削平短暂的流量高峰，虽说堆积会造成请求被短暂延迟处理，但是只要我们时刻监控消息队列中的堆积长度，在堆积量超过一定量时，增加队列处理机数量来提升消息的处理能力就好了，而且秒杀的用户对于短暂延迟知晓秒杀的结果也是有一定容忍度的。</p>
+<p>这里需要注意一下，我所说的是“短暂”延迟，如果长时间没有给用户公示秒杀结果，那么用户可能就会怀疑你的秒杀活动有猫腻了。所以在使用消息队列应对流量峰值时，需要对队列处理的时间、前端写入流量的大小、数据库处理能力做好评估，然后根据不同的量级来决定部署多少台队列处理程序。</p>
+<p>比如你的秒杀商品有 1000 件，处理一次购买请求的时间是 500ms，那么总共就需要 500s 的时间。这时你部署 10 个队列处理程序，那么秒杀请求的处理时间就是 50s，也就是说用户需要等待 50s 才可以看到秒杀的结果，这是可以接受的。这时会并发 10 个请求到达数据库，并不会对数据库造成很大的压力。</p>
+<h3 id="通过异步处理简化秒杀请求中的业务流程"><a href="#通过异步处理简化秒杀请求中的业务流程" class="headerlink" title="通过异步处理简化秒杀请求中的业务流程"></a><font color = "dd0000">通过异步处理简化秒杀请求中的业务流程</font></h3><p>其实在大量的写请求“攻击”你的电商系统的时候，消息队列除了发挥主要的削峰填谷的作用之外，还可以实现异步处理来简化秒杀请求中的业务流程，提升系统的性能。</p>
+<p>你想，在刚才提到的秒杀场景下，我们在处理购买请求时需要 500ms。这时你分析了一下整个的购买流程，发现这里面会有主要的业务逻辑，也会有次要的业务逻辑：比如说，主要的流程是生成订单、扣减库存；次要的流程可能是我们在下单购买成功之后会给用户发放优惠券，会增加用户的积分。</p>
+<p>假如发放优惠券的耗时是 50ms，增加用户积分的耗时也是 50ms，那么如果我们将发放优惠券、增加积分的操作放在另外一个队列处理机中执行，那么整个流程就缩短到了 400ms，性能提升了 20%，处理这 1000 件商品的时间就变成了 400s。如果我们还是希望能在 50s 之内看到秒杀结果的话，只需要部署 8 个队列程序就好了。 经过将一些业务流程异步处理之后，我们的秒杀系统部署结构也会有所改变：</p>
+<img src="/blog.io/img/异步处理在秒杀活动中的作用.png">
+
+
+<h3 id="解耦实现秒杀系统模块之间松耦合"><a href="#解耦实现秒杀系统模块之间松耦合" class="headerlink" title="解耦实现秒杀系统模块之间松耦合"></a><font color = "dd0000">解耦实现秒杀系统模块之间松耦合</font></h3><p>除了异步处理和削峰填谷以外，消息队列在秒杀系统中起到的另一个作用是解耦合。</p>
+<p>比如数据团队对你说，在秒杀活动之后想要统计活动的数据，借此来分析活动商品的受欢迎程度、购买者人群的特点以及用户对于秒杀互动的满意程度等等指标。而我们需要将大量的数据发送给数据团队，那么要怎么做呢？</p>
+<p>一个思路是：使用 HTTP 或者 RPC 的方式来同步地调用，也就是数据团队这边提供一个接口，我们实时将秒杀的数据推送给它，但是这样调用会有两个问题：</p>
+<ol>
+<li><p>整体系统的耦合性比较强，当数据团队的接口发生故障时，会影响到秒杀系统的可用性。</p>
+</li>
+<li><p>当数据系统需要新的字段，就要变更接口的参数，那么秒杀系统也要随着一起变更。</p>
+</li>
+</ol>
+<p>这时，我们可以考虑使用消息队列降低业务系统和数据系统的直接耦合度。</p>
+<p>秒杀系统产生一条购买数据后，我们可以先把全部数据发送给消息队列，然后数据团队再订阅这个消息队列的话题，这样它们就可以接收到数据，然后再做过滤和处理了。</p>
+<p>秒杀系统在这样解耦合之后，数据系统的故障就不会影响到秒杀系统了，同时当数据系统需要新的字段时，只需要解析消息队列中的消息，拿到需要的数据就好了。</p>
+<img src="/blog.io/img/系统解耦合示意图.png">
+
+<p>异步处理、解耦合和削峰填谷是消息队列在秒杀系统设计中起到的主要作用，其中异步处理可以简化业务流程中的步骤，提升系统性能；削峰填谷可以削去到达秒杀系统的峰值流量，让业务逻辑的处理更加缓和；解耦合可以将秒杀系统和数据系统解耦开，这样两个系统的任何变更都不会影响到另一个系统，</p>
+<p>如果你的系统想要提升写入性能实现系统的低耦合，想要抵挡高并发的写流量，那么你就可以考虑使用消息队列来完成。</p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a><font color = "dd0000">总结</font></h3><ol>
+<li><p>削峰填谷是消息队列的主要作用</p>
+</li>
+<li><p>分离业务异步处理更能增加大系统处理能力</p>
+</li>
+<li><p>解耦可以提升系统的鲁棒性</p>
+</li>
+</ol>
+<div id="paginator"></div></div><div id="post-footer"><hr><a href="/blog.io/2021/04/06/%E6%B6%88%E6%81%AF%E6%8A%95%E9%80%92%EF%BC%9A%E5%A6%82%E4%BD%95%E4%BF%9D%E8%AF%81%E6%B6%88%E6%81%AF%E4%BB%85%E4%BB%85%E8%A2%AB%E6%B6%88%E8%B4%B9%E4%B8%80%E6%AC%A1%EF%BC%9F/">← Prev 18 | 消息投递：如何保证消息仅仅被消费一次？</a><span style="color: #fe2"> | </span><a href="/blog.io/2021/03/30/CDN%EF%BC%9A%E9%9D%99%E6%80%81%E8%B5%84%E6%BA%90%E5%A6%82%E4%BD%95%E5%8A%A0%E9%80%9F%EF%BC%9F/">16 | CDN：静态资源如何加速？ Next →</a><hr></div><div id="bottom-btn"><a id="to-index" href="#post-index" title="index">≡</a><a id="to-top" href="#post-title" title="to top">∧</a></div><div id="Valine"></div><script>new Valine({
+ el: '#Valine'
+ , appId: 's9ieIT2hA5ChVBjBufKhyfnK-gzGzoHsz'
+ , appKey: 'a8LAJbmO7wJi6fj9T85KMJid'
+ , placeholder: '此条评论委托企鹅物流发送'
+})</script></div></article><aside><div id="about"><a href="/blog.io/" id="logo"><img src="https://ak.hypergryph.com/assets/index/images/ak/pc/faction/1.png" alt="Logo"></a><h1 id="Dr"><a href="/"> Dr.Allen Feng</a></h1><section id="total"><a id="total-archives" href="/blog.io/archives"><span class="total-title">Archives Total:</span><span class="total-number">58</span></a><div id="total-tags"><span class="total-title">Tags:</span><span class="total-number">52</span></div><div id="total-categories"><span class="total-title">Categories:</span><span class="total-number">6</span></div></section></div><div id="aside-block"><h1>INDEX</h1><div id="post-index"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%88%91%E6%89%80%E7%90%86%E8%A7%A3%E7%9A%84%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97"><span class="toc-number">1.</span> <span class="toc-text">我所理解的消息队列</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%89%8A%E5%8E%BB%E7%A7%92%E6%9D%80%E5%9C%BA%E6%99%AF%E4%B8%8B%E7%9A%84%E5%B3%B0%E5%80%BC%E5%86%99%E6%B5%81%E9%87%8F"><span class="toc-number">2.</span> <span class="toc-text">削去秒杀场景下的峰值写流量</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%80%9A%E8%BF%87%E5%BC%82%E6%AD%A5%E5%A4%84%E7%90%86%E7%AE%80%E5%8C%96%E7%A7%92%E6%9D%80%E8%AF%B7%E6%B1%82%E4%B8%AD%E7%9A%84%E4%B8%9A%E5%8A%A1%E6%B5%81%E7%A8%8B"><span class="toc-number">3.</span> <span class="toc-text">通过异步处理简化秒杀请求中的业务流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A7%A3%E8%80%A6%E5%AE%9E%E7%8E%B0%E7%A7%92%E6%9D%80%E7%B3%BB%E7%BB%9F%E6%A8%A1%E5%9D%97%E4%B9%8B%E9%97%B4%E6%9D%BE%E8%80%A6%E5%90%88"><span class="toc-number">4.</span> <span class="toc-text">解耦实现秒杀系统模块之间松耦合</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">5.</span> <span class="toc-text">总结</span></a></li></ol></div></div><footer><nobr><span class="text-title">©</span><span class="text-content">1970 to 2020</span></nobr><wbr><nobr><span class="text-title">ICP</span><span class="text-content">——备案号——</span></nobr><wbr><wbr><nobr>published with&nbsp;<a target="_blank" rel="noopener" href="http://hexo.io">Hexo&nbsp;</a></nobr><wbr><nobr>Theme&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus/hexo-theme-arknights">Arknight&nbsp;</a></nobr><wbr><nobr>by&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus">Yue_plus</a></nobr></footer></aside></main><canvas id="canvas-dust"></canvas><script src="/blog.io/js/arknights.js"></script><script src="https://cdn.bootcdn.net/ajax/libs/highlight.js/10.1.2/highlight.min.js"></script></body></html>

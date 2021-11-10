@@ -1,0 +1,71 @@
+<!DOCTYPE html><html lang="zh-Hans"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>JVM内存模型和参数配置的学习（一） | 如何做到年薪百万</title><script src="https://cdn.bootcss.com/valine/1.4.4/Valine.min.js"></script><link rel="stylesheet" href="/blog.io/css/arknights.css"><link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/highlight.js/10.1.2/styles/atom-one-dark-reasonable.min.css"><style>@font-face {
+ font-family: BenderLight;
+ src: local('Bender'), url("/blog.io/font/BenderLight.ttf");
+}
+@font-face {
+ font-family: 'JetBrains Mono';
+ src: local('JetBrains Mono'), url('/blog.io/font/JetBrainsMono-Regular.woff2') format('woff2');
+}</style><meta name="generator" content="Hexo 5.4.0"></head><body><header><nav><a href="/blog.io/">Home</a><a href="/blog.io/archives/">Archives</a></nav></header><main><article><div id="post-bg"><div id="post-title"><h1>JVM内存模型和参数配置的学习（一）</h1><hr></div><div id="post-content"><p>众所周知，JVM内部主要空间可以分成2大部分</p>
+<ol>
+<li>JVM虚拟机数据区</li>
+<li>本地内存</li>
+</ol>
+<p>JVM虚拟机数据区包含了堆，本地方法栈，虚拟机栈和程序计数区。<br>本地内存包含了元数据区和直接内存。<br>这其中堆内存和本地内存是所有线程共享的，栈内存和程序计数器是线程私有的。</p>
+<img src="/blog.io/img/JVM内存模型.png">
+
+<h4 id="堆内存（heap）"><a href="#堆内存（heap）" class="headerlink" title="堆内存（heap）"></a>堆内存（heap）</h4><p>堆内存在虚拟机启动的时候被创建，这个内存区域<em><strong>唯一的作用是存放对象的实例</strong></em>。堆内存主要分成两个部分：</p>
+<ul>
+<li>年轻代</li>
+<li>老年代</li>
+<li>metaspace</li>
+</ul>
+<p>年轻代又由Eden， from和to组成。（8：1：1）<br>Young和Old的比例大约造1：2左右。这个值可以通过参数 –XX:NewRatio 来指定<br> JDK8使用metaspace来替代了permsize:永久代大小</p>
+<h4 id="元数据区"><a href="#元数据区" class="headerlink" title="元数据区"></a>元数据区</h4><p>元数据区也就是原来的方法区也被叫做“永久代”，也是我们经常理解的“静态区”。这个地方储存的是</p>
+<ol>
+<li>类的元信息</li>
+<li>常量（1.7后从永久代移到堆）</li>
+<li>静态变量（1.7后从永久代移到堆）</li>
+</ol>
+<p>由此可得，这些是所有线程都需要的，所以是公共区域。类的元数据信息不再像永久代一样存储在连续的堆空间上，而是移动到叫做“Metaspace”的本地内存（Native memory）中，这样还增加了堆的空间。新参数（MaxMetaspaceSize）用于限制本地内存分配给类元数据的大小。如果没有指定这个参数，元空间会在运行时根据需要动态调整。（GC时如果超的很多就增加，如果相反就减少这个值）</p>
+<h4 id="栈内存（Stack"><a href="#栈内存（Stack" class="headerlink" title="栈内存（Stack)"></a>栈内存（Stack)</h4><p>栈内存分为两个部分：</p>
+<ol>
+<li>虚拟机栈（JVM Stack）<br> 每个方法被<strong>执行</strong>的时候都会创建一个”<strong>栈帧</strong>“,用于存储局部变量表(包括参数)、操作栈、方法出口等信息。每个方法被调用到执行完的过程，就对应着一个栈帧在虚拟机栈中从入栈到出栈的过程。</li>
+<li>本地方法栈（native Stack）<br> 本地方法栈（Native Method Stacks）与虚拟机栈所发挥的作用是非常相似的，其区别不过是虚拟机栈为虚拟机执行Java方法（也就是字节码）服务，而本地方法栈则是为虚拟机使用到的Native方法服务。</li>
+</ol>
+<h4 id="直接内存（堆外内存）"><a href="#直接内存（堆外内存）" class="headerlink" title="直接内存（堆外内存）"></a>直接内存（堆外内存）</h4><p>堆外内存就是把内存对象分配在Java虚拟机的堆以外的内存，这些内存直接受操作系统管理（而不是虚拟机），这样做的结果就是能够在一定程度上减少垃圾回收对应用程序造成的影响。</p>
+<p>Java8中我们经常用java.nio.DirectByteBuffer对象进行堆外内存的管理和使用，它会在对象创建的时候就分配堆外内存。</p>
+<p>优点：</p>
+<ol>
+<li><p>减少了垃圾回收<br>因为垃圾回收会暂停其他的工作。</p>
+</li>
+<li><p>加快了复制的速度<br>堆内在flush到远程时，会先复制到直接内存（非堆内存），然后在发送；而堆外内存相当于省略掉了这个工作。</p>
+</li>
+</ol>
+<p>缺点：</p>
+<ol>
+<li>同样任何一个事物使用起来有优点就会有缺点，堆外内存的缺点就是内存难以控制，使用了堆外内存就间接失去了JVM管理内存的可行性，改由自己来管理，当发生内存溢出时排查起来非常困难。</li>
+</ol>
+<p>堆外内存的OOM：</p>
+<ol>
+<li>java.nio.DirectByteBuffer对象在创建过程中会先通过Unsafe接口直接通过os::malloc来分配内存，每个DirectByteBuffer对象在初始化时，都会创建一个对应的Cleaner对象。这个Cleaner对象会在合适的时候执行unsafe.freeMemory(address)，从而回收这块堆外内存。</li>
+<li>这些内存只有在DirectByteBuffer回收掉之后才有机会被回收，因此如果这些对象大部分都移到了old，当下一次FGC执行时，Cleaner对象会将自身Cleaner链表上删除，并触发clean方法清理堆外内存。但是一直没有触发CMS GC或者Full GC，那么悲剧将会发生，因为你的物理内存被他们耗尽了</li>
+<li>因此为了避免这种悲剧的发生，通过-XX:MaxDirectMemorySize来指定最大的堆外内存大小，当使用达到了阈值的时候将调用System.gc来做一次full gc，以此来回收掉没有被使用的堆外内存。</li>
+<li>其实，在ByteBuffer.allocateDirect方式中，会主动调用System.gc()强制执行FGC。</li>
+</ol>
+<p>堆内和堆外内存相关链接：</p>
+<ol>
+<li><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/ZYC88888/article/details/80228531">https://blog.csdn.net/ZYC88888/article/details/80228531</a><br>（including gc）</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/reload-sun/p/12216931.html">https://www.cnblogs.com/reload-sun/p/12216931.html</a><br>（including gc）</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://blog.51cto.com/15065850/2603114">https://blog.51cto.com/15065850/2603114</a><br>（gc）</p>
+</li>
+</ol>
+<h4 id="程序计数器"><a href="#程序计数器" class="headerlink" title="程序计数器"></a>程序计数器</h4><p>这个是在多线程的时候，如果执行的程序突然失去了资源，等会回来的时候根据这个计数器就可以找到上一次执行到的地方，Native方法时，计数器值为空。</p>
+<h4 id="JVM内存参数设置"><a href="#JVM内存参数设置" class="headerlink" title="JVM内存参数设置"></a>JVM内存参数设置</h4><p>另外，JVM的参数很多都是控制这些内存大小的，例如堆的最大最小空间大小，年轻代大小，年轻代最大最小空间等等，还有就是每个线程的堆栈大小</p>
+<div id="paginator"></div></div><div id="post-footer"><hr><a href="/blog.io/2020/09/02/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B(%E4%B8%80)%20-%20%E4%B8%89%E7%A7%8D%E5%AE%9E%E7%8E%B0%E6%96%B9%E5%BC%8F%EF%BC%88%E4%B8%8D%E5%8C%85%E6%8B%AC%E7%BA%BF%E7%A8%8B%E6%B1%A0%EF%BC%89/">← Prev Java多线程(一) - 三种实现方式（不包括线程池）</a><span style="color: #fe2"> | </span><a href="/blog.io/2020/08/19/Java%E5%9B%9E%E8%B0%83%E5%87%BD%E6%95%B0/">Java 回调函数 Next →</a><hr></div><div id="bottom-btn"><a id="to-index" href="#post-index" title="index">≡</a><a id="to-top" href="#post-title" title="to top">∧</a></div><div id="Valine"></div><script>new Valine({
+ el: '#Valine'
+ , appId: 's9ieIT2hA5ChVBjBufKhyfnK-gzGzoHsz'
+ , appKey: 'a8LAJbmO7wJi6fj9T85KMJid'
+ , placeholder: '此条评论委托企鹅物流发送'
+})</script></div></article><aside><div id="about"><a href="/blog.io/" id="logo"><img src="https://ak.hypergryph.com/assets/index/images/ak/pc/faction/1.png" alt="Logo"></a><h1 id="Dr"><a href="/"> Dr.Allen Feng</a></h1><section id="total"><a id="total-archives" href="/blog.io/archives"><span class="total-title">Archives Total:</span><span class="total-number">58</span></a><div id="total-tags"><span class="total-title">Tags:</span><span class="total-number">52</span></div><div id="total-categories"><span class="total-title">Categories:</span><span class="total-number">6</span></div></section></div><div id="aside-block"><h1>INDEX</h1><div id="post-index"><ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%A0%86%E5%86%85%E5%AD%98%EF%BC%88heap%EF%BC%89"><span class="toc-number">1.</span> <span class="toc-text">堆内存（heap）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%85%83%E6%95%B0%E6%8D%AE%E5%8C%BA"><span class="toc-number">2.</span> <span class="toc-text">元数据区</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A0%88%E5%86%85%E5%AD%98%EF%BC%88Stack"><span class="toc-number">3.</span> <span class="toc-text">栈内存（Stack)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%9B%B4%E6%8E%A5%E5%86%85%E5%AD%98%EF%BC%88%E5%A0%86%E5%A4%96%E5%86%85%E5%AD%98%EF%BC%89"><span class="toc-number">4.</span> <span class="toc-text">直接内存（堆外内存）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%A8%8B%E5%BA%8F%E8%AE%A1%E6%95%B0%E5%99%A8"><span class="toc-number">5.</span> <span class="toc-text">程序计数器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#JVM%E5%86%85%E5%AD%98%E5%8F%82%E6%95%B0%E8%AE%BE%E7%BD%AE"><span class="toc-number">6.</span> <span class="toc-text">JVM内存参数设置</span></a></li></ol></div></div><footer><nobr><span class="text-title">©</span><span class="text-content">1970 to 2020</span></nobr><wbr><nobr><span class="text-title">ICP</span><span class="text-content">——备案号——</span></nobr><wbr><wbr><nobr>published with&nbsp;<a target="_blank" rel="noopener" href="http://hexo.io">Hexo&nbsp;</a></nobr><wbr><nobr>Theme&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus/hexo-theme-arknights">Arknight&nbsp;</a></nobr><wbr><nobr>by&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus">Yue_plus</a></nobr></footer></aside></main><canvas id="canvas-dust"></canvas><script src="/blog.io/js/arknights.js"></script><script src="https://cdn.bootcdn.net/ajax/libs/highlight.js/10.1.2/highlight.min.js"></script></body></html>

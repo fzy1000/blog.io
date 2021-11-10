@@ -1,0 +1,125 @@
+<!DOCTYPE html><html lang="zh-Hans"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Java多线程(一) - 三种实现方式（不包括线程池） | 如何做到年薪百万</title><script src="https://cdn.bootcss.com/valine/1.4.4/Valine.min.js"></script><link rel="stylesheet" href="/blog.io/css/arknights.css"><link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/highlight.js/10.1.2/styles/atom-one-dark-reasonable.min.css"><style>@font-face {
+ font-family: BenderLight;
+ src: local('Bender'), url("/blog.io/font/BenderLight.ttf");
+}
+@font-face {
+ font-family: 'JetBrains Mono';
+ src: local('JetBrains Mono'), url('/blog.io/font/JetBrainsMono-Regular.woff2') format('woff2');
+}</style><meta name="generator" content="Hexo 5.4.0"></head><body><header><nav><a href="/blog.io/">Home</a><a href="/blog.io/archives/">Archives</a></nav></header><main><article><div id="post-bg"><div id="post-title"><h1>Java多线程(一) - 三种实现方式（不包括线程池）</h1><hr></div><div id="post-content"><h2 id="多线程的三种方法"><a href="#多线程的三种方法" class="headerlink" title="多线程的三种方法"></a>多线程的三种方法</h2><ol>
+<li>继承Thread类</li>
+<li>实现runnable</li>
+<li>实现callable</li>
+</ol>
+<ul>
+<li>区别<ol>
+<li>第一个可以直接new之后start，后两个要new Thread（new MyClass）.start().</li>
+<li>后面两个可以放到线程池里面，第一个不行。</li>
+<li>后两个可以实现一个类然后用Thread类start好几个线程，这样可以共享资源，但是第一个就不行</li>
+<li>后面两个都可以用函数式接口加箭头函数，第一个不行</li>
+<li>最后一个有return值，其他的都不行</li>
+<li>后两个可以避免Java单继承多实现出现的问题</li>
+</ol>
+</li>
+</ul>
+<h4 id="线程和进程"><a href="#线程和进程" class="headerlink" title="线程和进程"></a>线程和进程</h4><p>进程：每个进程都有独立的代码和数据空间（进程上下文），进程间的切换会有较大的开销，一个进程包含1–n个线程。（进程是资源分配的最小单位）</p>
+<p>线程：同一类线程共享代码和数据空间，每个线程有独立的运行栈和程序计数器(PC)，线程切换开销小。（线程是cpu调度的最小单位）</p>
+<p>每个线程和进程一样分为五个阶段：创建、就绪、运行、阻塞、终止。</p>
+<h4 id="继承Thread类"><a href="#继承Thread类" class="headerlink" title="继承Thread类"></a>继承Thread类</h4><p>继承Thread类，重写run方法，这种写法就会造成线程不安全，因为所有的线程都可以随时访问公共静态区</p>
+<pre><code class="Java">    package notes;
+    public class ThreadDemo &#123;
+        public static void main(String[] args) &#123;
+            // TODO Auto-generated method stub
+            new MyThread(&quot;Thread1&quot;).start();
+            new MyThread(&quot;Thread2&quot;).start();
+            new MyThread(&quot;Thread3&quot;).start();
+        &#125;
+    &#125;
+    class MyThread extends Thread&#123;
+        private String name;
+        private int num = 5;
+        public MyThread(String name)&#123;
+            this.name = name;
+        &#125;
+        @Override
+        public void run() &#123;
+            while(num&gt;0) &#123;
+                System.out.println(name + &quot;runs, i = &quot; + num);
+                num--;
+            &#125;
+        &#125;
+    &#125;    
+</code></pre>
+<h4 id="实现runnable方法"><a href="#实现runnable方法" class="headerlink" title="实现runnable方法"></a>实现runnable方法</h4><blockquote>
+<p>实现Runnable接口，使得该类有了多线程类的特征。run（）方法是多线程程序的一个约定。所有的多线程代码都在run方法里面。Thread类实际上也是实现了Runnable接口的类。</p>
+</blockquote>
+<p>继承Thread会造成很多不方便，runnable接口显然更优秀</p>
+<p>1）：适合多个相同的程序代码的线程去处理同一个资源<br>2）：可以避免java中的单继承的限制<br>3）：增加程序的健壮性，代码可以被多个线程共享，代码和数据独立<br>4）：线程池只能放入实现Runable或callable类线程，不能直接放入继承Thread的类</p>
+<pre><code class="Java">public class ThreadDemo &#123;
+    public static void main(String[] args) throws InterruptedException &#123;
+        // 实现runnable接口的类可以创建一次之后创建很多线程，这样他们都会公用线程里的资源，这里的5不加static也是公用的
+        MyThread mythread = new MyThread(&quot;mythread&quot;);
+        new Thread(mythread).start();
+        new Thread(mythread).start();
+        new Thread(mythread).start();
+
+        Thread.sleep(1);
+        // Java8 Lambda expression
+        new Thread(() -&gt; &#123;
+            System.out.println(&quot;In Java8, Lambda expression&quot; + Thread.currentThread());
+        &#125;).start();
+    &#125;
+&#125;
+
+class MyThread implements Runnable &#123;
+    private String name;
+    private AtomicInteger num = new AtomicInteger(30);
+
+    public MyThread(String name) &#123;
+        this.name = name;
+    &#125;
+
+    @Override
+    public void run() &#123;
+        while (num.get() &gt; 0) &#123;
+            num.addAndGet(-1);
+            System.out.println(Thread.currentThread() + &quot;runs, i = &quot; + num);
+        &#125;
+    &#125;
+</code></pre>
+<h4 id="实现Callable接口"><a href="#实现Callable接口" class="headerlink" title="实现Callable接口"></a>实现Callable接口</h4><p>自定义一个实现Callable的类，必须指定泛型，因为他会有返回值</p>
+<pre><code class="Java">    public class ThreadDemo &#123;
+        public static void main(String[] args) &#123;、
+        //这里也可以用一个类对应很多个futuretask，但是继承thread就不行
+            MyCallable myThread1 = new MyCallable(&quot;thread1&quot;);
+            FutureTask&lt;Integer&gt; futuretask1 = new FutureTask&lt;Integer&gt;(myThread1);
+            FutureTask&lt;Integer&gt; futuretask2 = new FutureTask&lt;Integer&gt;(myThread1);
+            FutureTask&lt;Integer&gt; futuretask3 = new FutureTask&lt;Integer&gt;(myThread1);
+            new Thread(futuretask1).start();
+            new Thread(futuretask2).start();
+            new Thread(futuretask3).start();
+        &#125;
+    &#125;
+
+    class MyCallable implements Callable&lt;Integer&gt;&#123;
+        private int num = 5;
+        private String name;
+        public MyCallable(String name) &#123;
+            this.name = name;
+        &#125;
+        @Override
+        public Integer call() &#123;
+            while(num&gt;0) &#123;
+                System.out.println(name + &quot;runs, i = &quot; + num);
+                num--;
+            &#125;
+            return num;
+        &#125;
+    &#125;
+    ```
+</code></pre>
+<div id="paginator"></div></div><div id="post-footer"><hr><a href="/blog.io/2020/09/02/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B(%E4%BA%8C)%20-%20%E7%BA%BF%E7%A8%8B%E6%B1%A0/">← Prev Java多线程(二) - 线程池</a><span style="color: #fe2"> | </span><a href="/blog.io/2020/08/20/JVM%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%E5%92%8C%E5%8F%82%E6%95%B0%E9%85%8D%E7%BD%AE%E7%9A%84%E5%AD%A6%E4%B9%A0%EF%BC%88%E4%B8%80%EF%BC%89/">JVM内存模型和参数配置的学习（一） Next →</a><hr></div><div id="bottom-btn"><a id="to-index" href="#post-index" title="index">≡</a><a id="to-top" href="#post-title" title="to top">∧</a></div><div id="Valine"></div><script>new Valine({
+ el: '#Valine'
+ , appId: 's9ieIT2hA5ChVBjBufKhyfnK-gzGzoHsz'
+ , appKey: 'a8LAJbmO7wJi6fj9T85KMJid'
+ , placeholder: '此条评论委托企鹅物流发送'
+})</script></div></article><aside><div id="about"><a href="/blog.io/" id="logo"><img src="https://ak.hypergryph.com/assets/index/images/ak/pc/faction/1.png" alt="Logo"></a><h1 id="Dr"><a href="/"> Dr.Allen Feng</a></h1><section id="total"><a id="total-archives" href="/blog.io/archives"><span class="total-title">Archives Total:</span><span class="total-number">58</span></a><div id="total-tags"><span class="total-title">Tags:</span><span class="total-number">52</span></div><div id="total-categories"><span class="total-title">Categories:</span><span class="total-number">6</span></div></section></div><div id="aside-block"><h1>INDEX</h1><div id="post-index"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%9A%84%E4%B8%89%E7%A7%8D%E6%96%B9%E6%B3%95"><span class="toc-number">1.</span> <span class="toc-text">多线程的三种方法</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BA%BF%E7%A8%8B%E5%92%8C%E8%BF%9B%E7%A8%8B"><span class="toc-number">1.0.1.</span> <span class="toc-text">线程和进程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BB%A7%E6%89%BFThread%E7%B1%BB"><span class="toc-number">1.0.2.</span> <span class="toc-text">继承Thread类</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9E%E7%8E%B0runnable%E6%96%B9%E6%B3%95"><span class="toc-number">1.0.3.</span> <span class="toc-text">实现runnable方法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9E%E7%8E%B0Callable%E6%8E%A5%E5%8F%A3"><span class="toc-number">1.0.4.</span> <span class="toc-text">实现Callable接口</span></a></li></ol></li></ol></li></ol></div></div><footer><nobr><span class="text-title">©</span><span class="text-content">1970 to 2020</span></nobr><wbr><nobr><span class="text-title">ICP</span><span class="text-content">——备案号——</span></nobr><wbr><wbr><nobr>published with&nbsp;<a target="_blank" rel="noopener" href="http://hexo.io">Hexo&nbsp;</a></nobr><wbr><nobr>Theme&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus/hexo-theme-arknights">Arknight&nbsp;</a></nobr><wbr><nobr>by&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus">Yue_plus</a></nobr></footer></aside></main><canvas id="canvas-dust"></canvas><script src="/blog.io/js/arknights.js"></script><script src="https://cdn.bootcdn.net/ajax/libs/highlight.js/10.1.2/highlight.min.js"></script></body></html>

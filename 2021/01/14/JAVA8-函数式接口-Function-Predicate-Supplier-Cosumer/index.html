@@ -1,0 +1,380 @@
+<!DOCTYPE html><html lang="zh-Hans"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>JAVA8 函数式接口 Function/Predicate/Supplier/Consumer | 如何做到年薪百万</title><script src="https://cdn.bootcss.com/valine/1.4.4/Valine.min.js"></script><link rel="stylesheet" href="/blog.io/css/arknights.css"><link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/highlight.js/10.1.2/styles/atom-one-dark-reasonable.min.css"><style>@font-face {
+ font-family: BenderLight;
+ src: local('Bender'), url("/blog.io/font/BenderLight.ttf");
+}
+@font-face {
+ font-family: 'JetBrains Mono';
+ src: local('JetBrains Mono'), url('/blog.io/font/JetBrainsMono-Regular.woff2') format('woff2');
+}</style><meta name="generator" content="Hexo 5.4.0"></head><body><header><nav><a href="/blog.io/">Home</a><a href="/blog.io/archives/">Archives</a></nav></header><main><article><div id="post-bg"><div id="post-title"><h1>JAVA8 函数式接口 Function/Predicate/Supplier/Consumer</h1><hr></div><div id="post-content"><p>函数式接口是为方便Lambda表达而诞生的新型技术点。这里从43个接口中记录了一些常用的接口。</p>
+<h2 id="1-Consumer-消费者"><a href="#1-Consumer-消费者" class="headerlink" title="1. Consumer - 消费者"></a>1. Consumer - 消费者</h2><table>
+<thead>
+<tr>
+<th>接口</th>
+<th>详情</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Consumer&lt; T &gt;</td>
+<td>提供一个T类型的输入参数，不返回执行结果</td>
+</tr>
+<tr>
+<td>BiConsumer&lt;T,U&gt;</td>
+<td>提供两个自定义类型的输入参数，不返回执行结果</td>
+</tr>
+<tr>
+<td>DoubleConsumer</td>
+<td>表示接受单个double值参数，但不返回结果的操作</td>
+</tr>
+<tr>
+<td>IntConsumer</td>
+<td>表示接受单个int值参数，但不返回结果的操作</td>
+</tr>
+<tr>
+<td>LongConsumer</td>
+<td>表示接受单个long值参数，但不返回结果的操作</td>
+</tr>
+<tr>
+<td>ObjDoubleConsumer&lt; T &gt;</td>
+<td>表示接受object值和double值，但是不返回任何操作结果</td>
+</tr>
+<tr>
+<td>ObjIntConsumer&lt; T &gt;</td>
+<td>表示接受object值和int值，但是不返回任何操作结</td>
+</tr>
+<tr>
+<td>ObjLongConsumer&lt; T &gt;</td>
+<td>表示接受object值和long值，但是不返回任何操作结果</td>
+</tr>
+</tbody></table>
+<p>   Consumer<T><br>   提供一个T类型的输入参数，不返回执行结果</p>
+<pre><code class="JAVA">    //对给定的参数执行操作
+    void accept(T t)
+
+    //返回一个组合函数，after将会在该函数执行之后应用
+    default Consumer&lt;T&gt; andThen(Consumer&lt;? super T&gt; after)
+
+
+    StringBuilder sb = new StringBuilder(&quot;Hello &quot;);
+    Consumer&lt;StringBuilder&gt; consumer = (str) -&gt; str.append(&quot;Jack!&quot;);
+    consumer.accept(sb);
+    System.out.println(sb.toString());    // Hello Jack!
+
+    Consumer&lt;StringBuilder&gt; consumer1 = (str) -&gt; str.append(&quot; Bob!&quot;);
+    consumer.andThen(consumer1).accept(sb);
+</code></pre>
+<h2 id="2-Supplier-供应者"><a href="#2-Supplier-供应者" class="headerlink" title="2. Supplier - 供应者"></a>2. Supplier - 供应者</h2><table>
+<thead>
+<tr>
+<th>接口</th>
+<th>详情</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Supplier&lt; T &gt;</td>
+<td>不提供输入参数，但是返回结果的函数</td>
+</tr>
+<tr>
+<td>BooleanSupplier</td>
+<td>不提供输入参数，但是返回boolean结果的函数</td>
+</tr>
+<tr>
+<td>DoubleSupplier</td>
+<td>不提供输入参数，但是返回double结果的函数</td>
+</tr>
+<tr>
+<td>IntSupplier</td>
+<td>不提供输入参数，但是返回int结果的函数</td>
+</tr>
+<tr>
+<td>LongSupplier</td>
+<td>不提供输入参数，但是返回long结果的函数</td>
+</tr>
+</tbody></table>
+<pre><code class="JAVA">//获取结果值
+T  get()    
+
+Supplier&lt;String&gt; supplier = () -&gt; &quot;Hello Jack!&quot;;
+System.out.println(supplier.get()); // Hello Jack!
+</code></pre>
+<blockquote>
+<p>CompletableFuture 类提供了异步多线程池的方法，其中充分利用了Consumer和Supplier等函数式接口。<br>执行之后可以接thenApply，thenRun，thenAccept来处理</p>
+<ol>
+<li>Function&lt;? super T,? extends U&gt;</li>
+<li>Runnable</li>
+<li>Consumer&lt;? super T&gt;</li>
+</ol>
+</blockquote>
+<pre><code class="Java">    /**
+     * Returns a new CompletableFuture that is asynchronously completed
+     * by a task running in the given executor with the value obtained
+     * by calling the given Supplier.
+     *
+     * @param supplier a function returning the value to be used
+     * to complete the returned CompletableFuture
+     * @param executor the executor to use for asynchronous execution
+     * @param &lt;U&gt; the function&#39;s return type
+     * @return the new CompletableFuture
+     */
+    public static &lt;U&gt; CompletableFuture&lt;U&gt; supplyAsync(Supplier&lt;U&gt; supplier,
+                                                       Executor executor) &#123;
+        return asyncSupplyStage(screenExecutor(executor), supplier);
+    &#125;
+</code></pre>
+<h2 id="3-Predicate-断言"><a href="#3-Predicate-断言" class="headerlink" title="3. Predicate - 断言"></a>3. Predicate - 断言</h2><table>
+<thead>
+<tr>
+<th>接口</th>
+<th>详情</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Predicate&lt; T &gt;</td>
+<td>对给定的输入参数执行操作，返回一个boolean类型的结果（布尔值函数）</td>
+</tr>
+<tr>
+<td>BiPredicate&lt;T,U&gt;</td>
+<td>对给定的两个输入参数执行操作，返回一个boolean类型的结果（布尔值函数）</td>
+</tr>
+<tr>
+<td>DoublePredicate</td>
+<td>对给定的double参数执行操作，返回一个boolean类型的结果（布尔值函数）</td>
+</tr>
+<tr>
+<td>IntPredicate</td>
+<td>对给定的int输入参数执行操作，返回一个boolean类型的结果（布尔值函数）</td>
+</tr>
+<tr>
+<td>LongPredicate</td>
+<td>对给定的long参数执行操作，返回一个boolean类型的结果（布尔值函数）</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>Predicate方法</th>
+<th>详情</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>boolean  test(T t)</td>
+<td>根据给定的参数进行判断</td>
+</tr>
+<tr>
+<td>Predicate&lt; T &gt; and(Predicate&lt;? super T&gt; other)</td>
+<td>返回一个组合判断，将other以短路并且的方式加入到函数的判断中</td>
+</tr>
+<tr>
+<td>Predicate&lt; T &gt; or(Predicate&lt;? super T&gt; other)</td>
+<td>返回一个组合判断，将other以短路或的方式加入到函数的判断中</td>
+</tr>
+<tr>
+<td>Predicate&lt; T &gt; negate()</td>
+<td>将函数的判断取反</td>
+</tr>
+</tbody></table>
+<pre><code class="java">
+Predicate&lt;Integer&gt; predicate = number -&gt; number != 0;
+System.out.println(predicate.test(10));    //true
+        
+predicate = predicate.and(number -&gt; number &gt;= 10);
+System.out.println(predicate.test(10));    //true
+</code></pre>
+<h2 id="3-Function-功能"><a href="#3-Function-功能" class="headerlink" title="3. Function-功能"></a>3. Function-功能</h2><table>
+<thead>
+<tr>
+<th>接口</th>
+<th>详情</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Function&lt;T,R&gt;</td>
+<td>接收一个参数并返回结果的函数</td>
+</tr>
+<tr>
+<td>BiFunction&lt;T,U,R&gt;</td>
+<td>接受两个参数并返回结果的函数</td>
+</tr>
+<tr>
+<td>DoubleFunction&lt; R &gt;</td>
+<td>接收一个double类型的参数并返回结果的函数</td>
+</tr>
+<tr>
+<td>DoubleToIntFunction</td>
+<td>接收一个double类型的参数并返回int结果的函数</td>
+</tr>
+<tr>
+<td>DoubleToLongFunction</td>
+<td>接收一个double类型的参数并返回long结果的函数</td>
+</tr>
+<tr>
+<td>IntFunction&lt; R &gt;</td>
+<td>接收一个int类型的参数并返回结果的函数</td>
+</tr>
+<tr>
+<td>IntToDoubleFunction</td>
+<td>接收一个int类型的参数并返回double结果的函数</td>
+</tr>
+<tr>
+<td>IntToLongFunction</td>
+<td>接收一个int类型的参数并返回long结果的函数</td>
+</tr>
+<tr>
+<td>LongFunction&lt; R &gt;</td>
+<td>接收一个long类型的参数并返回结果的函数</td>
+</tr>
+<tr>
+<td>LongToDoubleFunction</td>
+<td>接收一个long类型的参数并返回double结果的函数</td>
+</tr>
+<tr>
+<td>LongToIntFunction</td>
+<td>接收一个long类型的参数并返回int结果的函数</td>
+</tr>
+<tr>
+<td>ToDoubleBiFunction&lt;T,U&gt;</td>
+<td>接收两个参数并返回double结果的函数</td>
+</tr>
+<tr>
+<td>ToDoubleFunction&lt; T &gt;</td>
+<td>接收一个参数并返回double结果的函数</td>
+</tr>
+<tr>
+<td>ToIntBiFunction&lt;T,U&gt;</td>
+<td>接收两个参数并返回int结果的函数</td>
+</tr>
+<tr>
+<td>ToIntFunction&lt; T &gt;</td>
+<td>接收一个参数并返回int结果的函数</td>
+</tr>
+<tr>
+<td>ToLongBiFunction&lt;T,U&gt;</td>
+<td>接收两个参数并返回long结果的函数</td>
+</tr>
+<tr>
+<td>ToLongFunction&lt; T &gt;</td>
+<td>接收一个参数并返回long结果的函数</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>Function&lt;T,R&gt;方法</th>
+<th>详情</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>R  apply(T t)</td>
+<td>将此参数应用到函数中</td>
+</tr>
+<tr>
+<td>Function&lt;T, R&gt;  andThen(Function&lt;? super R,? extends V&gt; after)</td>
+<td>返回一个组合函数，该函数结果应用到after函数中</td>
+</tr>
+<tr>
+<td>Function&lt;T, R&gt;  compose(Function&lt;? super V,? extends T&gt; before)</td>
+<td>返回一个组合函数，首先将入参应用到before函数，再将before函数结果应用到该函数中</td>
+</tr>
+</tbody></table>
+<pre><code class="java">
+Function&lt;String, String&gt; function = a -&gt; a + &quot; Jack!&quot;;
+System.out.println(function.apply(&quot;Hello&quot;)); // Hello Jack!
+        
+
+Function&lt;String, String&gt; function = a -&gt; a + &quot; Jack!&quot;;
+Function&lt;String, String&gt; function1 = a -&gt; a + &quot; Bob!&quot;;
+String greet = function.andThen(function1).apply(&quot;Hello&quot;);
+System.out.println(greet); // Hello Jack! Bob!
+        
+
+Function&lt;String, String&gt; function = a -&gt; a + &quot; Jack!&quot;;
+Function&lt;String, String&gt; function1 = a -&gt; a + &quot; Bob!&quot;;
+String greet = function.compose(function1).apply(&quot;Hello&quot;);
+System.out.println(greet); // Hello Bob! Jack!
+</code></pre>
+<h2 id="4-Operator-操作员"><a href="#4-Operator-操作员" class="headerlink" title="4. Operator-操作员"></a>4. Operator-操作员</h2><table>
+<thead>
+<tr>
+<th>接口</th>
+<th>详情</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>UnaryOperator&lt; T &gt;</td>
+<td>提供单个参数，并且返回一个与输入参数类型一致的结果</td>
+</tr>
+<tr>
+<td>BinaryOperator&lt; T &gt;</td>
+<td>提供两个参数，并且返回结果与输入参数类型一致的结果</td>
+</tr>
+<tr>
+<td>DoubleBinaryOperator</td>
+<td>提供两个double参数并且返回double结果</td>
+</tr>
+<tr>
+<td>DoubleUnaryOperator</td>
+<td>提供单个double参数并且返回double结果</td>
+</tr>
+<tr>
+<td>IntBinaryOperator</td>
+<td>提供两个int参数并且返回int结果</td>
+</tr>
+<tr>
+<td>IntUnaryOperator</td>
+<td>提供单个int参数并且返回int结果</td>
+</tr>
+<tr>
+<td>LongBinaryOperator</td>
+<td>提供两个long参数并且返回long结果</td>
+</tr>
+<tr>
+<td>LongUnaryOperator</td>
+<td>提供单个long参数并且返回long结果</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>UnaryOperator&lt; T &gt;方法</th>
+<th>详情</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>T apply(T t)</td>
+<td>将给定参数应用到函数中</td>
+</tr>
+<tr>
+<td>Function&lt;T, R&gt;  andThen(Function&lt;? super R,? extends V&gt; after)</td>
+<td>返回一个组合函数，该函数结果应用到after函数中</td>
+</tr>
+<tr>
+<td>Function&lt;T, R&gt;  compose(Function&lt;? super V,? extends T&gt; before)</td>
+<td>返回一个组合函数，首先将入参应用到before函数，再将before函数结果应用到该函数中</td>
+</tr>
+</tbody></table>
+<pre><code class="java">
+UnaryOperator&lt;String&gt; unaryOperator = greet -&gt; greet + &quot; Bob!&quot;;
+System.out.println(unaryOperator.apply(&quot;Hello&quot;)); // Hello Jack!
+        
+
+UnaryOperator&lt;String&gt; unaryOperator1 = greet -&gt; greet + &quot; Jack!&quot;;
+String greet = unaryOperator.andThen(unaryOperator1).apply(&quot;Hello&quot;);
+System.out.println(greet); // Hello Bob! Jack!
+        
+
+String greet = unaryOperator.compose(unaryOperator1).apply(&quot;Hello&quot;);
+System.out.println(greet); // Hello Jack! Bob!
+</code></pre>
+<h2 id="自己的TIPS"><a href="#自己的TIPS" class="headerlink" title="自己的TIPS"></a>自己的TIPS</h2><p>这些接口中，Predicate可以返回Boolean值，适合和Stream中的filter配合使用。Function和Operator在很多情况下可以替换。<br>下面是一个Predicate和Function组合使用，之后放在filter里面过滤的实例，目的是用getter获取属性之后根据属性去重：</p>
+<pre><code class="java">private &lt;T&gt; Predicate &lt;T&gt; distinctByKey(Function&lt;? super, T ?&gt; keyExtractor)&#123;
+    Map&lt;Obejct, Object&gt; map = new ConcurrentHashMap&lt;&gt;(8);
+    return t-&gt;map.putifAbsent(keyExtractor.apply(t), Boolean.True) == null;
+&#125;
+</code></pre>
+<p>private后面的<T>声明这是一个泛型方法（泛型类里的不是泛型方法），这个T就是方法里可以使用的泛型，<br>常见的标识如T,E,K,V等。</p>
+<p>这个方法返回了一个带判断的Lambda表达式，其中t会带入filter中的值。</p>
+<div id="paginator"></div></div><div id="post-footer"><hr><a href="/blog.io/2021/01/27/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E7%9A%84%E9%80%9A%E7%94%A8%E8%AE%BE%E8%AE%A1%E6%96%B9%E6%B3%95/">← Prev 高并发系统的通用设计方法</a><span style="color: #fe2"> | </span><a href="/blog.io/2021/01/11/MySql-%E4%BC%98%E5%8C%96%20(%E4%BA%8C)/">MySql-优化（二） Next →</a><hr></div><div id="bottom-btn"><a id="to-index" href="#post-index" title="index">≡</a><a id="to-top" href="#post-title" title="to top">∧</a></div><div id="Valine"></div><script>new Valine({
+ el: '#Valine'
+ , appId: 's9ieIT2hA5ChVBjBufKhyfnK-gzGzoHsz'
+ , appKey: 'a8LAJbmO7wJi6fj9T85KMJid'
+ , placeholder: '此条评论委托企鹅物流发送'
+})</script></div></article><aside><div id="about"><a href="/blog.io/" id="logo"><img src="https://ak.hypergryph.com/assets/index/images/ak/pc/faction/1.png" alt="Logo"></a><h1 id="Dr"><a href="/"> Dr.Allen Feng</a></h1><section id="total"><a id="total-archives" href="/blog.io/archives"><span class="total-title">Archives Total:</span><span class="total-number">58</span></a><div id="total-tags"><span class="total-title">Tags:</span><span class="total-number">52</span></div><div id="total-categories"><span class="total-title">Categories:</span><span class="total-number">6</span></div></section></div><div id="aside-block"><h1>INDEX</h1><div id="post-index"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Consumer-%E6%B6%88%E8%B4%B9%E8%80%85"><span class="toc-number">1.</span> <span class="toc-text">1. Consumer - 消费者</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Supplier-%E4%BE%9B%E5%BA%94%E8%80%85"><span class="toc-number">2.</span> <span class="toc-text">2. Supplier - 供应者</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Predicate-%E6%96%AD%E8%A8%80"><span class="toc-number">3.</span> <span class="toc-text">3. Predicate - 断言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Function-%E5%8A%9F%E8%83%BD"><span class="toc-number">4.</span> <span class="toc-text">3. Function-功能</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Operator-%E6%93%8D%E4%BD%9C%E5%91%98"><span class="toc-number">5.</span> <span class="toc-text">4. Operator-操作员</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%87%AA%E5%B7%B1%E7%9A%84TIPS"><span class="toc-number">6.</span> <span class="toc-text">自己的TIPS</span></a></li></ol></div></div><footer><nobr><span class="text-title">©</span><span class="text-content">1970 to 2020</span></nobr><wbr><nobr><span class="text-title">ICP</span><span class="text-content">——备案号——</span></nobr><wbr><wbr><nobr>published with&nbsp;<a target="_blank" rel="noopener" href="http://hexo.io">Hexo&nbsp;</a></nobr><wbr><nobr>Theme&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus/hexo-theme-arknights">Arknight&nbsp;</a></nobr><wbr><nobr>by&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus">Yue_plus</a></nobr></footer></aside></main><canvas id="canvas-dust"></canvas><script src="/blog.io/js/arknights.js"></script><script src="https://cdn.bootcdn.net/ajax/libs/highlight.js/10.1.2/highlight.min.js"></script></body></html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html><html lang="zh-Hans"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>MySql事务处理 | 如何做到年薪百万</title><script src="https://cdn.bootcss.com/valine/1.4.4/Valine.min.js"></script><link rel="stylesheet" href="/blog.io/css/arknights.css"><link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/highlight.js/10.1.2/styles/atom-one-dark-reasonable.min.css"><style>@font-face {
+ font-family: BenderLight;
+ src: local('Bender'), url("/blog.io/font/BenderLight.ttf");
+}
+@font-face {
+ font-family: 'JetBrains Mono';
+ src: local('JetBrains Mono'), url('/blog.io/font/JetBrainsMono-Regular.woff2') format('woff2');
+}</style><meta name="generator" content="Hexo 5.4.0"></head><body><header><nav><a href="/blog.io/">Home</a><a href="/blog.io/archives/">Archives</a></nav></header><main><article><div id="post-bg"><div id="post-title"><h1>MySql事务处理</h1><hr></div><div id="post-content"><p>事务(Transaction)是MySQL对SQL用户操作数据库的一种抽象。我们执行的每一条SQL语句都可以被看作是事务。一般来说，我们的MySQL在执行SQL语句时采用自动提交的模式，这就让我感觉不到事务的存在。其实，事务是为了保障多个SQL操作的一致性。MySQL的事务主要用于处理操作量大，复杂度高的数据。</p>
+<p>同时，在MySQL中只有InnoDB引擎是支持事务处理的。通过SHOW ENGINES;可以查询到，我们数据库的存储引擎相关的信息。</p>
+<pre><code class="markdown">如果想要把一个表的存储引擎切换为InnoDB，我们可以使用SQL语句进行切换。
+
+ALTER TABLE [table_name] ENGINE=InnoDB；
+</code></pre>
+<h2 id="1-事务的特性"><a href="#1-事务的特性" class="headerlink" title="1. 事务的特性"></a>1. 事务的特性</h2><p>事务的特性我们一般简称为ACID。已经在上一篇中提到过</p>
+<h2 id="2-事务的开启"><a href="#2-事务的开启" class="headerlink" title="2. 事务的开启"></a>2. 事务的开启</h2><p>MySQL默认为自动提交模式，表示事务为未开启状态，开启事务有多种方式。</p>
+<ul>
+<li>全局事务开启<pre><code class="mysql">SET autocommit = 0;
+</code></pre>
+</li>
+<li>SQL语句开启<pre><code class="mysql">START TRANSACTION;
+BEGIN;
+</code></pre>
+例：</li>
+</ul>
+<p>全局</p>
+<pre><code class="mysql">SET autocommit = 0;
+# Some SQL will execute
+COMMIT/ROLLBACK;
+SET autocommit = 1;
+</code></pre>
+<p>SQL：</p>
+<pre><code class="mysql">BEGIN/START TRANSACTION;
+# Some SQL will execute
+COMMIT/ROLLBACK;
+</code></pre>
+<h2 id="3-事务的分类"><a href="#3-事务的分类" class="headerlink" title="3. 事务的分类"></a>3. 事务的分类</h2><p>事务一般分为五类：</p>
+<ol>
+<li>扁平事务</li>
+<li>保存点事务</li>
+<li>链式事务</li>
+<li>嵌套事务</li>
+<li>分布式事务</li>
+</ol>
+<h4 id="3-1-扁平事务"><a href="#3-1-扁平事务" class="headerlink" title="3.1 扁平事务"></a>3.1 扁平事务</h4><p>扁平事务是在开发过程中最常见的一种事务形式，在这种事务中，所有的操作都在同一层次。</p>
+<pre><code>BEGIN WORK;
+//TODO
+COMMIT WORK;
+</code></pre>
+<p>扁平事务的特点，就是被事务包裹起来的SQL代码段只有一个状态即要么成功要么失败。</p>
+<h4 id="3-2-保存点事务"><a href="#3-2-保存点事务" class="headerlink" title="3.2 保存点事务"></a>3.2 保存点事务</h4><p>保存点事务和扁平事务是形成鲜明对比的。保存点事务允许事务在执行过程中回滚到本事务先前的一个状态。<br>这样就降低了因事务中某个环节出错而导致整个事务回滚的开销。</p>
+<pre><code>BEGIN WORK;
+//TODO 1
+SAVEPOINT t1
+//TODO 2
+SAVEPOINT t2
+COMMIT WORK/ROLLBACK WORK/ROLLBACK TO SAVEPOINT t1;
+</code></pre>
+<h4 id="3-3链式事务"><a href="#3-3链式事务" class="headerlink" title="3.3链式事务"></a>3.3链式事务</h4><p>链式事务是在提交一个事务时，释放不必要的数据对象，同时将必要的上下文隐式传递给下一个事务。<br>提交事务和下一个事务操作将被视为原子操作，就是下一个事务可以看到上一个事务的执行结果。<br>不过链式事务在回滚时，只能回滚到就近的上一个保存点。</p>
+<img src="/blog.io/img/链式事务.png">
+
+<h4 id="3-4嵌套事务"><a href="#3-4嵌套事务" class="headerlink" title="3.4嵌套事务"></a>3.4嵌套事务</h4><p>嵌套事务顾名思义便是多个事务嵌套在一起，如下图所示。这种情况下，我们一般把最外层事务称之为顶层事务，一个事务的前驱事务为父事务、后继事务为子事务。</p>
+<p>嵌套事务的特点便是，任何一个节点的子事务都可以提交或回滚。但是只有在其父事务提交或回滚后，其事务才能算的上是真正意义上的提交或回滚。由此便可得出结论，只有在顶层事务提交或回滚后，所有的事务才生效。</p>
+<img src="/blog.io/img/嵌套事务.png">
+
+<h4 id="3-5分布式事务"><a href="#3-5分布式事务" class="headerlink" title="3.5分布式事务"></a>3.5分布式事务</h4><p>分布式事务通常是指在一个分布式环境下运行的扁平事务，因此需要根据数据所在位置访问网络中的不同节点。<br>在不同的物理地址，通过网络访问，执行不同的事务，这就是分布式事务。</p>
+<p><font color="#dd0000">关于分布式事务的回滚，还需要继续研究</font></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/jing99/p/11769093.html">https://www.cnblogs.com/jing99/p/11769093.html</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/barrywxx/p/8506512.html">https://www.cnblogs.com/barrywxx/p/8506512.html</a></p>
+<h2 id="4-事务的隔离"><a href="#4-事务的隔离" class="headerlink" title="4.事务的隔离"></a>4.事务的隔离</h2><p>之所以使用事务，是因为事务具有一定的隔离性。因为我们的MySQL是并发执行的。同一时刻可以有多条SQL语句要被我们的数据库管理系统执行。那么为了让他们之间保持一种相互独立的状态，这就需要事务去完成。</p>
+<p><font color="#dd0000">关于事务的隔离等级，见上一篇文章</font></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_39530754/article/details/82701753"><font color="0000dd">Reference</font></a></p>
+<div id="paginator"></div></div><div id="post-footer"><hr><a href="/blog.io/2021/01/08/MySql%E5%B0%8F%E8%AE%B0/">← Prev MySql小记</a><span style="color: #fe2"> | </span><a href="/blog.io/2021/01/06/%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E7%9A%84%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/">四种事务的隔离级别 Next →</a><hr></div><div id="bottom-btn"><a id="to-index" href="#post-index" title="index">≡</a><a id="to-top" href="#post-title" title="to top">∧</a></div><div id="Valine"></div><script>new Valine({
+ el: '#Valine'
+ , appId: 's9ieIT2hA5ChVBjBufKhyfnK-gzGzoHsz'
+ , appKey: 'a8LAJbmO7wJi6fj9T85KMJid'
+ , placeholder: '此条评论委托企鹅物流发送'
+})</script></div></article><aside><div id="about"><a href="/blog.io/" id="logo"><img src="https://ak.hypergryph.com/assets/index/images/ak/pc/faction/1.png" alt="Logo"></a><h1 id="Dr"><a href="/"> Dr.Allen Feng</a></h1><section id="total"><a id="total-archives" href="/blog.io/archives"><span class="total-title">Archives Total:</span><span class="total-number">58</span></a><div id="total-tags"><span class="total-title">Tags:</span><span class="total-number">52</span></div><div id="total-categories"><span class="total-title">Categories:</span><span class="total-number">6</span></div></section></div><div id="aside-block"><h1>INDEX</h1><div id="post-index"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E4%BA%8B%E5%8A%A1%E7%9A%84%E7%89%B9%E6%80%A7"><span class="toc-number">1.</span> <span class="toc-text">1. 事务的特性</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E4%BA%8B%E5%8A%A1%E7%9A%84%E5%BC%80%E5%90%AF"><span class="toc-number">2.</span> <span class="toc-text">2. 事务的开启</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E4%BA%8B%E5%8A%A1%E7%9A%84%E5%88%86%E7%B1%BB"><span class="toc-number">3.</span> <span class="toc-text">3. 事务的分类</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-%E6%89%81%E5%B9%B3%E4%BA%8B%E5%8A%A1"><span class="toc-number">3.0.1.</span> <span class="toc-text">3.1 扁平事务</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-%E4%BF%9D%E5%AD%98%E7%82%B9%E4%BA%8B%E5%8A%A1"><span class="toc-number">3.0.2.</span> <span class="toc-text">3.2 保存点事务</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3%E9%93%BE%E5%BC%8F%E4%BA%8B%E5%8A%A1"><span class="toc-number">3.0.3.</span> <span class="toc-text">3.3链式事务</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-4%E5%B5%8C%E5%A5%97%E4%BA%8B%E5%8A%A1"><span class="toc-number">3.0.4.</span> <span class="toc-text">3.4嵌套事务</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-5%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1"><span class="toc-number">3.0.5.</span> <span class="toc-text">3.5分布式事务</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E4%BA%8B%E5%8A%A1%E7%9A%84%E9%9A%94%E7%A6%BB"><span class="toc-number">4.</span> <span class="toc-text">4.事务的隔离</span></a></li></ol></div></div><footer><nobr><span class="text-title">©</span><span class="text-content">1970 to 2020</span></nobr><wbr><nobr><span class="text-title">ICP</span><span class="text-content">——备案号——</span></nobr><wbr><wbr><nobr>published with&nbsp;<a target="_blank" rel="noopener" href="http://hexo.io">Hexo&nbsp;</a></nobr><wbr><nobr>Theme&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus/hexo-theme-arknights">Arknight&nbsp;</a></nobr><wbr><nobr>by&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus">Yue_plus</a></nobr></footer></aside></main><canvas id="canvas-dust"></canvas><script src="/blog.io/js/arknights.js"></script><script src="https://cdn.bootcdn.net/ajax/libs/highlight.js/10.1.2/highlight.min.js"></script></body></html>

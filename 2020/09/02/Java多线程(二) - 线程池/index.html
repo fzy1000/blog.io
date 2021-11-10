@@ -1,0 +1,276 @@
+<!DOCTYPE html><html lang="zh-Hans"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Java多线程(二) - 线程池 | 如何做到年薪百万</title><script src="https://cdn.bootcss.com/valine/1.4.4/Valine.min.js"></script><link rel="stylesheet" href="/blog.io/css/arknights.css"><link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/highlight.js/10.1.2/styles/atom-one-dark-reasonable.min.css"><style>@font-face {
+ font-family: BenderLight;
+ src: local('Bender'), url("/blog.io/font/BenderLight.ttf");
+}
+@font-face {
+ font-family: 'JetBrains Mono';
+ src: local('JetBrains Mono'), url('/blog.io/font/JetBrainsMono-Regular.woff2') format('woff2');
+}</style><meta name="generator" content="Hexo 5.4.0"></head><body><header><nav><a href="/blog.io/">Home</a><a href="/blog.io/archives/">Archives</a></nav></header><main><article><div id="post-bg"><div id="post-title"><h1>Java多线程(二) - 线程池</h1><hr></div><div id="post-content"><h4 id="线程池的目的"><a href="#线程池的目的" class="headerlink" title="线程池的目的"></a>线程池的目的</h4><ol>
+<li>降低系统资源消耗，通过重用已存在的线程，降低线程创建和销毁造成的消耗</li>
+<li>提高系统响应速度，当有任务到达时，通过复用已存在的线程，无需等待新线程的创建便能立即执行</li>
+<li>方便线程并发数的管控。因为线程若是无限制的创建，可能会导致内存占用过多而产生<a target="_blank" rel="noopener" href="https://blog.csdn.net/xlgen157387/article/details/78298840" title="OOM">OOM</a>，并且会造成cpu过度切换（cpu切换线程是有时间成本的（需要保持当前执行线程的现场，并恢复要执行线程的现场））</li>
+<li>提供更强大的功能，延时定时线程池</li>
+</ol>
+<h4 id="Executors提供的四种线程池"><a href="#Executors提供的四种线程池" class="headerlink" title="Executors提供的四种线程池"></a>Executors提供的四种线程池</h4><p><strong>- newSingleThreadExecutor</strong><br>创建一个单线程化的线程池，它只会用唯一的工作线程来执行任务，保证所有任务按照指定顺序(FIFO, LIFO, 优先级)执行。</p>
+<p><strong>通俗</strong>：创建只有一个线程的线程池，且线程的存活时间是无限的；当该线程正繁忙时，对于新任务会进入阻塞队列中(无界的阻塞队列)</p>
+<p><strong>适用</strong>：一个任务一个任务执行的场景</p>
+<pre><code class="Java">        ExecutorService pool = Executors.newSingleThreadExecutor();
+        //函数式接口重写runnable方法
+        pool.execute(() -&gt; out.println(Thread.currentThread().getName()));
+</code></pre>
+<p><strong>- newFixedThreadPool</strong><br>创建一个定长线程池，可控制线程最大并发数，超出的线程会在队列中等待。</p>
+<p><strong>通俗</strong>：创建可容纳固定数量线程的池子，每个线程的存活时间是无限的，当池子满了就不在添加线程了；如果池中的所有线程均在繁忙状态，对于新任务会进入阻塞队列中(无界的阻塞队列)</p>
+<p><strong>适用</strong>：执行长期的任务，性能好很多</p>
+<pre><code class="Java">        /**
+        * 1.创建固定大小的线程池。每次提交一个任务就创建一个线程，直到线程达到线程池的最大大小&lt;br&gt;
+        * 2.线程池的大小一旦达到最大值就会保持不变，如果某个线程因为执行异常而结束，那么线程池会补充一个新线程&lt;br&gt;
+        * 3.因为线程池大小为3，每个任务输出index后sleep 2秒，所以每两秒打印3个数字，和线程名称&lt;br&gt;
+        */
+        public static void fixTheadPoolTest() &#123;
+            ExecutorService fixedThreadPool = Executors.newFixedThreadPool(3);
+            for (int i = 0; i &lt; 10; i++) &#123;
+                final int ii = i;
+                fixedThreadPool.execute(() -&gt; &#123;
+                    out.println(&quot;线程名称：&quot; + Thread.currentThread().getName() + &quot;，执行&quot; + ii);
+                    try &#123;
+                        Thread.sleep(2000);
+                    &#125; catch (InterruptedException e) &#123;
+                        e.printStackTrace();
+                    &#125;
+                &#125;);
+            &#125;
+        &#125;
+        ------output-------
+        线程名称：pool-1-thread-3，执行2
+        线程名称：pool-1-thread-1，执行0
+        线程名称：pool-1-thread-2，执行3
+        线程名称：pool-1-thread-3，执行4
+        线程名称：pool-1-thread-1，执行5
+        线程名称：pool-1-thread-2，执行6
+        线程名称：pool-1-thread-3，执行7
+        线程名称：pool-1-thread-1，执行8
+        线程名称：pool-1-thread-3，执行9
+</code></pre>
+<p><strong>- newScheduledThreadPool</strong><br>创建一个可定期或者延时执行任务的定长线程池，支持定时及周期性任务执行。 </p>
+<p><strong>通俗</strong>：创建一个固定大小的线程池，线程池内线程存活时间无限制，线程池可以支持定时及周期性任务执行，如果所有线程均处于繁忙状态，对于新任务会进入DelayedWorkQueue队列中，这是一种按照超时时间排序的队列结构</p>
+<p><strong>适用</strong>：周期性执行任务的场景</p>
+<pre><code class="Java">        /**
+         * 创建一个定长线程池，支持定时及周期性任务执行。延迟执行
+         */
+        public static void sceduleThreadPool() &#123;
+            ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(5);
+            Runnable r1 = () -&gt; out.println(&quot;线程名称：&quot; + Thread.currentThread().getName() + &quot;，执行:3秒后执行&quot;);
+            scheduledThreadPool.schedule(r1, 3, TimeUnit.SECONDS);
+            Runnable r2 = () -&gt; out.println(&quot;线程名称：&quot; + Thread.currentThread().getName() + &quot;，执行:延迟2秒后每3秒执行一次&quot;);
+            scheduledThreadPool.scheduleAtFixedRate(r2, 2, 3, TimeUnit.SECONDS);
+            Runnable r3 = () -&gt; out.println(&quot;线程名称：&quot; + Thread.currentThread().getName() + &quot;，执行:普通任务&quot;);
+            for (int i = 0; i &lt; 5; i++) &#123;
+                scheduledThreadPool.execute(r3);
+            &#125;
+        &#125;
+        ----output------
+        线程名称：pool-1-thread-1，执行:普通任务
+        线程名称：pool-1-thread-5，执行:普通任务
+        线程名称：pool-1-thread-4，执行:普通任务
+        线程名称：pool-1-thread-3，执行:普通任务
+        线程名称：pool-1-thread-2，执行:普通任务
+        线程名称：pool-1-thread-1，执行:延迟2秒后每3秒执行一次
+        线程名称：pool-1-thread-5，执行:3秒后执行
+        线程名称：pool-1-thread-4，执行:延迟2秒后每3秒执行一次
+        线程名称：pool-1-thread-4，执行:延迟2秒后每3秒执行一次
+        线程名称：pool-1-thread-4，执行:延迟2秒后每3秒执行一次
+        线程名称：pool-1-thread-4，执行:延迟2秒后每3秒执行一次
+</code></pre>
+<p><strong>- newCachedThreadPool</strong><br>创建一个可缓存线程池，如果线程池长度超过处理需要，可灵活回收空闲线程，若无可回收，则新建线程。</p>
+<p><strong>通俗</strong>：当有新任务到来，则插入到SynchronousQueue中，由于SynchronousQueue是同步队列，因此会在池中寻找可用线程来执行，若有可以线程则执行，若没有可用线程则创建一个线程来执行该任务；若池中线程空闲时间超过指定大小，则该线程会被销毁。</p>
+<p><strong>适用</strong>：执行很多短期异步的小程序或者负载较轻的服务器</p>
+<pre><code class="Java">        /**
+         * 1.创建一个可缓存的线程池。如果线程池的大小超过了处理任务所需要的线程，那么就会回收部分空闲（60秒不执行任务）的线程&lt;br&gt;
+         * 2.当任务数增加时，此线程池又可以智能的添加新线程来处理任务&lt;br&gt;
+         * 3.此线程池不会对线程池大小做限制，线程池大小完全依赖于操作系统（或者说JVM）能够创建的最大线程大小&lt;br&gt;
+         * 
+         */
+        public static void cacheThreadPool() &#123;
+            ExecutorService cachedThreadPool = Executors.newCachedThreadPool();
+            for (int i = 1; i &lt;= 10; i++) &#123;
+                final int ii = i;
+                try &#123;
+                    Thread.sleep(ii * 1);
+                &#125; catch (InterruptedException e) &#123;
+                    e.printStackTrace();
+                &#125;
+                cachedThreadPool.execute(()-&gt;out.println(&quot;线程名称：&quot; + Thread.currentThread().getName() + &quot;，执行&quot; + ii));
+            &#125;
+        &#125;
+        -----output------
+        线程名称：pool-1-thread-1，执行1
+        线程名称：pool-1-thread-1，执行2
+        线程名称：pool-1-thread-1，执行3
+        线程名称：pool-1-thread-1，执行4
+        线程名称：pool-1-thread-1，执行5
+        线程名称：pool-1-thread-1，执行6
+        线程名称：pool-1-thread-1，执行7
+        线程名称：pool-1-thread-1，执行8
+        线程名称：pool-1-thread-1，执行9
+        线程名称：pool-1-thread-1，执行10
+</code></pre>
+<h4 id="线程池的主要参数"><a href="#线程池的主要参数" class="headerlink" title="线程池的主要参数"></a><a target="_blank" rel="noopener" href="https://blog.csdn.net/ye17186/article/details/89467919" title="线程池的主要参数">线程池的主要参数</a></h4><pre><code class="Java">    public ThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue&lt;Runnable&gt; workQueue) &#123;
+        this(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue,
+             Executors.defaultThreadFactory(), defaultHandler);
+    &#125;
+</code></pre>
+<ol>
+<li><p>corePoolSize 线程池核心线程大小</p>
+<p> 线程池中会维护一个最小的线程数量，即使这些线程处理空闲状态，他们也不会 被销毁，除非设置了allowCoreThreadTimeOut。这里的最小线程数量即是corePoolSize。</p>
+</li>
+<li><p>maximumPoolSize 线程池最大线程数量</p>
+<p> 一个任务被提交到线程池后，首先会缓存到工作队列（后面会介绍）中，如果工作队列满了，则会创建一个新线程，然后从工作队列中的取出一个任务交由新线程来处理，而将刚提交的任务放入工作队列。线程池不会无限制的去创建新线程，它会有一个最大线程数量的限制，这个数量即由maximumPoolSize来指定。</p>
+</li>
+<li><p>keepAliveTime 空闲线程存活时间</p>
+<p> 一个线程如果处于空闲状态，并且当前的线程数量大于corePoolSize，那么在指定时间后，这个空闲线程会被销毁，这里的指定时间由keepAliveTime来设定</p>
+</li>
+<li><p>unit 空间线程存活时间单位</p>
+<p> keepAliveTime的计量单位</p>
+</li>
+<li><p>workQueue 工作队列</p>
+<p> 新任务被提交后，会先进入到此工作队列中，任务调度时再从队列中取出任务。jdk中提供了四种工作队列：</p>
+<p> ①ArrayBlockingQueue</p>
+<p> 基于数组的有界阻塞队列，按FIFO排序。新任务进来后，会放到该队列的队尾，有界的数组可以防止资源耗尽问题。当线程池中线程数量达到corePoolSize后，再有新任务进来，则会将任务放入该队列的队尾，等待被调度。如果队列已经是满的，则创建一个新线程，如果线程数量已经达到maxPoolSize，则会执行拒绝策略。</p>
+<p> ②LinkedBlockingQueue</p>
+<p> 基于链表的无界阻塞队列（其实最大容量为Integer.MAX），按照FIFO排序。由于该队列的近似无界性，当线程池中线程数量达到corePoolSize后，再有新任务进来，会一直存入该队列，而不会去创建新线程直到maxPoolSize，因此使用该工作队列时，参数maxPoolSize其实是不起作用的。</p>
+<p> ③SynchronousQueue</p>
+<p> 一个不缓存任务的阻塞队列，生产者放入一个任务必须等到消费者取出这个任务。也就是说新任务进来时，不会缓存，而是直接被调度执行该任务，如果没有可用线程，则创建新线程，如果线程数量达到maxPoolSize，则执行拒绝策略。</p>
+<p> ④PriorityBlockingQueue</p>
+<p> 具有优先级的无界阻塞队列，优先级通过参数Comparator实现。</p>
+</li>
+<li><p>threadFactory 线程工厂</p>
+<p> 创建一个新线程时使用的工厂，可以用来设定线程名、是否为daemon线程等等</p>
+</li>
+<li><p>handler 拒绝策略</p>
+<p> 当工作队列中的任务已到达最大限制，并且线程池中的线程数量也达到最大限制，这时如果有新任务提交进来，该如何处理呢。这里的拒绝策略，就是解决这个问题的，jdk中提供了4中拒绝策略：</p>
+<p> ①CallerRunsPolicy</p>
+<p> 该策略下，在调用者线程中直接执行被拒绝任务的run方法，除非线程池已经shutdown，则直接抛弃任务。</p>
+<p> ②AbortPolicy</p>
+<p> 该策略下，直接丢弃任务，并抛出RejectedExecutionException异常。</p>
+<p> ③DiscardPolicy</p>
+<p> 该策略下，直接丢弃任务，什么都不做。</p>
+<p> ④DiscardOldestPolicy</p>
+<p> 该策略下，抛弃进入队列最早的那个任务，然后尝试把这次拒绝的任务放入队列</p>
+</li>
+</ol>
+<h4 id="线程池流程"><a href="#线程池流程" class="headerlink" title="线程池流程"></a>线程池流程</h4><p>ThreadPoolExecutor执行execute()分4种情况</p>
+<p>a、若当前运行的线程少于corePoolSize,则创建新线程来执行任务(执行这一步需要获取全局锁)<br>b、若运行的线程多于或等于corePoolSize,则将任务加入BlockingQueue<br>c、若无法将任务加入BlockingQueue,则创建新的线程来处理任务(执行这一步需要获取全局锁)<br>d、若创建新线程将使当前运行的线程超出maximumPoolSize,任务将被拒绝,并调用RejectedExecutionHandler.rejectedExecution()</p>
+<p>采取上述思路,是为了在执行execute()时,尽可能避免获取全局锁<br>在ThreadPoolExecutor完成预热之后（当前运行的线程数大于等于corePoolSize),几乎所有的execute()方法调用都是执行步骤b,而步骤b不需要获取全局锁</p>
+<p><strong>源码分析</strong>：上面的流程分析让我们很直观的了解的线程池的工作原理，让我们再通过源代码来看看是如何实现的。线程池执行任务的方法如下：</p>
+<pre><code class="Java">    public void execute(Runnable command) &#123;
+        if (command == null)
+            throw new NullPointerException();
+        //如果线程数小于基本线程数，则创建线程并执行当前任务
+        if (poolSize &gt;= corePoolSize || !addIfUnderCorePoolSize(command)) &#123;
+            //如线程数大于等于基本线程数或线程创建失败，则将当前任务放到工作队列中。
+            if (runState == RUNNING &amp;&amp; workQueue.offer(command)) &#123;
+                if (runState != RUNNING || poolSize == 0)
+                    ensureQueuedTaskHandled(command);
+            &#125;
+            //如果线程池不处于运行中或任务无法放入队列，并且当前线程数量小于最大允许的线程数量，则创建一个线程执行任务。
+            else if (!addIfUnderMaximumPoolSize(command))
+                //抛出RejectedExecutionException异常
+                reject(command); // is shutdown or saturated
+        &#125;
+    &#125;
+</code></pre>
+<h4 id="如何配置线程池"><a href="#如何配置线程池" class="headerlink" title="如何配置线程池"></a>如何配置线程池</h4><p><strong>CPU密集型任务</strong><br>尽量使用较小的线程池，一般为CPU核心数+1。 因为CPU密集型任务使得CPU使用率很高，若开过多的线程数，会造成CPU过度切换。</p>
+<p><strong>IO密集型任务</strong><br>可以使用稍大的线程池，一般为2*CPU核心数。 IO密集型任务CPU使用率并不高，因此可以让CPU在等待IO的时候有其他线程去处理别的任务，充分利用CPU时间。</p>
+<p><strong>混合型任务</strong><br>可以将任务分成IO密集型和CPU密集型任务，然后分别用不同的线程池去处理。 只要分完之后两个任务的执行时间相差不大，那么就会比串行执行来的高效。<br>因为如果划分之后两个任务执行时间有数据级的差距，那么拆分没有意义。<br>因为先执行完的任务就要等后执行完的任务，最终的时间仍然取决于后执行完的任务，而且还要加上任务拆分与合并的开销，得不偿失。</p>
+<h4 id="LinkedBlockingQueue和ArrayBlockingQueue"><a href="#LinkedBlockingQueue和ArrayBlockingQueue" class="headerlink" title="LinkedBlockingQueue和ArrayBlockingQueue"></a>LinkedBlockingQueue和ArrayBlockingQueue</h4><p>　　一般如果线程池任务队列采用LinkedBlockingQueue队列的话，那么不会拒绝任何任务（因为队列大小没有限制），这种情况下，ThreadPoolExecutor最多仅会按照最小线程数来创建线程，也就是说线程池大小被忽略了。如果线程池任务队列采用</p>
+<p>ArrayBlockingQueue队列的话，那么ThreadPoolExecutor将会采取一个非常负责的算法，比如假定线程池的最小线程数为4，最大为8所用的ArrayBlockingQueue最大为10。随着任务到达并被放到队列中，线程池中最多运行4个线程（即最小线程数）。</p>
+<p>即使队列完全填满，也就是说有10个处于等待状态的任务，ThreadPoolExecutor也只会利用4个线程。如果队列已满，而又有新任务进来，此时才会启动一个新线程，这里不会因为队列已满而拒接该任务，相反会启动一个新线程。新线程会运行队列中的</p>
+<p>第一个任务，为新来的任务腾出空间。这个算法背后的理念是：该池大部分时间仅使用核心线程（4个），即使有适量的任务在队列中等待运行。这时线程池就可以用作节流阀。如果挤压的请求变得非常多，这时该池就会尝试运行更多的线程来清理；</p>
+<p>这时第二个节流阀—最大线程数就起作用了。</p>
+<h4 id="execute-和submit-方法"><a href="#execute-和submit-方法" class="headerlink" title="execute()和submit()方法"></a>execute()和submit()方法</h4><p>1、execute()，执行一个任务，没有返回值。<br>2、submit()，提交一个线程任务，有返回值。</p>
+<p>**submit(Callable<T> task)**能获取到它的返回值，通过future.get()获取（阻塞直到任务执行完）。一般使用FutureTask+Callable配合使用（IntentService中有体现）。</p>
+<p>**submit(Runnable task, T result)**能通过传入的载体result间接获得线程的返回值。<br>submit(Runnable task)则是没有返回值的，就算获取它的返回值也是null。</p>
+<p>Future.get方法会使取结果的线程进入阻塞状态，直到线程执行完成之后，唤醒取结果的线程，然后返回结果。</p>
+<h4 id="生产者和消费者模式"><a href="#生产者和消费者模式" class="headerlink" title="生产者和消费者模式"></a>生产者和消费者模式</h4><p><a target="_blank" rel="noopener" href="http://ifeve.com/producers-and-consumers-mode/" title="什么是生产者消费者模式"><strong>什么是生产者消费者模式</strong></a><br>生产者消费者模式是通过一个容器来解决生产者和消费者的强耦合问题。生产者和消费者彼此之间不直接通讯，而通过阻塞队列来进行通讯，所以生产者生产完数据之后不用等待消费者处理，直接扔给阻塞队列，消费者不找生产者要数据，而是直接从阻塞队列里取，阻塞队列就相当于一个缓冲区，平衡了生产者和消费者的处理能力。</p>
+<p>线程池就是一个高明的消费者模式，新的线程“生产”的时候。如果没有到线程池的最大线程数量或者最内存，那么就直接创建一个线程并且把他“消费”掉，如果多了就扔到阻塞队列里。</p>
+<h4 id="线程池演示"><a href="#线程池演示" class="headerlink" title="线程池演示"></a>线程池演示</h4><p>实例化一个runnable或者callable的类，然后直接传进线程池，不需要new一个thread然后start，或者new一个FutureTask了。</p>
+<p>用runnable实现多线程（用的也算是pool.submit 但是没有返回值）</p>
+<pre><code class="Java">    /**
+     *
+     * 线程池
+     * 跟数据库连接池类似
+     * 避免了线程的创建和销毁造成的额外开销
+     *
+     * java.util.concurrent
+     *
+     * Executor    负责现成的使用和调度的根接口
+     *    |--ExecutorService    线程池的主要接口
+     *          |--ThreadPoolExecutor    线程池的实现类
+     *          |--ScheduledExecutorService    接口，负责线程的调度
+     *              |--ScheduledThreadPoolExecutor    (extends ThreadPoolExecutor implements ScheduledExecutorService)
+     *
+     * Executors工具类
+     * 提供了创建线程池的方法
+     *
+     */
+    public class ThreadPool &#123;
+        public static void main(String[] args)&#123;
+            //使用Executors工具类中的方法创建线程池
+            ExecutorService pool = Executors.newFixedThreadPool(5);
+            ThreadPoolDemo demo = new ThreadPoolDemo();
+            //为线程池中的线程分配任务,使用submit方法，传入的参数可以是Runnable的实现类，也可以是Callable的实现类
+            for(int i=1;i&lt;=5;i++)&#123;
+                pool.submit(demo);
+            &#125;
+            //关闭线程池
+            //shutdown ： 以一种平和的方式关闭线程池，在关闭线程池之前，会等待线程池中的所有的任务都结束，不在接受新任务
+            //shutdownNow ： 立即关闭线程池
+            pool.shutdown();
+        &#125;
+    &#125;
+    class ThreadPoolDemo implements Runnable&#123;
+        /**多线程的共享数据*/
+        private int i = 0;
+        @Override
+        public void run() &#123;
+            while(i&lt;=50)&#123;
+                System.out.println(Thread.currentThread().getName()+&quot;---&quot;+ i++);
+            &#125;
+        &#125;
+    &#125;
+</code></pre>
+<p>实现callable然后加入线程池</p>
+<pre><code class="Java">    public class ThreadPool2 &#123;
+
+        public static void main(String args[])&#123;
+            ExecutorService executorService = Executors.newFixedThreadPool(5);
+
+            for(int i=0;i&lt;5;i++)&#123;
+                //线程池执行submit之后直接返回一个Future
+                Future&lt;Integer&gt; future = executorService.submit(new Callable&lt;Integer&gt;() &#123;
+                //匿名内部类直接重写runnable方法
+                    @Override
+                    public Integer call() throws Exception &#123;
+                        int result = 0;
+                        for(int i=0;i&lt;=10;i++)&#123;
+                            result += i;
+                        &#125;
+                        return result;
+                    &#125;
+                &#125;);
+                try &#123;
+                    System.out.println(Thread.currentThread().getName()+&quot;--&quot;+future.get());
+                &#125; catch (InterruptedException | ExecutionException e) &#123;
+                    e.printStackTrace();
+                &#125;
+            &#125;
+            executorService.shutdown();
+        &#125;
+    &#125;
+</code></pre>
+<div id="paginator"></div></div><div id="post-footer"><hr><a href="/blog.io/2021/01/06/%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E7%9A%84%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/">← Prev 四种事务的隔离级别</a><span style="color: #fe2"> | </span><a href="/blog.io/2020/09/02/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B(%E4%B8%80)%20-%20%E4%B8%89%E7%A7%8D%E5%AE%9E%E7%8E%B0%E6%96%B9%E5%BC%8F%EF%BC%88%E4%B8%8D%E5%8C%85%E6%8B%AC%E7%BA%BF%E7%A8%8B%E6%B1%A0%EF%BC%89/">Java多线程(一) - 三种实现方式（不包括线程池） Next →</a><hr></div><div id="bottom-btn"><a id="to-index" href="#post-index" title="index">≡</a><a id="to-top" href="#post-title" title="to top">∧</a></div><div id="Valine"></div><script>new Valine({
+ el: '#Valine'
+ , appId: 's9ieIT2hA5ChVBjBufKhyfnK-gzGzoHsz'
+ , appKey: 'a8LAJbmO7wJi6fj9T85KMJid'
+ , placeholder: '此条评论委托企鹅物流发送'
+})</script></div></article><aside><div id="about"><a href="/blog.io/" id="logo"><img src="https://ak.hypergryph.com/assets/index/images/ak/pc/faction/1.png" alt="Logo"></a><h1 id="Dr"><a href="/"> Dr.Allen Feng</a></h1><section id="total"><a id="total-archives" href="/blog.io/archives"><span class="total-title">Archives Total:</span><span class="total-number">58</span></a><div id="total-tags"><span class="total-title">Tags:</span><span class="total-number">52</span></div><div id="total-categories"><span class="total-title">Categories:</span><span class="total-number">6</span></div></section></div><div id="aside-block"><h1>INDEX</h1><div id="post-index"><ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BA%BF%E7%A8%8B%E6%B1%A0%E7%9A%84%E7%9B%AE%E7%9A%84"><span class="toc-number">1.</span> <span class="toc-text">线程池的目的</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Executors%E6%8F%90%E4%BE%9B%E7%9A%84%E5%9B%9B%E7%A7%8D%E7%BA%BF%E7%A8%8B%E6%B1%A0"><span class="toc-number">2.</span> <span class="toc-text">Executors提供的四种线程池</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BA%BF%E7%A8%8B%E6%B1%A0%E7%9A%84%E4%B8%BB%E8%A6%81%E5%8F%82%E6%95%B0"><span class="toc-number">3.</span> <span class="toc-text">线程池的主要参数</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BA%BF%E7%A8%8B%E6%B1%A0%E6%B5%81%E7%A8%8B"><span class="toc-number">4.</span> <span class="toc-text">线程池流程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E9%85%8D%E7%BD%AE%E7%BA%BF%E7%A8%8B%E6%B1%A0"><span class="toc-number">5.</span> <span class="toc-text">如何配置线程池</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#LinkedBlockingQueue%E5%92%8CArrayBlockingQueue"><span class="toc-number">6.</span> <span class="toc-text">LinkedBlockingQueue和ArrayBlockingQueue</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#execute-%E5%92%8Csubmit-%E6%96%B9%E6%B3%95"><span class="toc-number">7.</span> <span class="toc-text">execute()和submit()方法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%94%9F%E4%BA%A7%E8%80%85%E5%92%8C%E6%B6%88%E8%B4%B9%E8%80%85%E6%A8%A1%E5%BC%8F"><span class="toc-number">8.</span> <span class="toc-text">生产者和消费者模式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BA%BF%E7%A8%8B%E6%B1%A0%E6%BC%94%E7%A4%BA"><span class="toc-number">9.</span> <span class="toc-text">线程池演示</span></a></li></ol></div></div><footer><nobr><span class="text-title">©</span><span class="text-content">1970 to 2020</span></nobr><wbr><nobr><span class="text-title">ICP</span><span class="text-content">——备案号——</span></nobr><wbr><wbr><nobr>published with&nbsp;<a target="_blank" rel="noopener" href="http://hexo.io">Hexo&nbsp;</a></nobr><wbr><nobr>Theme&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus/hexo-theme-arknights">Arknight&nbsp;</a></nobr><wbr><nobr>by&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus">Yue_plus</a></nobr></footer></aside></main><canvas id="canvas-dust"></canvas><script src="/blog.io/js/arknights.js"></script><script src="https://cdn.bootcdn.net/ajax/libs/highlight.js/10.1.2/highlight.min.js"></script></body></html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html><html lang="zh-Hans"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>JVM内存模型（二） | 如何做到年薪百万</title><script src="https://cdn.bootcss.com/valine/1.4.4/Valine.min.js"></script><link rel="stylesheet" href="/blog.io/css/arknights.css"><link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/highlight.js/10.1.2/styles/atom-one-dark-reasonable.min.css"><style>@font-face {
+ font-family: BenderLight;
+ src: local('Bender'), url("/blog.io/font/BenderLight.ttf");
+}
+@font-face {
+ font-family: 'JetBrains Mono';
+ src: local('JetBrains Mono'), url('/blog.io/font/JetBrainsMono-Regular.woff2') format('woff2');
+}</style><meta name="generator" content="Hexo 5.4.0"></head><body><header><nav><a href="/blog.io/">Home</a><a href="/blog.io/archives/">Archives</a></nav></header><main><article><div id="post-bg"><div id="post-title"><h1>JVM内存模型（二）</h1><hr></div><div id="post-content"><h2 id="一-运行时数据区域"><a href="#一-运行时数据区域" class="headerlink" title="一. 运行时数据区域"></a>一. 运行时数据区域</h2><p>JDK 1.8 之前：</p>
+</br>
+<img src="/blog.io/img/jvm1.7内存模型.png">
+
+<p>JDK 1.8 ：</p>
+</br>
+<img src="/blog.io/img/jvm1.8内存模型.png">
+
+<p>线程私有的：</p>
+<ul>
+<li>程序计数器</li>
+<li>虚拟机栈</li>
+<li>本地方法栈</li>
+</ul>
+<p>线程共享的：</p>
+<ul>
+<li>堆</li>
+<li>方法区</li>
+<li>直接内存 (非运行时数据区的一部分)</li>
+</ul>
+<h2 id="二-类静态成员变量的存储位置及JVM的内存划分"><a href="#二-类静态成员变量的存储位置及JVM的内存划分" class="headerlink" title="二. 类静态成员变量的存储位置及JVM的内存划分"></a>二. 类静态成员变量的存储位置及JVM的内存划分</h2><p>静态成员变量存储在哪里呢？在网上查阅不少资料，发现好多内容都是过时的了，其中主流观点是静态成员变量存放在方法区。JDK8之前，静态成员变量确实存放在方法区；但JDK8之后就取消了“永久代”，取而代之的是“元空间”，永久代中的数据也进行了迁移，静态成员变量迁移到了堆中（方法区是JVM的规范，永久代是方法区的具体实现）。</p>
+</br>
+<img src="/blog.io/img/jvm1.8常量池.png">
+
+
+<p>注：静态成员变量、常量池由方法区迁移到堆</p>
+<p>元空间在本地内存</p>
+<h3 id="2-1-程序计数器"><a href="#2-1-程序计数器" class="headerlink" title="2.1 程序计数器"></a>2.1 程序计数器</h3><p>程序计数器是一块较小的内存空间，可以看作是当前线程所执行的字节码的行号指示器。字节码解释器工作时通过改变这个计数器的值来选取下一条需要执行的字节码指令，分支、循环、跳转、异常处理、线程恢复等功能都需要依赖这个计数器来完成。</p>
+<p>另外，为了线程切换后能恢复到正确的执行位置，每条线程都需要有一个独立的程序计数器，各线程之间计数器互不影响，独立存储，我们称这类内存区域为“线程私有”的内存。</p>
+<p>从上面的介绍中我们知道程序计数器主要有两个作用：</p>
+<p>字节码解释器通过改变程序计数器来依次读取指令，从而实现代码的流程控制，如：顺序执行、选择、循环、异常处理。<br>在多线程的情况下，程序计数器用于记录当前线程执行的位置，从而当线程被切换回来的时候能够知道该线程上次运行到哪儿了。<br>注意：程序计数器是唯一一个不会出现 OutOfMemoryError 的内存区域，它的生命周期随着线程的创建而创建，随着线程的结束而死亡。</p>
+<h3 id="2-2-Java-虚拟机栈"><a href="#2-2-Java-虚拟机栈" class="headerlink" title="2.2 Java 虚拟机栈"></a>2.2 Java 虚拟机栈</h3><p>与程序计数器一样，Java 虚拟机栈也是线程私有的，它的生命周期和线程相同，描述的是 Java 方法执行的内存模型，每次方法调用的数据都是通过栈传递的。</p>
+<p>Java 内存可以粗糙的区分为堆内存（Heap）和栈内存 (Stack),其中栈就是现在说的虚拟机栈，或者说是虚拟机栈中局部变量表部分。 （实际上，Java 虚拟机栈是由一个个栈帧组成，而每个栈帧中都拥有：局部变量表、操作数栈、动态链接、方法出口信息。）</p>
+<p>局部变量表主要存放了编译期可知的各种数据类型（boolean、byte、char、short、int、float、long、double）、对象引用（reference 类型，它不同于对象本身，可能是一个指向对象起始地址的引用指针，也可能是指向一个代表对象的句柄或其他与此对象相关的位置）。</p>
+<p>Java 虚拟机栈会出现两种错误：StackOverFlowError 和 OutOfMemoryError。</p>
+<ul>
+<li><p>StackOverFlowError： 若 Java 虚拟机栈的内存大小不允许动态扩展，那么当线程请求栈的深度超过当前 Java 虚拟机栈的最大深度的时候，就抛出 StackOverFlowError 错误。</p>
+</li>
+<li><p>OutOfMemoryError： Java 虚拟机栈的内存大小可以动态扩展， 如果虚拟机在动态扩展栈时无法申请到足够的内存空间，则抛出OutOfMemoryError异常。(HotSpot不允许动态扩展，所以如果栈空间申请成功了就不会出现OOM，但是申请的时候还是有可能出现OOM)</p>
+</li>
+</ul>
+<p>Java 虚拟机栈也是线程私有的，每个线程都有各自的 Java 虚拟机栈，而且随着线程的创建而创建，随着线程的死亡而死亡。</p>
+<h4 id="扩展：那么方法-函数如何调用？"><a href="#扩展：那么方法-函数如何调用？" class="headerlink" title="扩展：那么方法/函数如何调用？"></a>扩展：那么方法/函数如何调用？</h4><p>Java 栈可用类比数据结构中栈，Java 栈中保存的主要内容是栈帧，每一次函数调用都会有一个对应的栈帧被压入 Java 栈，每一个函数调用结束后，都会有一个栈帧被弹出。</p>
+<p>Java 方法有两种返回方式：</p>
+<ul>
+<li>return 语句。</li>
+<li>抛出异常。</li>
+</ul>
+<p>不管哪种返回方式都会导致栈帧被弹出。</p>
+<h3 id="2-3-本地方法栈"><a href="#2-3-本地方法栈" class="headerlink" title="2.3 本地方法栈"></a>2.3 本地方法栈</h3><p>和虚拟机栈所发挥的作用非常相似，区别是： 虚拟机栈为虚拟机执行 Java 方法 （也就是字节码）服务，而本地方法栈则为虚拟机使用到的 Native 方法服务。 在 HotSpot 虚拟机中和 Java 虚拟机栈合二为一。</p>
+<h3 id="2-4-堆"><a href="#2-4-堆" class="headerlink" title="2.4 堆"></a>2.4 堆</h3><p>Java 虚拟机所管理的内存中最大的一块，Java 堆是所有线程共享的一块内存区域，在虚拟机启动时创建。<b><font color = "dd0000">此内存区域的唯一目的就是存放对象实例，几乎所有的对象实例以及数组都在这里分配内存。</font ></b></p>
+<p>Java 世界中“几乎”所有的对象都在堆中分配，但是，随着 JIT 编译期的发展与逃逸分析技术逐渐成熟，栈上分配、标量替换优化技术将会导致一些微妙的变化，所有的对象都分配到堆上也渐渐变得不那么“绝对”了。从 JDK 1.7 开始已经默认开启逃逸分析，如果某些方法中的对象引用没有被返回或者未被外面使用（也就是未逃逸出去），那么对象可以直接在栈上分配内存。</p>
+<p>Java 堆是垃圾收集器管理的主要区域，因此也被称作GC 堆（Garbage Collected Heap）.从垃圾回收的角度，由于现在收集器基本都采用分代垃圾收集算法，所以 Java 堆还可以细分为：新生代和老年代：再细致一点有：Eden 空间、From Survivor、To Survivor 空间等。进一步划分的目的是更好地回收内存，或者更快地分配内存。</p>
+<p>JDK 8 版本之后方法区（HotSpot 的永久代）被彻底移除了（JDK1.7 就已经开始了），取而代之是元空间，元空间使用的是直接内存。</p>
+<p>堆这里最容易出现的就是 OutOfMemoryError 错误，并且出现这种错误之后的表现形式还会有几种，比如：</p>
+<ul>
+<li>OutOfMemoryError: GC Overhead Limit Exceeded ： 当 JVM 花太多时间执行垃圾回收并且只能回收很少的堆空间时，就会发生此错误。</li>
+<li>java.lang.OutOfMemoryError: Java heap space :假如在创建新的对象时, 堆内存中的空间不足以存放新创建的对象, 就会引发java.lang.OutOfMemoryError: Java heap space 错误。(和本机物理内存无关，和你配置的内存大小有关！)</li>
+<li>……</li>
+</ul>
+<h3 id="2-5-方法区"><a href="#2-5-方法区" class="headerlink" title="2.5 方法区"></a>2.5 方法区</h3><p>方法区与 Java 堆一样，是各个线程共享的内存区域，它用于存储已被虚拟机加载的类信息、常量、静态变量、即时编译器编译后的代码等数据。虽然 Java 虚拟机规范把方法区描述为堆的一个逻辑部分，但是它却有一个别名叫做 Non-Heap（非堆），目的应该是与 Java 堆区分开来。</p>
+<p>方法区也被称为永久代。很多人都会分不清方法区和永久代的关系，为此我也查阅了文献。</p>
+<h3 id="2-5-1-方法区和永久代的关系"><a href="#2-5-1-方法区和永久代的关系" class="headerlink" title="2.5.1 方法区和永久代的关系"></a>2.5.1 方法区和永久代的关系</h3><p>《Java 虚拟机规范》只是规定了有方法区这么个概念和它的作用，并没有规定如何去实现它。那么，在不同的 JVM 上方法区的实现肯定是不同的了。 方法区和永久代的关系很像 Java 中接口和类的关系，类实现了接口，而永久代就是 HotSpot 虚拟机对虚拟机规范中方法区的一种实现方式。 也就是说，永久代是 HotSpot 的概念，方法区是 Java 虚拟机规范中的定义，是一种规范，而永久代是一种实现，一个是标准一个是实现，其他的虚拟机实现并没有永久代这一说法。</p>
+<h3 id="2-5-3-为什么要将永久代-PermGen-替换为元空间-MetaSpace-呢"><a href="#2-5-3-为什么要将永久代-PermGen-替换为元空间-MetaSpace-呢" class="headerlink" title="2.5.3 为什么要将永久代 (PermGen) 替换为元空间 (MetaSpace) 呢?"></a>2.5.3 为什么要将永久代 (PermGen) 替换为元空间 (MetaSpace) 呢?</h3><p>下图来自《深入理解 Java 虚拟机》第 3 版 2.2.5</p>
+</br>
+<img src="/blog.io/img/永久代.png">
+
+
+<ol>
+<li><p>整个永久代有一个 JVM 本身设置的固定大小上限，无法进行调整，而元空间使用的是直接内存，受本机可用内存的限制，虽然元空间仍旧可能溢出，但是比原来出现的几率会更小。</p>
+<p><br>当元空间溢出时会得到如下错误： java.lang.OutOfMemoryError: MetaSpace</p>
+<p><br>你可以使用 -XX：MaxMetaspaceSize 标志设置最大元空间大小，默认值为 unlimited，这意味着它只受系统内存的限制。-XX：MetaspaceSize 调整标志定义元空间的初始大小如果未指定此标志，则 Metaspace 将根据运行时的应用程序需求动态地重新调整大小。<br></p>
+</li>
+</ol>
+<ol start="2">
+<li>元空间里面存放的是类的元数据，这样加载多少类的元数据就不由 MaxPermSize 控制了, 而由系统的实际可用空间来控制，这样能加载的类就更多了。</li>
+</ol>
+<ol start="3">
+<li>在 JDK8，合并 HotSpot 和 JRockit 的代码时, JRockit 从来没有一个叫永久代的东西, 合并之后就没有必要额外的设置这么一个永久代的地方了。</li>
+</ol>
+<h3 id="2-6-运行时常量池"><a href="#2-6-运行时常量池" class="headerlink" title="2.6 运行时常量池"></a>2.6 运行时常量池</h3><p>运行时常量池是方法区的一部分。Class 文件中除了有类的版本、字段、方法、接口等描述信息外，还有常量池表（用于存放编译期生成的各种字面量和符号引用）</p>
+<ol>
+<li>JDK1.7 之前运行时常量池逻辑包含字符串常量池存放在方法区, 此时 hotspot 虚拟机对方法区的实现为永久代</li>
+<li>JDK1.7 字符串常量池被从方法区拿到了堆中, 这里没有提到运行时常量池,也就是说字符串常量池被单独拿到堆,运行时常量池剩下的东西还在方法区, 也就是 hotspot 中的永久代 。</li>
+<li>JDK1.8 hotspot 移除了永久代用元空间(Metaspace)取而代之, 这时候字符串常量池还在堆, 运行时常量池还在方法区, 只不过方法区的实现从永久代变成了元空间(Metaspace)</li>
+</ol>
+<p>JVM 常量池中存储的都是引用  <a target="_blank" rel="noopener" href="https://www.zhihu.com/question/57109429/answer/151717241">https://www.zhihu.com/question/57109429/answer/151717241</a></p>
+<h3 id="2-7-直接内存"><a href="#2-7-直接内存" class="headerlink" title="2.7 直接内存"></a>2.7 直接内存</h3><p>直接内存并不是虚拟机运行时数据区的一部分，也不是虚拟机规范中定义的内存区域，但是这部分内存也被频繁地使用。而且也可能导致 OutOfMemoryError 错误出现。</p>
+<p>JDK1.4 中新加入的 NIO(New Input/Output) 类，引入了一种基于通道（Channel） 与缓存区（Buffer） 的 I/O 方式，它可以直接使用 Native 函数库直接分配堆外内存，然后通过一个存储在 Java 堆中的 DirectByteBuffer 对象作为这块内存的引用进行操作。这样就能在一些场景中显著提高性能，因为避免了在 Java 堆和 Native 堆之间来回复制数据。</p>
+<p>本机直接内存的分配不会受到 Java 堆的限制，但是，既然是内存就会受到本机总内存大小以及处理器寻址空间的限制。</p>
+<p>参考资料：</p>
+<p><a target="_blank" rel="noopener" href="http://www.cnblogs.com/paddix/p/5309550.html">http://www.cnblogs.com/paddix/p/5309550.html</a></p>
+<p><a target="_blank" rel="noopener" href="http://www.cnblogs.com/hadoop-dev/p/7169252.html">http://www.cnblogs.com/hadoop-dev/p/7169252.html</a></p>
+<p><a target="_blank" rel="noopener" href="http://www.cnblogs.com/chanchan/p/7726724.html">http://www.cnblogs.com/chanchan/p/7726724.html</a></p>
+<p><a target="_blank" rel="noopener" href="https://snailclimb.gitee.io/javaguide/#/docs/java/jvm/Java%E5%86%85%E5%AD%98%E5%8C%BA%E5%9F%9F?id=%e5%86%99%e5%9c%a8%e5%89%8d%e9%9d%a2-%e5%b8%b8%e8%a7%81%e9%9d%a2%e8%af%95%e9%a2%98">https://snailclimb.gitee.io/javaguide/#/docs/java/jvm/Java%E5%86%85%E5%AD%98%E5%8C%BA%E5%9F%9F?id=%e5%86%99%e5%9c%a8%e5%89%8d%e9%9d%a2-%e5%b8%b8%e8%a7%81%e9%9d%a2%e8%af%95%e9%a2%98</a></p>
+<div id="paginator"></div></div><div id="post-footer"><hr><a href="/blog.io/2021/07/14/JVM%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%E5%92%8C%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%EF%BC%88%E4%B8%89%EF%BC%89/">← Prev JVM内存模型和垃圾回收（三）</a><span style="color: #fe2"> | </span><a href="/blog.io/2021/06/28/%E7%90%86%E8%A7%A3zookeeper%E9%80%89%E4%B8%BE%E6%9C%BA%E5%88%B6/">理解zookeeper选举机制 Next →</a><hr></div><div id="bottom-btn"><a id="to-index" href="#post-index" title="index">≡</a><a id="to-top" href="#post-title" title="to top">∧</a></div><div id="Valine"></div><script>new Valine({
+ el: '#Valine'
+ , appId: 's9ieIT2hA5ChVBjBufKhyfnK-gzGzoHsz'
+ , appKey: 'a8LAJbmO7wJi6fj9T85KMJid'
+ , placeholder: '此条评论委托企鹅物流发送'
+})</script></div></article><aside><div id="about"><a href="/blog.io/" id="logo"><img src="https://ak.hypergryph.com/assets/index/images/ak/pc/faction/1.png" alt="Logo"></a><h1 id="Dr"><a href="/"> Dr.Allen Feng</a></h1><section id="total"><a id="total-archives" href="/blog.io/archives"><span class="total-title">Archives Total:</span><span class="total-number">58</span></a><div id="total-tags"><span class="total-title">Tags:</span><span class="total-number">52</span></div><div id="total-categories"><span class="total-title">Categories:</span><span class="total-number">6</span></div></section></div><div id="aside-block"><h1>INDEX</h1><div id="post-index"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80-%E8%BF%90%E8%A1%8C%E6%97%B6%E6%95%B0%E6%8D%AE%E5%8C%BA%E5%9F%9F"><span class="toc-number">1.</span> <span class="toc-text">一. 运行时数据区域</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C-%E7%B1%BB%E9%9D%99%E6%80%81%E6%88%90%E5%91%98%E5%8F%98%E9%87%8F%E7%9A%84%E5%AD%98%E5%82%A8%E4%BD%8D%E7%BD%AE%E5%8F%8AJVM%E7%9A%84%E5%86%85%E5%AD%98%E5%88%92%E5%88%86"><span class="toc-number">2.</span> <span class="toc-text">二. 类静态成员变量的存储位置及JVM的内存划分</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E7%A8%8B%E5%BA%8F%E8%AE%A1%E6%95%B0%E5%99%A8"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 程序计数器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Java-%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%A0%88"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 Java 虚拟机栈</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%89%A9%E5%B1%95%EF%BC%9A%E9%82%A3%E4%B9%88%E6%96%B9%E6%B3%95-%E5%87%BD%E6%95%B0%E5%A6%82%E4%BD%95%E8%B0%83%E7%94%A8%EF%BC%9F"><span class="toc-number">2.2.1.</span> <span class="toc-text">扩展：那么方法&#x2F;函数如何调用？</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E6%9C%AC%E5%9C%B0%E6%96%B9%E6%B3%95%E6%A0%88"><span class="toc-number">2.3.</span> <span class="toc-text">2.3 本地方法栈</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-%E5%A0%86"><span class="toc-number">2.4.</span> <span class="toc-text">2.4 堆</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-%E6%96%B9%E6%B3%95%E5%8C%BA"><span class="toc-number">2.5.</span> <span class="toc-text">2.5 方法区</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-1-%E6%96%B9%E6%B3%95%E5%8C%BA%E5%92%8C%E6%B0%B8%E4%B9%85%E4%BB%A3%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc-number">2.6.</span> <span class="toc-text">2.5.1 方法区和永久代的关系</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-3-%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E5%B0%86%E6%B0%B8%E4%B9%85%E4%BB%A3-PermGen-%E6%9B%BF%E6%8D%A2%E4%B8%BA%E5%85%83%E7%A9%BA%E9%97%B4-MetaSpace-%E5%91%A2"><span class="toc-number">2.7.</span> <span class="toc-text">2.5.3 为什么要将永久代 (PermGen) 替换为元空间 (MetaSpace) 呢?</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-6-%E8%BF%90%E8%A1%8C%E6%97%B6%E5%B8%B8%E9%87%8F%E6%B1%A0"><span class="toc-number">2.8.</span> <span class="toc-text">2.6 运行时常量池</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-7-%E7%9B%B4%E6%8E%A5%E5%86%85%E5%AD%98"><span class="toc-number">2.9.</span> <span class="toc-text">2.7 直接内存</span></a></li></ol></li></ol></div></div><footer><nobr><span class="text-title">©</span><span class="text-content">1970 to 2020</span></nobr><wbr><nobr><span class="text-title">ICP</span><span class="text-content">——备案号——</span></nobr><wbr><wbr><nobr>published with&nbsp;<a target="_blank" rel="noopener" href="http://hexo.io">Hexo&nbsp;</a></nobr><wbr><nobr>Theme&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus/hexo-theme-arknights">Arknight&nbsp;</a></nobr><wbr><nobr>by&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus">Yue_plus</a></nobr></footer></aside></main><canvas id="canvas-dust"></canvas><script src="/blog.io/js/arknights.js"></script><script src="https://cdn.bootcdn.net/ajax/libs/highlight.js/10.1.2/highlight.min.js"></script></body></html>

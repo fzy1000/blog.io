@@ -1,0 +1,259 @@
+<!DOCTYPE html><html lang="zh-Hans"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>理解zookeeper选举机制 | 如何做到年薪百万</title><script src="https://cdn.bootcss.com/valine/1.4.4/Valine.min.js"></script><link rel="stylesheet" href="/blog.io/css/arknights.css"><link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/highlight.js/10.1.2/styles/atom-one-dark-reasonable.min.css"><style>@font-face {
+ font-family: BenderLight;
+ src: local('Bender'), url("/blog.io/font/BenderLight.ttf");
+}
+@font-face {
+ font-family: 'JetBrains Mono';
+ src: local('JetBrains Mono'), url('/blog.io/font/JetBrainsMono-Regular.woff2') format('woff2');
+}</style><meta name="generator" content="Hexo 5.4.0"></head><body><header><nav><a href="/blog.io/">Home</a><a href="/blog.io/archives/">Archives</a></nav></header><main><article><div id="post-bg"><div id="post-title"><h1>理解zookeeper选举机制</h1><hr></div><div id="post-content"><h2>1. Zookeeper集群</h3>
+
+<p>配置多个实例共同构成一个集群对外提供服务以达到水平扩展的目的，每个服务器上的数据是相同的，每一个服务器均可以对外提供读和写的服务，这点和redis是相同的，即对客户端来讲每个服务器都是平等的。</p>
+</br>
+<img src="/blog.io/img/ZK集群.png">
+
+
+<p>这篇主要分析leader的选择机制，zookeeper提供了三种方式：</p>
+<ol>
+<li>LeaderElection  </li>
+<li>AuthFastLeaderElection</li>
+<li>FastLeaderElection （最新默认）</li>
+</ol>
+<p>默认的算法是FastLeaderElection，所以这篇主要分析它的选举机制。</p>
+<h2>二、选举流程简述</h2>
+
+<p>目前有5台服务器，每台服务器均没有数据，它们的编号分别是1,2,3,4,5,按编号依次启动，它们的选择举过程如下：</p>
+<ol>
+<li>服务器1启动，给自己投票，然后发投票信息，由于其它机器还没有启动所以它收不到反馈信息，服务器1的状态一直属于Looking(选举状态)。</li>
+<li>服务器2启动，给自己投票，同时与之前启动的服务器1交换结果，由于服务器2的编号大所以服务器2胜出，但此时投票数没有大于半数，所以两个服务器的状态依然是LOOKING。</li>
+<li>服务器3启动，给自己投票，同时与之前启动的服务器1,2交换信息，由于服务器3的编号最大所以服务器3胜出，此时投票数正好大于半数，所以服务器3成为领导者，服务器1,2成为小弟。</li>
+<li>服务器4启动，给自己投票，同时与之前启动的服务器1,2,3交换信息，尽管服务器4的编号大，但之前服务器3已经胜出，所以服务器4只能成为小弟。</li>
+<li>服务器5启动，后面的逻辑同服务器4成为小弟。</li>
+</ol>
+<h2>三、选择机制中的概念</h2>
+
+<ol>
+<li><p>Serverid：服务器ID </p>
+<p>比如有三台服务器，编号分别是1,2,3。</p>
+<p>编号越大在选择算法中的权重越大。</p>
+</li>
+<li><p>Zxid：数据ID</p>
+<p>服务器中存放的最大数据ID.</p>
+<p>值越大说明数据越新，在选举算法中数据越新权重越大。</p>
+</li>
+<li><p>Epoch：逻辑时钟</p>
+<p>或者叫投票的次数，同一轮投票过程中的逻辑时钟值是相同的。每投完一次票这个数据就会增加，然后与接收到的其它服务器返回的投票信息中的数值相比，根据不同的值做出不同的判断。</p>
+</li>
+<li><p>Server状态：选举状态</p>
+<ul>
+<li><p>LOOKING，竞选状态。</p>
+</li>
+<li><p>FOLLOWING，随从状态，同步leader状态，参与投票。</p>
+</li>
+<li><p>OBSERVING，观察状态,同步leader状态，不参与投票。</p>
+</li>
+<li><p>LEADING，领导者状态。</p>
+</li>
+</ul>
+</li>
+</ol>
+<h2>四、选举消息内容</h2>
+在投票完成后，需要将投票信息发送给集群中的所有服务器，它包含如下内容。
+
+<ul>
+<li><p>服务器ID</p>
+</li>
+<li><p>数据ID</p>
+</li>
+<li><p>逻辑时钟</p>
+</li>
+<li><p>选举状态</p>
+</li>
+</ul>
+<h2>五、选举流程图</h2>
+因为每个服务器都是独立的，在启动时均从初始状态开始参与选举，下面是简易流程图。
+
+</br>
+<img src="/blog.io/img/ZK选举流程图.png">
+
+
+<h2>六、选举状态图</h2>
+描述Leader选择过程中的状态变化，这是假设全部实例中均没有数据，假设服务器启动顺序分别为：A,B,C。
+
+</br>
+<img src="/blog.io/img/ZK选举状态图.png">
+
+
+<h2>七、判断是否已经胜出</h2>
+默认是采用投票数大于半数则胜出的逻辑。
+
+<h2>八、选举流程详述</h2>
+
+<p>一、首先开始选举阶段，每个Server读取自身的zxid。</p>
+<p>二、发送投票信息</p>
+<ul>
+<li><p>首先，每个Server第一轮都会投票给自己。</p>
+</li>
+<li><p>投票信息包含 ：所选举leader的Serverid，Zxid，Epoch。Epoch会随着选举轮数的增加而递增。</p>
+</li>
+</ul>
+<p>三、接收投票信息</p>
+<ol>
+<li><p>如果服务器B接收到服务器A的数据（服务器A处于选举状态(LOOKING 状态)</p>
+<ul>
+<li><p>首先，判断逻辑时钟值：</p>
+<ol>
+<li><p>如果发送过来的逻辑时钟Epoch大于目前的逻辑时钟。首先，更新本逻辑时钟Epoch，同时清空本轮逻辑时钟收集到的来自其他server的选举数据。然后，判断是否需要更新当前自己的选举leader Serverid。判断规则rules judging：保存的zxid最大值和leader Serverid来进行判断的。先看数据zxid,数据zxid大者胜出;其次再判断leader Serverid,leader Serverid大者胜出；然后再将自身最新的选举结果(也就是上面提到的三种数据（leader Serverid，Zxid，Epoch）广播给其他server)</p>
+</li>
+<li><p>如果发送过来的逻辑时钟Epoch小于目前的逻辑时钟。说明对方server在一个相对较早的Epoch中，这里只需要将本机的三种数据（leader Serverid，Zxid，Epoch）发送过去就行。</p>
+</li>
+<li><p>如果发送过来的逻辑时钟Epoch等于目前的逻辑时钟。再根据上述判断规则rules judging来选举leader ，然后再将自身最新的选举结果(也就是上面提到的三种数据（leader  Serverid，Zxid，Epoch）广播给其他server)。</p>
+</li>
+</ol>
+</li>
+<li><p>其次，判断服务器是不是已经收集到了所有服务器的选举状态：若是，根据选举结果设置自己的角色(FOLLOWING还是LEADER)，退出选举过程就是了。</p>
+</li>
+</ul>
+<p>最后，若没有收到没有收集到所有服务器的选举状态：也可以判断一下根据以上过程之后最新的选举leader是不是得到了超过半数以上服务器的支持,如果是,那么尝试在200ms内接收一下数据,如果没有新的数据到来,说明大家都已经默认了这个结果,同样也设置角色退出选举过程。</p>
+</li>
+</ol>
+</br>
+2. 如果所接收服务器A处在其它状态（FOLLOWING或者LEADING）。
+
+<ol>
+<li>逻辑时钟Epoch等于目前的逻辑时钟，将该数据保存到recvset。此时Server已经处于LEADING状态，说明此时这个server已经投票选出结果。若此时这个接收服务器宣称自己是leader, 那么将判断是不是有半数以上的服务器选举它，如果是则设置选举状态退出选举过程。</li>
+<li>否则这是一条与当前逻辑时钟不符合的消息，那么说明在另一个选举过程中已经有了选举结果，于是将该选举结果加入到outofelection集合中，再根据outofelection来判断是否可以结束选举,如果可以也是保存逻辑时钟，设置选举状态，退出选举过程。</li>
+</ol>
+<p>参考文章：</p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/felixzh/p/5869212.html">https://www.cnblogs.com/felixzh/p/5869212.html</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/cnh294141800/article/details/52959028/">https://blog.csdn.net/cnh294141800/article/details/52959028/</a></p>
+<div id="paginator"></div></div><div id="post-footer"><hr><a href="/blog.io/2021/07/13/JVM%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%E5%92%8C%E5%8F%82%E6%95%B0%E9%85%8D%E7%BD%AE%E7%9A%84%E5%AD%A6%E4%B9%A0%EF%BC%88%E4%BA%8C%EF%BC%89/">← Prev JVM内存模型（二）</a><span style="color: #fe2"> | </span><a href="/blog.io/2021/06/09/kafka%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%8E%9F%E7%90%86%E8%AF%A6%E8%A7%A3/">kafka设计与原理详解 Next →</a><hr></div><div id="bottom-btn"><a id="to-index" href="#post-index" title="index">≡</a><a id="to-top" href="#post-title" title="to top">∧</a></div><div id="Valine"></div><script>new Valine({
+ el: '#Valine'
+ , appId: 's9ieIT2hA5ChVBjBufKhyfnK-gzGzoHsz'
+ , appKey: 'a8LAJbmO7wJi6fj9T85KMJid'
+ , placeholder: '此条评论委托企鹅物流发送'
+})</script></div></article><aside><div id="about"><a href="/blog.io/" id="logo"><img src="https://ak.hypergryph.com/assets/index/images/ak/pc/faction/1.png" alt="Logo"></a><h1 id="Dr"><a href="/"> Dr.Allen Feng</a></h1><section id="total"><a id="total-archives" href="/blog.io/archives"><span class="total-title">Archives Total:</span><span class="total-number">58</span></a><div id="total-tags"><span class="total-title">Tags:</span><span class="total-number">52</span></div><div id="total-categories"><span class="total-title">Categories:</span><span class="total-number">6</span></div></section></div><div id="aside-block"><h1>INDEX</h1><div id="post-index"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">1. Zookeeper集群
+
+配置多个实例共同构成一个集群对外提供服务以达到水平扩展的目的，每个服务器上的数据是相同的，每一个服务器均可以对外提供读和写的服务，这点和redis是相同的，即对客户端来讲每个服务器都是平等的。
+
+
+
+
+
+这篇主要分析leader的选择机制，zookeeper提供了三种方式：
+
+LeaderElection  
+AuthFastLeaderElection
+FastLeaderElection （最新默认）
+
+默认的算法是FastLeaderElection，所以这篇主要分析它的选举机制。
+二、选举流程简述
+
+目前有5台服务器，每台服务器均没有数据，它们的编号分别是1,2,3,4,5,按编号依次启动，它们的选择举过程如下：
+
+服务器1启动，给自己投票，然后发投票信息，由于其它机器还没有启动所以它收不到反馈信息，服务器1的状态一直属于Looking(选举状态)。
+服务器2启动，给自己投票，同时与之前启动的服务器1交换结果，由于服务器2的编号大所以服务器2胜出，但此时投票数没有大于半数，所以两个服务器的状态依然是LOOKING。
+服务器3启动，给自己投票，同时与之前启动的服务器1,2交换信息，由于服务器3的编号最大所以服务器3胜出，此时投票数正好大于半数，所以服务器3成为领导者，服务器1,2成为小弟。
+服务器4启动，给自己投票，同时与之前启动的服务器1,2,3交换信息，尽管服务器4的编号大，但之前服务器3已经胜出，所以服务器4只能成为小弟。
+服务器5启动，后面的逻辑同服务器4成为小弟。
+
+三、选择机制中的概念
+
+
+Serverid：服务器ID 
+比如有三台服务器，编号分别是1,2,3。
+编号越大在选择算法中的权重越大。
+
+Zxid：数据ID
+服务器中存放的最大数据ID.
+值越大说明数据越新，在选举算法中数据越新权重越大。
+
+Epoch：逻辑时钟
+或者叫投票的次数，同一轮投票过程中的逻辑时钟值是相同的。每投完一次票这个数据就会增加，然后与接收到的其它服务器返回的投票信息中的数值相比，根据不同的值做出不同的判断。
+
+Server状态：选举状态
+
+LOOKING，竞选状态。
+
+FOLLOWING，随从状态，同步leader状态，参与投票。
+
+OBSERVING，观察状态,同步leader状态，不参与投票。
+
+LEADING，领导者状态。
+
+
+
+
+四、选举消息内容
+在投票完成后，需要将投票信息发送给集群中的所有服务器，它包含如下内容。
+
+
+服务器ID
+
+数据ID
+
+逻辑时钟
+
+选举状态
+
+
+五、选举流程图
+因为每个服务器都是独立的，在启动时均从初始状态开始参与选举，下面是简易流程图。
+
+
+
+
+
+
+六、选举状态图
+描述Leader选择过程中的状态变化，这是假设全部实例中均没有数据，假设服务器启动顺序分别为：A,B,C。
+
+
+
+
+
+
+七、判断是否已经胜出
+默认是采用投票数大于半数则胜出的逻辑。
+
+八、选举流程详述
+
+一、首先开始选举阶段，每个Server读取自身的zxid。
+二、发送投票信息
+
+首先，每个Server第一轮都会投票给自己。
+
+投票信息包含 ：所选举leader的Serverid，Zxid，Epoch。Epoch会随着选举轮数的增加而递增。
+
+
+三、接收投票信息
+
+如果服务器B接收到服务器A的数据（服务器A处于选举状态(LOOKING 状态)
+
+首先，判断逻辑时钟值：
+
+如果发送过来的逻辑时钟Epoch大于目前的逻辑时钟。首先，更新本逻辑时钟Epoch，同时清空本轮逻辑时钟收集到的来自其他server的选举数据。然后，判断是否需要更新当前自己的选举leader Serverid。判断规则rules judging：保存的zxid最大值和leader Serverid来进行判断的。先看数据zxid,数据zxid大者胜出;其次再判断leader Serverid,leader Serverid大者胜出；然后再将自身最新的选举结果(也就是上面提到的三种数据（leader Serverid，Zxid，Epoch）广播给其他server)
+
+如果发送过来的逻辑时钟Epoch小于目前的逻辑时钟。说明对方server在一个相对较早的Epoch中，这里只需要将本机的三种数据（leader Serverid，Zxid，Epoch）发送过去就行。
+
+如果发送过来的逻辑时钟Epoch等于目前的逻辑时钟。再根据上述判断规则rules judging来选举leader ，然后再将自身最新的选举结果(也就是上面提到的三种数据（leader  Serverid，Zxid，Epoch）广播给其他server)。
+
+
+
+其次，判断服务器是不是已经收集到了所有服务器的选举状态：若是，根据选举结果设置自己的角色(FOLLOWING还是LEADER)，退出选举过程就是了。
+
+
+最后，若没有收到没有收集到所有服务器的选举状态：也可以判断一下根据以上过程之后最新的选举leader是不是得到了超过半数以上服务器的支持,如果是,那么尝试在200ms内接收一下数据,如果没有新的数据到来,说明大家都已经默认了这个结果,同样也设置角色退出选举过程。
+
+
+
+
+2. 如果所接收服务器A处在其它状态（FOLLOWING或者LEADING）。
+
+
+逻辑时钟Epoch等于目前的逻辑时钟，将该数据保存到recvset。此时Server已经处于LEADING状态，说明此时这个server已经投票选出结果。若此时这个接收服务器宣称自己是leader, 那么将判断是不是有半数以上的服务器选举它，如果是则设置选举状态退出选举过程。
+否则这是一条与当前逻辑时钟不符合的消息，那么说明在另一个选举过程中已经有了选举结果，于是将该选举结果加入到outofelection集合中，再根据outofelection来判断是否可以结束选举,如果可以也是保存逻辑时钟，设置选举状态，退出选举过程。
+
+参考文章：
+https:&#x2F;&#x2F;www.cnblogs.com&#x2F;felixzh&#x2F;p&#x2F;5869212.html
+https:&#x2F;&#x2F;blog.csdn.net&#x2F;cnh294141800&#x2F;article&#x2F;details&#x2F;52959028&#x2F;
+</span></a></li><li class="toc-item toc-level-2"><a class="toc-link"><span class="toc-number">2.</span> <span class="toc-text">二、选举流程简述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link"><span class="toc-number">3.</span> <span class="toc-text">三、选择机制中的概念</span></a></li><li class="toc-item toc-level-2"><a class="toc-link"><span class="toc-number">4.</span> <span class="toc-text">四、选举消息内容</span></a></li><li class="toc-item toc-level-2"><a class="toc-link"><span class="toc-number">5.</span> <span class="toc-text">五、选举流程图</span></a></li><li class="toc-item toc-level-2"><a class="toc-link"><span class="toc-number">6.</span> <span class="toc-text">六、选举状态图</span></a></li><li class="toc-item toc-level-2"><a class="toc-link"><span class="toc-number">7.</span> <span class="toc-text">七、判断是否已经胜出</span></a></li><li class="toc-item toc-level-2"><a class="toc-link"><span class="toc-number">8.</span> <span class="toc-text">八、选举流程详述</span></a></li></ol></div></div><footer><nobr><span class="text-title">©</span><span class="text-content">1970 to 2020</span></nobr><wbr><nobr><span class="text-title">ICP</span><span class="text-content">——备案号——</span></nobr><wbr><wbr><nobr>published with&nbsp;<a target="_blank" rel="noopener" href="http://hexo.io">Hexo&nbsp;</a></nobr><wbr><nobr>Theme&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus/hexo-theme-arknights">Arknight&nbsp;</a></nobr><wbr><nobr>by&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus">Yue_plus</a></nobr></footer></aside></main><canvas id="canvas-dust"></canvas><script src="/blog.io/js/arknights.js"></script><script src="https://cdn.bootcdn.net/ajax/libs/highlight.js/10.1.2/highlight.min.js"></script></body></html>

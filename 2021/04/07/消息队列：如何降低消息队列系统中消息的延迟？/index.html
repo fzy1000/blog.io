@@ -1,0 +1,94 @@
+<!DOCTYPE html><html lang="zh-Hans"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>19 | 消息队列：如何降低消息队列系统中消息的延迟？ | 如何做到年薪百万</title><script src="https://cdn.bootcss.com/valine/1.4.4/Valine.min.js"></script><link rel="stylesheet" href="/blog.io/css/arknights.css"><link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/highlight.js/10.1.2/styles/atom-one-dark-reasonable.min.css"><style>@font-face {
+ font-family: BenderLight;
+ src: local('Bender'), url("/blog.io/font/BenderLight.ttf");
+}
+@font-face {
+ font-family: 'JetBrains Mono';
+ src: local('JetBrains Mono'), url('/blog.io/font/JetBrainsMono-Regular.woff2') format('woff2');
+}</style><meta name="generator" content="Hexo 5.4.0"></head><body><header><nav><a href="/blog.io/">Home</a><a href="/blog.io/archives/">Archives</a></nav></header><main><article><div id="post-bg"><div id="post-title"><h1>19 | 消息队列：如何降低消息队列系统中消息的延迟？</h1><hr></div><div id="post-content"><p>学完前面两节课之后，相信你对在垂直电商项目中如何使用消息队列应对秒杀时的峰值流量已经有所了解。当然了，你也应该知道要如何做才能保证消息不会丢失，尽量避免消息重复带来的影响。那么我想让你思考一下：除了这些内容，你在使用消息队列时还需要关注哪些点呢？</p>
+<p>先来看一个场景：在你的垂直电商项目中，你会在用户下单支付之后向消息队列里面发送一条消息，队列处理程序消费了消息后会增加用户的积分或者给用户发送优惠券。用户在下单之后，等待几分钟或者十几分钟拿到积分和优惠券是可以接受的，但是一旦消息队列出现大量堆积，用户消费完成后几小时还拿到优惠券，那就会有用户投诉了。</p>
+<p>这时你要关注的就是消息队列中消息的延迟了，这其实是消费性能的问题，那么你要如何提升消费性能保证更短的消息延迟呢？在我看来，首先需要掌握如何来监控消息的延迟，因为有了数据之后你才可以知道目前的延迟数据是否满足要求，也可以评估优化之后的效果。然后你要掌握使用消息队列的正确姿势以及关注消息队列本身是如何保证消息尽快被存储和投递的。</p>
+<p>接下来，我们先来看看第一点：如何监控消息延迟。如何监控消息延迟</p>
+<h3 id="如何监控消息延迟"><a href="#如何监控消息延迟" class="headerlink" title="如何监控消息延迟"></a><font color = "dd0000">如何监控消息延迟</font></h3><p>在我看来，监控消息的延迟有两种方式：</p>
+<ul>
+<li>使用消息队列提供的工具，通过监控消息的堆积来完成；</li>
+<li>通过生成监控消息的方式来监控消息的延迟情况。</li>
+</ul>
+<p>接下来，我带你实际了解一下。</p>
+<p>假设在开篇的场景之下电商系统中的消息队列已经堆积了大量的消息，那么你要想监控消息的堆积情况，首先需要从原理上了解在消息队列中消费者的消费进度是多少，因为这样才方便计算当前的消费延迟是多少。比如生产者向队列中一共生产了 1000 条消息，某一个消费者消费进度是 900 条，那么这个消费者的消费延迟就是 100 条消息。</p>
+<h3 id="在-Kafka-中，消费者的消费进度在不同的版本上是不同的。"><a href="#在-Kafka-中，消费者的消费进度在不同的版本上是不同的。" class="headerlink" title="在 Kafka 中，消费者的消费进度在不同的版本上是不同的。"></a><font color = "dd0000">在 Kafka 中，消费者的消费进度在不同的版本上是不同的。</font></h3><p>在 Kafka0.9 之前的版本中，消费进度是存储在 ZooKeeper 中的，消费者在消费消息的时候先要从 ZooKeeper 中获取最新的消费进度，再从这个进度的基础上消费后面的消息。</p>
+<p>在 Kafka0.9 版本之后，消费进度被迁入到 Kakfa 的一个专门的 topic 叫“__consumer_offsets”里面。所以如果你了解 kafka 的原理，可以依据不同的版本从不同的位置获取到这个消费进度的信息。</p>
+<p>当然，作为一个成熟的组件，Kafka 也提供了一些工具来获取这个消费进度的信息帮助你实现自己的监控，这个工具主要有两个：</p>
+<p>首先，Kafka 提供了工具叫做“kafka-consumer-groups.sh”（它在 Kafka 安装包的 bin 目录下）。</p>
+<p>为了帮助你理解，我简单地搭建了一个 Kafka 节点并且写入和消费了一些信息，然后我来使用命令看看消息累积情况，具体的命令如下：</p>
+<pre><code>./bin/kafka-consumer-groups.sh --bootstrap-server localhost:9092 --describe --group test-consumer-group
+</code></pre>
+<p>结果如下：</p>
+<img src="/blog.io/img/Kafka-consumer-group.sh命令结果示意图.png">
+
+<ul>
+<li>图中的前两列是队列的基本信息，包括话题名和分区名；</li>
+<li>第三列是当前消费者的消费进度；</li>
+<li>第四列是当前生产消息的总数；</li>
+<li>第五列就是消费消息的堆积数（也就是第四列与第三列的差值）。</li>
+<li>通过这个命令你可以很方便地了解消费者的消费情况。</li>
+</ul>
+<h3 id="第二个工具是-JMX"><a href="#第二个工具是-JMX" class="headerlink" title="第二个工具是 JMX"></a><font color = "dd0000">第二个工具是 JMX</font></h3><p>Kafka 通过 JMX 暴露了消息堆积的数据，我在本地启动了一个 console consumer，然后使用 jconsole 连接 consumer 就可以看到 consumer 的堆积数据了（就是下图中红框里的数据）。这些数据你可以写代码来获取，这样也可以方便地输出到监控系统中，我比较推荐这种方式。</p>
+<img src="/blog.io/img/JXM消息堆积示意图.png">
+
+<p>除了使用消息队列提供的工具以外，你还可以通过生成监控消息的方式来监控消息的延迟。具体怎么做呢？</p>
+<p>你先定义一种特殊的消息，然后启动一个监控程序将这个消息定时地循环写入到消息队列中，消息的内容可以是生成消息的时间戳并且也会作为队列的消费者消费数据。业务处理程序消费到这个消息时直接丢弃掉，而监控程序在消费到这个消息时就可以和这个消息的生成时间做比较，如果时间差达到某一个阈值就可以向我们报警。</p>
+<img src="/blog.io/img/消息监控程序示意图.png">
+
+<p>这两种方式都可以监控消息的消费延迟情况，而从我的经验出发，我比较推荐两种方式结合来使用。比如在实际项目中，我会优先在监控程序中获取 JMX 中的队列堆积数据做到 dashboard 报表中，同时也会启动探测进程确认消息的延迟情况是怎样的。</p>
+<p>了解了消息延迟的监控方式之后，我们再来看看如何提升消息的写入和消费性能，这样才会让异步的消息得到尽快的处理。</p>
+<h3 id="减少消息延迟的正确姿势"><a href="#减少消息延迟的正确姿势" class="headerlink" title="减少消息延迟的正确姿势"></a><font color = "dd0000">减少消息延迟的正确姿势</font></h3><p>想要减少消息的处理延迟，我们需要在消费端和消息队列两个层面来完成。</p>
+<p>在消费端的目标是提升消费者的消息处理能力，你能做的是：</p>
+<ul>
+<li>优化消费代码提升性能；</li>
+<li>增加消费者的数量（这个方式比较简单）。<br>不过第二种方式会受限于消息队列的实现。如果消息队列使用的是 Kafka 就无法通过增加消费者数量的方式来提升消息处理能力。</li>
+</ul>
+<p>因为在 Kafka 中，一个 Topic（话题）可以配置多个 Partition（分区），数据会被平均或者按照生产者指定的方式写入到多个分区中，那么在消费的时候，Kafka 约定一个分区只能被一个消费者消费，为什么要这么设计呢？在我看来，如果有多个 consumer（消费者）可以消费一个分区的数据，那么在操作这个消费进度的时候就需要加锁，可能会对性能有一定的影响。</p>
+<p>所以说，话题的分区数量决定了消费的并行度，增加多余的消费者也是没有用处的，你可以通过增加分区来提高消费者的处理能力。</p>
+<img src="/blog.io/img/kafka消费示意图.png">
+
+<p>那么，如何在不增加分区的前提下提升消费能力呢？</p>
+<p>虽然不能增加 consumer，但你可以在一个 consumer 中提升处理消息的并行度，所以可以考虑使用多线程的方式来增加处理能力：你可以预先创建一个或者多个线程池，在接收到消息之后把消息丢到线程池中来异步地处理，这样，原本串行的消费消息的流程就变成了并行的消费，可以提高消息消费的吞吐量，在并行处理的前提下，我们就可以在一次和消息队列的交互中多拉取几条数据，然后分配给多个线程来处理。</p>
+<img src="/blog.io/img/多线程消费队列示意图.png">
+
+<p>另外，在消费队列中数据的时候还需要注意消费线程空转的问题。</p>
+<p>我是在测试自己写的一个消息中间件的时候发现的。当时，我发现运行消费客户端的进程会偶发地出现 CPU 跑满的情况，于是打印了 JVM 线程堆栈，找到了那个跑满 CPU 的线程。这个时候才发现，原来是消息队列中有一段时间没有新的消息，于是消费客户端拉取不到新的消息就会不间断地轮询拉取消息，这个线程就把 CPU 跑满了。</p>
+<p>所以，你在写消费客户端的时候要考虑这种场景，拉取不到消息可以等待一段时间再来拉取，等待的时间不宜过长，否则会增加消息的延迟。我一般建议固定的 10ms~100ms，也可以按照一定步长递增，比如第一次拉取不到消息等待 10ms，第二次 20ms，最长可以到 100ms，直到拉取到消息再回到 10ms。</p>
+<p>说完了消费端的做法之后，再来说说消息队列本身在读取性能优化方面做了哪些事情。</p>
+<ul>
+<li>消息的存储；</li>
+<li>零拷贝技术。</li>
+</ul>
+<p>针对第一点，我最初在设计的时候为了实现简单，使用了普通的数据库来存储消息，但是受限于数据库的性能瓶颈，读取 QPS 只能到 2000，后面我重构了存储模块，使用本地磁盘作为存储介质。Page Cache 的存在就可以提升消息的读取速度，即使要读取磁盘中的数据，由于消息的读取是顺序的并且不需要跨网络读取数据，所以读取消息的 QPS 提升了一个数量级。</p>
+<p>另外一个优化点是零拷贝技术，说是零拷贝，其实我们不可能消灭数据的拷贝，只是尽量减少拷贝的次数。在读取消息队列的数据的时候，其实就是把磁盘中的数据通过网络发送给消费客户端，在实现上会有四次数据拷贝的步骤：</p>
+<ol>
+<li>数据从磁盘拷贝到内核缓冲区；</li>
+<li>系统调用将内核缓存区的数据拷贝到用户缓冲区；</li>
+<li>用户缓冲区的数据被写入到 Socket 缓冲区中；</li>
+<li>操作系统再将 Socket 缓冲区的数据拷贝到网卡的缓冲区中。</li>
+</ol>
+<img src="/blog.io/img/数据从磁盘写入网络的过程.png">
+
+
+<p>操作系统提供了 Sendfile 函数可以减少数据被拷贝的次数。使用了 Sendfile 之后，在内核缓冲区的数据不会被拷贝到用户缓冲区而是直接被拷贝到 Socket 缓冲区，节省了一次拷贝的过程提升了消息发送的性能。高级语言中对于 Sendfile 函数有封装，比如说在 Java 里面的 java.nio.channels.FileChannel 类就提供了 transferTo 方法提供了 Sendfile 的功能。</p>
+<img src="/blog.io/img/使用sendFile.png">
+
+
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a><font color = "dd0000">总结</font></h3><p>如何提高消息队列的性能来降低消息消费的延迟呢？</p>
+<ul>
+<li>消息队列提供的工具来监控消息消费的延迟</li>
+<li>横向扩展消费者数量增加消息处理的能力</li>
+<li>选择高性能的消息存储方式，提升消费性能</li>
+</ul>
+<p>消息队列也是一种特殊的队列，只要设计队列，任务堆积就是一个不可忽视的问题，很多故障都源于此处。</p>
+<div id="paginator"></div></div><div id="post-footer"><hr><a href="/blog.io/2021/04/15/%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84%EF%BC%9A%E6%AF%8F%E7%A7%921%E4%B8%87%E6%AC%A1%E8%AF%B7%E6%B1%82%E7%9A%84%E7%B3%BB%E7%BB%9F%E8%A6%81%E5%81%9A%E6%9C%8D%E5%8A%A1%E5%8C%96%E6%8B%86%E5%88%86%E5%90%97%EF%BC%9F/">← Prev 21 | 系统架构：每秒1万次请求的系统要做服务化拆分吗？</a><span style="color: #fe2"> | </span><a href="/blog.io/2021/04/06/%E6%B6%88%E6%81%AF%E6%8A%95%E9%80%92%EF%BC%9A%E5%A6%82%E4%BD%95%E4%BF%9D%E8%AF%81%E6%B6%88%E6%81%AF%E4%BB%85%E4%BB%85%E8%A2%AB%E6%B6%88%E8%B4%B9%E4%B8%80%E6%AC%A1%EF%BC%9F/">18 | 消息投递：如何保证消息仅仅被消费一次？ Next →</a><hr></div><div id="bottom-btn"><a id="to-index" href="#post-index" title="index">≡</a><a id="to-top" href="#post-title" title="to top">∧</a></div><div id="Valine"></div><script>new Valine({
+ el: '#Valine'
+ , appId: 's9ieIT2hA5ChVBjBufKhyfnK-gzGzoHsz'
+ , appKey: 'a8LAJbmO7wJi6fj9T85KMJid'
+ , placeholder: '此条评论委托企鹅物流发送'
+})</script></div></article><aside><div id="about"><a href="/blog.io/" id="logo"><img src="https://ak.hypergryph.com/assets/index/images/ak/pc/faction/1.png" alt="Logo"></a><h1 id="Dr"><a href="/"> Dr.Allen Feng</a></h1><section id="total"><a id="total-archives" href="/blog.io/archives"><span class="total-title">Archives Total:</span><span class="total-number">58</span></a><div id="total-tags"><span class="total-title">Tags:</span><span class="total-number">52</span></div><div id="total-categories"><span class="total-title">Categories:</span><span class="total-number">6</span></div></section></div><div id="aside-block"><h1>INDEX</h1><div id="post-index"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E7%9B%91%E6%8E%A7%E6%B6%88%E6%81%AF%E5%BB%B6%E8%BF%9F"><span class="toc-number">1.</span> <span class="toc-text">如何监控消息延迟</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9C%A8-Kafka-%E4%B8%AD%EF%BC%8C%E6%B6%88%E8%B4%B9%E8%80%85%E7%9A%84%E6%B6%88%E8%B4%B9%E8%BF%9B%E5%BA%A6%E5%9C%A8%E4%B8%8D%E5%90%8C%E7%9A%84%E7%89%88%E6%9C%AC%E4%B8%8A%E6%98%AF%E4%B8%8D%E5%90%8C%E7%9A%84%E3%80%82"><span class="toc-number">2.</span> <span class="toc-text">在 Kafka 中，消费者的消费进度在不同的版本上是不同的。</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC%E4%BA%8C%E4%B8%AA%E5%B7%A5%E5%85%B7%E6%98%AF-JMX"><span class="toc-number">3.</span> <span class="toc-text">第二个工具是 JMX</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%87%8F%E5%B0%91%E6%B6%88%E6%81%AF%E5%BB%B6%E8%BF%9F%E7%9A%84%E6%AD%A3%E7%A1%AE%E5%A7%BF%E5%8A%BF"><span class="toc-number">4.</span> <span class="toc-text">减少消息延迟的正确姿势</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">5.</span> <span class="toc-text">总结</span></a></li></ol></div></div><footer><nobr><span class="text-title">©</span><span class="text-content">1970 to 2020</span></nobr><wbr><nobr><span class="text-title">ICP</span><span class="text-content">——备案号——</span></nobr><wbr><wbr><nobr>published with&nbsp;<a target="_blank" rel="noopener" href="http://hexo.io">Hexo&nbsp;</a></nobr><wbr><nobr>Theme&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus/hexo-theme-arknights">Arknight&nbsp;</a></nobr><wbr><nobr>by&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus">Yue_plus</a></nobr></footer></aside></main><canvas id="canvas-dust"></canvas><script src="/blog.io/js/arknights.js"></script><script src="https://cdn.bootcdn.net/ajax/libs/highlight.js/10.1.2/highlight.min.js"></script></body></html>

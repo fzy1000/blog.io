@@ -1,0 +1,80 @@
+<!DOCTYPE html><html lang="zh-Hans"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>MySql-优化（二） | 如何做到年薪百万</title><script src="https://cdn.bootcss.com/valine/1.4.4/Valine.min.js"></script><link rel="stylesheet" href="/blog.io/css/arknights.css"><link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/highlight.js/10.1.2/styles/atom-one-dark-reasonable.min.css"><style>@font-face {
+ font-family: BenderLight;
+ src: local('Bender'), url("/blog.io/font/BenderLight.ttf");
+}
+@font-face {
+ font-family: 'JetBrains Mono';
+ src: local('JetBrains Mono'), url('/blog.io/font/JetBrainsMono-Regular.woff2') format('woff2');
+}</style><meta name="generator" content="Hexo 5.4.0"></head><body><header><nav><a href="/blog.io/">Home</a><a href="/blog.io/archives/">Archives</a></nav></header><main><article><div id="post-bg"><div id="post-title"><h1>MySql-优化（二）</h1><hr></div><div id="post-content"><ol>
+<li><p>查询缓存优化查询</p>
+<pre><code>反例：
+
+select * from user where time &gt; CURDATE();
+
+正例
+ 
+select * from user where time &gt; &#39;2020-01-01&#39;;
+</code></pre>
+<p>解释：</p>
+<p>MySQL的查询缓存对CURDATE()这个函数不起作用。所以，像NOW（）和RAND()或者<br>其他的诸如此类的SQL函数都不会开启查询缓存，所以需要一个变量来代替MySQL的函数从而开启缓存</p>
+<p><font color='ff0000'>在更新表结构或者数据的时候，缓存就会失效了。由于缓存失效的很频繁，大多数情况下不建议用查询缓存，8.0版本已移除</font></p>
+</li>
+<li><p>使用EXPLAIN关键字查询MySQL怎么处理sql语句的。</p>
+<p><a target="_blank" rel="noopener" href="http://www.cnitblog.com/aliyiyi08/archive/2008/09/09/48878.html"><font color="0000dd">Mysql Explain 详解</font></a></p>
+</li>
+<li><p>选择正确的引擎</p>
+<ul>
+<li>MylSAN 适合于一些需要大量查询的应用，但他对于大量写操作并不友好。甚至你只是需要update一个字段，整个表都会被锁起来。<br>而别的进程，就算是读进程都无法操作直到update操作完成。另外，MylSAM对与SELECT COUNT(*)这一类计算都是超快无比的。</li>
+<li>InnoDB 是一个非常复杂的存储引擎，对于一些小的应用，他会比MylSAM还要慢，但是它支持行锁，以及事务等高级应用。</li>
+</ul>
+</li>
+<li><p>索引</p>
+<p>索引并不一定就是给主键或者唯一的字段。如果某个字段经常做搜索条件（Where）， 那就要为这个字段创建一个索引。</p>
+</li>
+<li><p>在Join表的时候使用相当类型的例，并将其索引</p>
+<p>如果有JOIN查询，应当确认两个表中Join的字段是被建过索引的。<br>这样，MySQL就会为优化查询。而且这些用来Join的字段<font color="ff0000">应该是相同类型</font>的！！<br>如果是String类型，还要有相同的字符集</p>
+</li>
+<li><p>千万不能使用 order by rand()</p>
+<p>如果工作中需要打乱返回的数据行千万不要用order by rand()。这样MySQL就会不得不去执行rand()。<br>而且这是为了每一行记录去记行，然后在对其排序。就算用了Limit 1 也无济于事，因为要排序。<br>这样会使数据库性能指数级下降。</p>
+</li>
+<li><p>为每张表加一个主键ID</p>
+<p>我们要为每张表都加一个主键，最好是INT型（推荐UNSIGNED）,并且设置自动增加的AUTO_INCREMENT标志。<br>就算你的表USERS有一个主键叫‘email’， 你也别让他成为主键。使用VARCHAR类型主键会使性能下降。<br>程序里也需要使用表的ID来构造数据结构。</p>
+<p>在MySQL引擎下，还有一些操作需要使用主键，在这种情况下，主键的性能和设置变得非常重要，比如集群，分区。</p>
+</li>
+<li><p>使用ENUM而不是VARCHAR</p>
+<p>ENUM类型是非常快和紧凑的。实际上他保存的是TINYINT，但外表是字符串。这样用这个字段来做一些选项列表就便的相当完美。</p>
+<p>一些字段比如：</p>
+<p>性别，国家， 民族， 状态， 部门。</p>
+<p>这些字段的值是有限且固定的，那么就应该用ENUM而不是VARCHAR。</p>
+</li>
+<li><p>尽可能不用null</p>
+<p>null不仅不会节省空间，反而会需要额外的空间来储存这条记录是不是null。</p>
+</li>
+<li><p>固定长度的表会更快</p>
+<p>如果表中的所有字段都是固定长度的，整个表都会被认为是“static”或“fixed_length”。<br>例如，表中没有如下字段： VARCHAR， TEXT， BLOB。只要你包括了其中一个这些字段，那么表就不是<font color = 'ff0000'>固定长度静态表</font>了</p>
+<p>固定长度静态表会提高性能，因为MySQL会搜寻的更快。这些固定的长度很容易计算下一个数据的偏移量，所以读取自然会很快。<br>如果不是定长的，那么每一次找下一条，都需要程序找到主键。</p>
+<p>而且，固定长度的表也更容易被缓存和重建。不过唯一的副作用是，固定长度的字段会浪费一些空间，因为定长的字段不管你用不用都会分配这么多的空间。</p>
+</li>
+</ol>
+<ol start="11">
+<li><p>当只要一行数据时使用 LIMIT 1</p>
+<p>LIMIT 1 找到一条后就停止搜索了</p>
+</li>
+<li><p>垂直分割</p>
+<p>垂直分割是一种分表的策略，这样可以降低表的复杂度数目。</p>
+<p><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/05da0fc0950e?from=singlemessage"><font color="0000dd">分表分库还需要研究</font></a></p>
+</li>
+<li><p>拆分大的DELETE和INSERT</p>
+<p>当执行大的DELETE和INSERT时，这两个操作是有可能会锁表的，如果整个操作过大，<br>就有可能造成表被锁上一段时间。</p>
+</li>
+<li><p>越小的列会越快</p>
+<p>把数据变的紧凑会减少数据库引擎对硬盘的访问。</p>
+<p>如果一个表只有几列（字典，配置），那么最好使用MEDIUMINT，SMALLINT或是更小的<br>TINYINT会更经济。如果不需要记时间，用DATE比DATETIME好的多</p>
+</li>
+</ol>
+<div id="paginator"></div></div><div id="post-footer"><hr><a href="/blog.io/2021/01/14/JAVA8-%E5%87%BD%E6%95%B0%E5%BC%8F%E6%8E%A5%E5%8F%A3-Function-Predicate-Supplier-Cosumer/">← Prev JAVA8 函数式接口 Function/Predicate/Supplier/Consumer</a><span style="color: #fe2"> | </span><a href="/blog.io/2021/01/11/MySql-%E4%BC%98%E5%8C%96%20(%E4%B8%80)/">MySql 优化（一） Next →</a><hr></div><div id="bottom-btn"><a id="to-top" href="#post-title" title="to top">∧</a></div><div id="Valine"></div><script>new Valine({
+ el: '#Valine'
+ , appId: 's9ieIT2hA5ChVBjBufKhyfnK-gzGzoHsz'
+ , appKey: 'a8LAJbmO7wJi6fj9T85KMJid'
+ , placeholder: '此条评论委托企鹅物流发送'
+})</script></div></article><aside><div id="about"><a href="/blog.io/" id="logo"><img src="https://ak.hypergryph.com/assets/index/images/ak/pc/faction/1.png" alt="Logo"></a><h1 id="Dr"><a href="/"> Dr.Allen Feng</a></h1><section id="total"><a id="total-archives" href="/blog.io/archives"><span class="total-title">Archives Total:</span><span class="total-number">58</span></a><div id="total-tags"><span class="total-title">Tags:</span><span class="total-number">52</span></div><div id="total-categories"><span class="total-title">Categories:</span><span class="total-number">6</span></div></section></div><div id="aside-block"></div><footer><nobr><span class="text-title">©</span><span class="text-content">1970 to 2020</span></nobr><wbr><nobr><span class="text-title">ICP</span><span class="text-content">——备案号——</span></nobr><wbr><wbr><nobr>published with&nbsp;<a target="_blank" rel="noopener" href="http://hexo.io">Hexo&nbsp;</a></nobr><wbr><nobr>Theme&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus/hexo-theme-arknights">Arknight&nbsp;</a></nobr><wbr><nobr>by&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus">Yue_plus</a></nobr></footer></aside></main><canvas id="canvas-dust"></canvas><script src="/blog.io/js/arknights.js"></script><script src="https://cdn.bootcdn.net/ajax/libs/highlight.js/10.1.2/highlight.min.js"></script></body></html>

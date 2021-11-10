@@ -1,0 +1,59 @@
+<!DOCTYPE html><html lang="zh-Hans"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>架构分层 | 如何做到年薪百万</title><script src="https://cdn.bootcss.com/valine/1.4.4/Valine.min.js"></script><link rel="stylesheet" href="/blog.io/css/arknights.css"><link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/highlight.js/10.1.2/styles/atom-one-dark-reasonable.min.css"><style>@font-face {
+ font-family: BenderLight;
+ src: local('Bender'), url("/blog.io/font/BenderLight.ttf");
+}
+@font-face {
+ font-family: 'JetBrains Mono';
+ src: local('JetBrains Mono'), url('/blog.io/font/JetBrainsMono-Regular.woff2') format('woff2');
+}</style><meta name="generator" content="Hexo 5.4.0"></head><body><header><nav><a href="/blog.io/">Home</a><a href="/blog.io/archives/">Archives</a></nav></header><main><article><div id="post-bg"><div id="post-title"><h1>架构分层</h1><hr></div><div id="post-content"><p>在系统从0到1的阶段，为了能让系统快速上线， 我们通常不考虑分层。 但是随着业务系统越来越庞大，就会出现大量代码纠缠在一起，出现逻辑混乱，<br>各模块互相依赖，代码扩展性差，改一处而动全身等问题。<br><br/><br>这时，就要思考分层的问题了</p>
+<h3 id="什么是分层架构"><a href="#什么是分层架构" class="headerlink" title="什么是分层架构"></a>什么是分层架构</h3><p>软件架构分层是将整体系统拆分成N个层次，每个层级有独立的职责，多个层次协助完成的功能。例如MVC<br>就是一种标准的软件分层框架。另外一种常见的分层方式是将整体架构分为<strong>表现层，逻辑层和数据访问层</strong>。</p>
+<ul>
+<li>表现层，顾名思义就是展示数据结果和接受用户指令的，最接近用户的一层</li>
+<li>逻辑层里面是业务逻辑（Biz/Service）</li>
+<li>数据访问层则是主要处理和存储之间的交互（DAO）</li>
+</ul>
+<p>除此之外，OSI网络模型把整个网络分成了7层，从上到下分别是：</p>
+<ul>
+<li>应用层</li>
+<li>表示层</li>
+<li>会话层</li>
+<li>传输层</li>
+<li>网络层</li>
+<li>数据链路层</li>
+<li>物理层</li>
+</ul>
+<p>工作中经常用到的TCP/IP协议则从上到下分成了4层：</p>
+<ul>
+<li>应用层（1-3）</li>
+<li>传输层（4）</li>
+<li>网络层（5）</li>
+<li>数据链路层（6-7）</li>
+</ul>
+<p>其中网络层负责端到端的寻址和建立连接，传输层负责端到端的数据传输。</p>
+<p>除此之外，Linux文件系统也是分层设计的。</p>
+<h3 id="分层的好处"><a href="#分层的好处" class="headerlink" title="分层的好处"></a>分层的好处</h3><ul>
+<li>分层的设计可以简化西戎设计，让不同的人专注做某一层次的事情。一件事交给一层做，其他的都交给其他几层完成。</li>
+<li>另外，分层之后可以有很高的复用性。</li>
+<li>最后， 分层架构可以让我们更容易横向扩展。例如，业务逻辑里包含复杂的计算导致CPU性能成为瓶颈。那我们就可以把逻辑层单独抽出来独立部署，然<br>后只对逻辑层进行扩展。这样代价就小多了。</li>
+</ul>
+<h3 id="如何做分层"><a href="#如何做分层" class="headerlink" title="如何做分层"></a>如何做分层</h3><p>我们以阿里巴巴Java开发手册v1.4为例。可以将原来的三层结构分为：</p>
+<img src="/blog.io/img/psc.png">
+
+<ul>
+<li>终端显示曾：各端模板渲染并执行显示的层，主要是Velocity，JS，JSP，移动端渲染展示。</li>
+<li>开放接口层： 将Service层方法封装成开放接口，同时进行网管安全控制和<font color="dd0000">流量控制</font>等.</li>
+<li>Web层： 主要是对访问控制进行转发，各类基本参数校验，或者不复用的业务简单处理等。</li>
+<li>Service层： 业务逻辑层</li>
+<li>Manager层： 通用业务处理曾，这一层的作用有两个，一， 可将Service层的一些通用能力下沉到这一层，比如缓存和存储交互策略，<br>中间件接入：二， 也可以封装对第三方接口的调用，比如支付或者审核等服务</li>
+<li>DAO层： 数据访问层， 与MySQL，Oracle，Hbase等进行数据交互</li>
+<li>外部接口或第三方平台： 包括其他部门的RPC开放接口，基础平台，其他公司的HTTP接口。</li>
+</ul>
+<p>这里面主要增加了Manager层，他其实就是更细化，更原子性的服务接口，而Service层负责依据业务逻辑编排原子接口。<br>注意！层次之间一定是相邻互相以来的，数据的流转也只能在相邻的两层之间流转。</p>
+<p>另外，哪怕一个案例中不需要业务层，直接操作DAO层就可以，那我们也不能直接这么做，否则以后的维护就会便的苦难。</p>
+<h3 id="分层架构的不足"><a href="#分层架构的不足" class="headerlink" title="分层架构的不足"></a>分层架构的不足</h3><p>最大的缺点就是增加了代码的复杂性。另外，如果每个层次独立部署，那么层次之间通过网络来交互，那么多层的架构在性能上就会有损耗。</p>
+<div id="paginator"></div></div><div id="post-footer"><hr><a href="/blog.io/2021/02/07/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E7%9B%AE%E6%A0%87%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9A%E5%A6%82%E4%BD%95%E6%8F%90%E5%8D%87%E7%B3%BB%E7%BB%9F%E6%80%A7%E8%83%BD/">← Prev 三：系统设计目标（一）：如何提升系统性能</a><span style="color: #fe2"> | </span><a href="/blog.io/2021/01/27/%E9%AB%98%E5%B9%B6%E5%8F%91%E7%B3%BB%E7%BB%9F%E7%9A%84%E9%80%9A%E7%94%A8%E8%AE%BE%E8%AE%A1%E6%96%B9%E6%B3%95/">高并发系统的通用设计方法 Next →</a><hr></div><div id="bottom-btn"><a id="to-index" href="#post-index" title="index">≡</a><a id="to-top" href="#post-title" title="to top">∧</a></div><div id="Valine"></div><script>new Valine({
+ el: '#Valine'
+ , appId: 's9ieIT2hA5ChVBjBufKhyfnK-gzGzoHsz'
+ , appKey: 'a8LAJbmO7wJi6fj9T85KMJid'
+ , placeholder: '此条评论委托企鹅物流发送'
+})</script></div></article><aside><div id="about"><a href="/blog.io/" id="logo"><img src="https://ak.hypergryph.com/assets/index/images/ak/pc/faction/1.png" alt="Logo"></a><h1 id="Dr"><a href="/"> Dr.Allen Feng</a></h1><section id="total"><a id="total-archives" href="/blog.io/archives"><span class="total-title">Archives Total:</span><span class="total-number">58</span></a><div id="total-tags"><span class="total-title">Tags:</span><span class="total-number">52</span></div><div id="total-categories"><span class="total-title">Categories:</span><span class="total-number">6</span></div></section></div><div id="aside-block"><h1>INDEX</h1><div id="post-index"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%88%86%E5%B1%82%E6%9E%B6%E6%9E%84"><span class="toc-number">1.</span> <span class="toc-text">什么是分层架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%86%E5%B1%82%E7%9A%84%E5%A5%BD%E5%A4%84"><span class="toc-number">2.</span> <span class="toc-text">分层的好处</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E5%81%9A%E5%88%86%E5%B1%82"><span class="toc-number">3.</span> <span class="toc-text">如何做分层</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%86%E5%B1%82%E6%9E%B6%E6%9E%84%E7%9A%84%E4%B8%8D%E8%B6%B3"><span class="toc-number">4.</span> <span class="toc-text">分层架构的不足</span></a></li></ol></div></div><footer><nobr><span class="text-title">©</span><span class="text-content">1970 to 2020</span></nobr><wbr><nobr><span class="text-title">ICP</span><span class="text-content">——备案号——</span></nobr><wbr><wbr><nobr>published with&nbsp;<a target="_blank" rel="noopener" href="http://hexo.io">Hexo&nbsp;</a></nobr><wbr><nobr>Theme&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus/hexo-theme-arknights">Arknight&nbsp;</a></nobr><wbr><nobr>by&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus">Yue_plus</a></nobr></footer></aside></main><canvas id="canvas-dust"></canvas><script src="/blog.io/js/arknights.js"></script><script src="https://cdn.bootcdn.net/ajax/libs/highlight.js/10.1.2/highlight.min.js"></script></body></html>
