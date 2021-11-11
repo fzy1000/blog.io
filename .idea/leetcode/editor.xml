@@ -3,6 +3,33 @@
   <component name="LeetcodeEditor">
     <option name="projectConfig">
       <map>
+        <entry key="$PROJECT_DIR$/../../Program/leetcode/leetcode/editor/cn/[301]删除无效的括号.java">
+          <value>
+            <LeetcodeEditor>
+              <option name="contentPath" value="$PROJECT_DIR$/../../Program/leetcode/leetcode/editor/cn/doc/content/[301]删除无效的括号.md" />
+              <option name="path" value="$PROJECT_DIR$/../../Program/leetcode/leetcode/editor/cn/[301]删除无效的括号.java" />
+              <option name="questionId" value="301" />
+            </LeetcodeEditor>
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/../../Program/leetcode/leetcode/editor/cn/[459]重复的子字符串.java">
+          <value>
+            <LeetcodeEditor>
+              <option name="contentPath" value="$PROJECT_DIR$/../../Program/leetcode/leetcode/editor/cn/doc/content/[459]重复的子字符串.md" />
+              <option name="path" value="$PROJECT_DIR$/../../Program/leetcode/leetcode/editor/cn/[459]重复的子字符串.java" />
+              <option name="questionId" value="459" />
+            </LeetcodeEditor>
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/../../Program/leetcode/leetcode/editor/cn/[96]不同的二叉搜索树.java">
+          <value>
+            <LeetcodeEditor>
+              <option name="contentPath" value="$PROJECT_DIR$/../../Program/leetcode/leetcode/editor/cn/doc/content/[96]不同的二叉搜索树.md" />
+              <option name="path" value="$PROJECT_DIR$/../../Program/leetcode/leetcode/editor/cn/[96]不同的二叉搜索树.java" />
+              <option name="questionId" value="96" />
+            </LeetcodeEditor>
+          </value>
+        </entry>
         <entry key="$PROJECT_DIR$/../java/leetcode/leetcode/editor/cn/[1190]反转每对括号间的子串.java">
           <value>
             <LeetcodeEditor>
