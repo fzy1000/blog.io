@@ -3,6 +3,24 @@
   <component name="LeetcodeEditor">
     <option name="projectConfig">
       <map>
+        <entry key="$PROJECT_DIR$/../../Program/leetcode/leetcode/editor/cn/[104]二叉树的最大深度.java">
+          <value>
+            <LeetcodeEditor>
+              <option name="contentPath" value="$PROJECT_DIR$/../../Program/leetcode/leetcode/editor/cn/doc/content/[104]二叉树的最大深度.md" />
+              <option name="path" value="$PROJECT_DIR$/../../Program/leetcode/leetcode/editor/cn/[104]二叉树的最大深度.java" />
+              <option name="questionId" value="104" />
+            </LeetcodeEditor>
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/../../Program/leetcode/leetcode/editor/cn/[105]从前序与中序遍历序列构造二叉树.java">
+          <value>
+            <LeetcodeEditor>
+              <option name="contentPath" value="$PROJECT_DIR$/../../Program/leetcode/leetcode/editor/cn/doc/content/[105]从前序与中序遍历序列构造二叉树.md" />
+              <option name="path" value="$PROJECT_DIR$/../../Program/leetcode/leetcode/editor/cn/[105]从前序与中序遍历序列构造二叉树.java" />
+              <option name="questionId" value="105" />
+            </LeetcodeEditor>
+          </value>
+        </entry>
         <entry key="$PROJECT_DIR$/../../Program/leetcode/leetcode/editor/cn/[301]删除无效的括号.java">
           <value>
             <LeetcodeEditor>
