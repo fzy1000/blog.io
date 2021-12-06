@@ -4,12 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6ba79c8e-075e-4e16-8670-f5e1f1ac7271" name="Changes" comment="&lt;new&gt;:&lt;20211116&gt;">
-      <change beforePath="$PROJECT_DIR$/.idea/leetcode/editor.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/leetcode/editor.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    <list default="true" id="6ba79c8e-075e-4e16-8670-f5e1f1ac7271" name="Changes" comment="&lt;new&gt;:&lt;20211206&gt;">
       <change beforePath="$PROJECT_DIR$/source/_posts/资料.md" beforeDir="false" afterPath="$PROJECT_DIR$/source/_posts/资料.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/source/_posts/高并发系统的通用设计方法.md" beforeDir="false" afterPath="$PROJECT_DIR$/source/_posts/高并发系统的通用设计方法.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -70,7 +66,7 @@
       <workItem from="1636429917885" duration="27684000" />
       <workItem from="1636611498345" duration="5910000" />
       <workItem from="1637065487571" duration="10033000" />
-      <workItem from="1638269628907" duration="9438000" />
+      <workItem from="1638269628907" duration="9750000" />
     </task>
     <task id="LOCAL-00001" summary="&lt;new&gt;:&lt;20211110&gt;">
       <created>1636528213906</created>
@@ -93,7 +89,14 @@
       <option name="project" value="LOCAL" />
       <updated>1637057091742</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="&lt;new&gt;:&lt;20211206&gt;">
+      <created>1638789237381</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1638789237382</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -118,6 +121,7 @@
     </ignored-roots>
     <MESSAGE value="&lt;new&gt;:&lt;20211110&gt;" />
     <MESSAGE value="&lt;new&gt;:&lt;20211116&gt;" />
-    <option name="LAST_COMMIT_MESSAGE" value="&lt;new&gt;:&lt;20211116&gt;" />
+    <MESSAGE value="&lt;new&gt;:&lt;20211206&gt;" />
+    <option name="LAST_COMMIT_MESSAGE" value="&lt;new&gt;:&lt;20211206&gt;" />
   </component>
 </project>
