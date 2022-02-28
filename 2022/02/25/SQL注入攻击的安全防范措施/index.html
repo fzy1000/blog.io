@@ -1,0 +1,47 @@
+<!DOCTYPE html><html lang="zh-Hans"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>SQL注入攻击的安全防范措施 | 如何做到年薪百万</title><script src="https://cdn.bootcss.com/valine/1.4.4/Valine.min.js"></script><link rel="stylesheet" href="/blog.io/css/arknights.css"><link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/highlight.js/10.1.2/styles/atom-one-dark-reasonable.min.css"><style>@font-face {
+ font-family: BenderLight;
+ src: local('Bender'), url("/blog.io/font/BenderLight.ttf");
+}
+@font-face {
+ font-family: 'JetBrains Mono';
+ src: local('JetBrains Mono'), url('/blog.io/font/JetBrainsMono-Regular.woff2') format('woff2');
+}</style><meta name="generator" content="Hexo 5.4.0"></head><body><header><nav><a href="/blog.io/">Home</a><a href="/blog.io/archives/">Archives</a></nav></header><main><article><div id="post-bg"><div id="post-title"><h1>SQL注入攻击的安全防范措施</h1><hr></div><div id="post-content"><h1 id="一、什么是SQL预编译"><a href="#一、什么是SQL预编译" class="headerlink" title="一、什么是SQL预编译"></a>一、什么是SQL预编译</h1><p>很多时候，我们可能会反复地执行一条SQL语句，每次执行的时候只不过是参数值不同而已，SQL语句的结构并未发生变化。</p>
+<p>如果没有预编译，那么每次在执行这些SQL的时候，数据库都需要进行词法分析、语义分析、制定执行计划、执行并返回结果这些操作，比较耗时和耗费资源。因此，数据库有一种机制可以将这些结构相同的SQL进行预编译，形成固定的执行计划，下次再执行的时候，直接拿这些执行计划，套入传入的参数执行即可，大大提高了效率。</p>
+<p>SQL语句解析过程<br>如何启用数据库的预编译功能呢？我们使用JDBC的时候，使用PreparedStatement就可以达到目标。如此，SQL的语句会提前发送给数据库进行预编译，变量值就使用占位符来表示，等到真的要执行SQL的时候，将参数填入占位符按照事先的执行计划执行即可。</p>
+<h1 id="二、为什么SQL预编译可以防止SQL注入"><a href="#二、为什么SQL预编译可以防止SQL注入" class="headerlink" title="二、为什么SQL预编译可以防止SQL注入"></a>二、为什么SQL预编译可以防止SQL注入</h1><p>PreparedStatement和Statement最大的区别在于，前者会提前将SQL发送给数据库进行预编译，提前确定了执行计划，对于输入的参数，无论是什么，都会按照原先的计划进行填入执行，不会再改变SQL的逻辑结构；而后者则会随着输入参数的不同改变SQL逻辑结构，因此有注入的风险。</p>
+<h1 id="三、MyBatis是如何做到防止SQL注入的"><a href="#三、MyBatis是如何做到防止SQL注入的" class="headerlink" title="三、MyBatis是如何做到防止SQL注入的"></a>三、MyBatis是如何做到防止SQL注入的</h1><p>‘#{}’ 的传值方式，本质上就是使用JDBC的PreparedStatement，无论参数是什么，都只是被当做参数执行，不会改变预编译好的SQL结构和执行计划；</p>
+<p>‘${}’ 的传值方式，则是使用JDBC的Statement，参数的值会改变SQL的逻辑结构。</p>
+<p>一般${}主要用在传入数据库对象的场景中，比如需要使用动态的表名和列名时，这种场景下无法使用#{}，我们就需要手动对参数进行过滤，来确保SQL的安全；</p>
+<h1 id="四、不能使用预编译时该如何方式SQL注入"><a href="#四、不能使用预编译时该如何方式SQL注入" class="headerlink" title="四、不能使用预编译时该如何方式SQL注入"></a>四、不能使用预编译时该如何方式SQL注入</h1><p>如下是一个对输入参数进行检查的例子：</p>
+<pre><code class="java">    protected static boolean sqlValidate(String str) &#123;    
+        //统一转为小写    
+        str = str.toLowerCase();
+        String badStr = &quot;&#39;|select|update|and|or|delete|insert|truncate|char|into|iframe|href|script|activex|html|flash&quot;  
+                + &quot;|substr|declare|exec|master|drop|execute|&quot;  
+                + &quot;union|;|--|+|,|like|%|#|*|&lt;|&gt;|$|@|\&quot;|http|cr|lf|&lt;|&gt;|(|)&quot;;//过滤掉的sql关键字，可以手动添加       
+        String[] badStrs = badStr.split(&quot;\\|&quot;);    
+        for (int i = 0; i &lt; badStrs.length; i++) &#123;    
+            if (str.indexOf(badStrs[i]) &gt;= 0) &#123;    
+                return false;    
+            &#125;    
+        &#125;    
+        return true;    
+    &#125;
+</code></pre>
+<h1 id="五、其他"><a href="#五、其他" class="headerlink" title="五、其他"></a>五、其他</h1><p>防止应用被SQL注入式攻击闯入并不是一件特别困难的事情，只要在利用表单输入的内容构造SQL命令之前，把所有输入内容过滤一番就可以了。过滤输入内容可以按多种方式进行。</p>
+<p>⑴ 对于动态构造SQL查询的场合，可以使用下面的技术： </p>
+<p>第一：替换单引号，即把所有单独出现的单引号改成两个单引号，防止攻击者修改SQL命令的含义。再来看前面的例子，“SELECT * from Users WHERE login = ‘’’ or ‘’1’’=’’1’ AND password = ‘’’ or ‘’1’’=’’1’”显然会得到与“SELECT * from Users WHERE login = ‘’ or ‘1’=’1’ AND password = ‘’ or ‘1’=’1’”不同的结果。</p>
+<p>  第二：删除用户输入内容中的所有连字符，防止攻击者构造出类如“SELECT * from Users WHERE login = ‘mas’ – AND password =’’”之类的查询，因为这类查询的后半部分已经被注释掉，不再有效，攻击者只要知道一个合法的用户登录名称，根本不需要知道用户的密码就可以顺利获得访问权限。</p>
+<p>  第三：对于用来执行查询的数据库帐户，限制其权限。用不同的用户帐户执行查询、插入、更新、删除操作。由于隔离了不同帐户可执行的操作，因而也就防止了原本用于执行SELECT命令的地方却被用于执行INSERT、UPDATE或DELETE命令。</p>
+<p>⑵ 用存储过程来执行所有的查询。SQL参数的传递方式将防止攻击者利用单引号和连字符实施攻击。此外，它还使得数据库权限可以限制到只允许特定的存储过程执行，所有的用户输入必须遵从被调用的存储过程的安全上下文，这样就很难再发生注入式攻击了。</p>
+<p>⑶ 限制表单或查询字符串输入的长度。如果用户的登录名字最多只有10个字符，那么不要认可表单中输入的10个以上的字符，这将大大增加攻击者在SQL命令中插入有害代码的难度。</p>
+<p>⑷ 检查用户输入的合法性，确信输入的内容只包含合法的数据。数据检查应当在客户端和服务器端都执行——之所以要执行服务器端验证，是为了弥补客户端验证机制脆弱的安全性。</p>
+<p>在客户端，攻击者完全有可能获得网页的源代码，修改验证合法性的脚本（或者直接删除脚本），然后将非法内容通过修改后的表单提交给服务器。因此，要保证验证操作确实已经执行，唯一的办法就是在服务器端也执行验证。你可以使用许多内建的验证对象，例如RegularExpressionValidator，它们能够自动生成验证用的客户端脚本，当然你也可以插入服务器端的方法调用。如果找不到现成的验证对象，你可以通过CustomValidator自己创建一个。</p>
+<p>⑸ 将用户登录名称、密码等数据加密保存。加密用户输入的数据，然后再将它与数据库中保存的数据比较，这相当于对用户输入的数据进行了“消毒”处理，用户输入的数据不再对数据库有任何特殊的意义，从而也就防止了攻击者注入SQL命令。System.Web.Security.FormsAuthentication类有一个HashPasswordForStoringInConfigFile，非常适合于对输入数据进行消毒处理。</p>
+<p>⑹ 检查提取数据的查询所返回的记录数量。如果程序只要求返回一个记录，但实际返回的记录却超过一行，那就当作出错处理。</p>
+<div id="paginator"></div></div><div id="post-footer"><hr><a href="/blog.io/2021/09/27/%E8%B5%84%E6%96%99/">资料 Next →</a><hr></div><div id="bottom-btn"><a id="to-index" href="#post-index" title="index">≡</a><a id="to-top" href="#post-title" title="to top">∧</a></div><div id="Valine"></div><script>new Valine({
+ el: '#Valine'
+ , appId: 's9ieIT2hA5ChVBjBufKhyfnK-gzGzoHsz'
+ , appKey: 'a8LAJbmO7wJi6fj9T85KMJid'
+ , placeholder: '此条评论委托企鹅物流发送'
+})</script></div></article><aside><div id="about"><a href="/blog.io/" id="logo"><img src="https://ak.hypergryph.com/assets/index/images/ak/pc/faction/1.png" alt="Logo"></a><h1 id="Dr"><a href="/"> Dr.Allen Feng</a></h1><section id="total"><a id="total-archives" href="/blog.io/archives"><span class="total-title">Archives Total:</span><span class="total-number">59</span></a><div id="total-tags"><span class="total-title">Tags:</span><span class="total-number">53</span></div><div id="total-categories"><span class="total-title">Categories:</span><span class="total-number">7</span></div></section></div><div id="aside-block"><h1>INDEX</h1><div id="post-index"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E4%BB%80%E4%B9%88%E6%98%AFSQL%E9%A2%84%E7%BC%96%E8%AF%91"><span class="toc-number">1.</span> <span class="toc-text">一、什么是SQL预编译</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88SQL%E9%A2%84%E7%BC%96%E8%AF%91%E5%8F%AF%E4%BB%A5%E9%98%B2%E6%AD%A2SQL%E6%B3%A8%E5%85%A5"><span class="toc-number">2.</span> <span class="toc-text">二、为什么SQL预编译可以防止SQL注入</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89%E3%80%81MyBatis%E6%98%AF%E5%A6%82%E4%BD%95%E5%81%9A%E5%88%B0%E9%98%B2%E6%AD%A2SQL%E6%B3%A8%E5%85%A5%E7%9A%84"><span class="toc-number">3.</span> <span class="toc-text">三、MyBatis是如何做到防止SQL注入的</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E4%B8%8D%E8%83%BD%E4%BD%BF%E7%94%A8%E9%A2%84%E7%BC%96%E8%AF%91%E6%97%B6%E8%AF%A5%E5%A6%82%E4%BD%95%E6%96%B9%E5%BC%8FSQL%E6%B3%A8%E5%85%A5"><span class="toc-number">4.</span> <span class="toc-text">四、不能使用预编译时该如何方式SQL注入</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E5%85%B6%E4%BB%96"><span class="toc-number">5.</span> <span class="toc-text">五、其他</span></a></li></ol></div></div><footer><nobr><span class="text-title">©</span><span class="text-content">1970 to 2020</span></nobr><wbr><nobr><span class="text-title">ICP</span><span class="text-content">——备案号——</span></nobr><wbr><wbr><nobr>published with&nbsp;<a target="_blank" rel="noopener" href="http://hexo.io">Hexo&nbsp;</a></nobr><wbr><nobr>Theme&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus/hexo-theme-arknights">Arknight&nbsp;</a></nobr><wbr><nobr>by&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus">Yue_plus</a></nobr></footer></aside></main><canvas id="canvas-dust"></canvas><script src="/blog.io/js/arknights.js"></script><script src="https://cdn.bootcdn.net/ajax/libs/highlight.js/10.1.2/highlight.min.js"></script></body></html>
