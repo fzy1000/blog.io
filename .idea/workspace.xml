@@ -4,9 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6ba79c8e-075e-4e16-8670-f5e1f1ac7271" name="Changes" comment="&lt;new&gt;:&lt;20220118&gt;">
+    <list default="true" id="6ba79c8e-075e-4e16-8670-f5e1f1ac7271" name="Changes" comment="&lt;new&gt;:&lt;20220228&gt;">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/source/_posts/资料.md" beforeDir="false" afterPath="$PROJECT_DIR$/source/_posts/资料.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yarn.lock" beforeDir="false" afterPath="$PROJECT_DIR$/yarn.lock" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -30,26 +33,23 @@
       <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
     </file-type-list>
   </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 8
+}]]></component>
   <component name="ProjectId" id="20UJ8ZPx4VOFy5KYO5itpAD0ueI" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">
-    <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
-    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
-    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
-    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
-    <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/node_modules" />
-    <property name="node.js.detected.package.eslint" value="true" />
-    <property name="node.js.detected.package.tslint" value="true" />
-    <property name="node.js.selected.package.eslint" value="(autodetect)" />
-    <property name="node.js.selected.package.tslint" value="(autodetect)" />
-    <property name="nodejs_package_manager_path" value="yarn" />
-    <property name="settings.editor.selected.configurable" value="project.propVCSSupport.Mappings" />
-  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "hexo",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "/Users/allen/Documents/Project/blog.io"
+  }
+}]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/source/_posts" />
@@ -69,7 +69,10 @@
       <workItem from="1637065487571" duration="10033000" />
       <workItem from="1638269628907" duration="10465000" />
       <workItem from="1639389103726" duration="10012000" />
-      <workItem from="1643434284214" duration="4268000" />
+      <workItem from="1643434284214" duration="5145000" />
+      <workItem from="1646116227257" duration="230000" />
+      <workItem from="1646116473184" duration="2789000" />
+      <workItem from="1646491091403" duration="4671000" />
     </task>
     <task id="LOCAL-00001" summary="&lt;new&gt;:&lt;20211110&gt;">
       <created>1636528213906</created>
@@ -113,7 +116,14 @@
       <option name="project" value="LOCAL" />
       <updated>1642495796065</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="&lt;new&gt;:&lt;20220228&gt;">
+      <created>1646033418004</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1646033418004</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -129,7 +139,6 @@
         </entry>
       </map>
     </option>
-    <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
@@ -140,6 +149,7 @@
     <MESSAGE value="&lt;new&gt;:&lt;20211116&gt;" />
     <MESSAGE value="&lt;new&gt;:&lt;20211206&gt;" />
     <MESSAGE value="&lt;new&gt;:&lt;20220118&gt;" />
-    <option name="LAST_COMMIT_MESSAGE" value="&lt;new&gt;:&lt;20220118&gt;" />
+    <MESSAGE value="&lt;new&gt;:&lt;20220228&gt;" />
+    <option name="LAST_COMMIT_MESSAGE" value="&lt;new&gt;:&lt;20220228&gt;" />
   </component>
 </project>
