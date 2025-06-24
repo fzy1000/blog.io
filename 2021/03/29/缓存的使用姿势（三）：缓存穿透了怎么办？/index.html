@@ -13,7 +13,7 @@
 <p>不过少量的缓存穿透不可避免，对系统也是没有损害的，主要有几点原因：</p>
 <ul>
 <li>一方面，互联网系统通常会面临极大数据量的考验，而缓存系统在容量上是有限的，不可能存储系统所有的数据，那么在查询未缓存数据的时候就会发生缓存穿透。</li>
-<li>另一方面，互联网系统的数据访问模型一般会遵从“80/20 原则”。“80/20 原则”又称为帕累托法则，是意大利经济学家帕累托提出的一个经济学的理论。简单来说，它是指在一组事物中，最重要的部分通常只占 20%，而其他的 80% 并没有那么重要。把它应用到数据访问的领域，就是我们会经常访问 20% 的热点数据，而另外的 80% 的数据则不会被经常访问。比如你买了很多衣服，很多书，但是其实经常穿的、经常看的可能也就是其中很小的一部分。<br>既然缓存的容量有限，并且大部分的访问只会请求 20% 的热点数据，那么理论上说，我们只需要在有限的缓存空间里存储 20% 的热点数据就可以有效地保护脆弱的后端系统了，也就可以放弃缓存另外 80% 的非热点数据了。所以这种少量的缓存穿透是不可避免的，但是对系统是没有损害的。</li>
+<li>另一方面，互联网系统的数据访问模型一般会遵从“80&#x2F;20 原则”。“80&#x2F;20 原则”又称为帕累托法则，是意大利经济学家帕累托提出的一个经济学的理论。简单来说，它是指在一组事物中，最重要的部分通常只占 20%，而其他的 80% 并没有那么重要。把它应用到数据访问的领域，就是我们会经常访问 20% 的热点数据，而另外的 80% 的数据则不会被经常访问。比如你买了很多衣服，很多书，但是其实经常穿的、经常看的可能也就是其中很小的一部分。<br>既然缓存的容量有限，并且大部分的访问只会请求 20% 的热点数据，那么理论上说，我们只需要在有限的缓存空间里存储 20% 的热点数据就可以有效地保护脆弱的后端系统了，也就可以放弃缓存另外 80% 的非热点数据了。所以这种少量的缓存穿透是不可避免的，但是对系统是没有损害的。</li>
 </ul>
 <p>那么什么样的缓存穿透对系统有害呢？答案是大量的穿透请求超过了后端系统的承受范围造成了后端系统的崩溃。如果把少量的请求比作毛毛细雨，那么一旦变成倾盆大雨，引发洪水，冲倒房屋，肯定就不行了。</p>
 <p>产生这种大量穿透请求的场景有很多，接下来我就带你解析这几种场景以及相应的解决方案。</p>
@@ -26,18 +26,8 @@
 
 <p>类似的场景还有一些：比如由于代码的 bug 导致查询数据库的时候抛出了异常，这样可以认为从数据库查询出来的数据为空，同样不会回种缓存。</p>
 <p>那么，当我们从数据库中查询到空值或者发生异常时，我们可以向缓存中回种一个空值。但是因为空值并不是准确的业务数据，并且会占用缓存的空间，所以我们会给这个空值加一个比较短的过期时间，让空值在短时间之内能够快速过期淘汰。下面是这个流程的伪代码：</p>
-<pre><code class="java">Object nullValue = new Object();
-try &#123;
-Object valueFromDB = getFromDB(uid); //从数据库中查询数据
-if (valueFromDB == null) &#123;
-cache.set(uid, nullValue, 10);   //如果从数据库中查询到空值，就把空值写入缓存，设置较短的超时时间
-&#125; else &#123;
-cache.set(uid, valueFromDB, 1000);
-&#125;
-&#125; catch(Exception e) &#123;
-cache.set(uid, nullValue, 10);
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-type">Object</span> <span class="hljs-variable">nullValue</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Object</span>();<br><span class="hljs-keyword">try</span> &#123;<br><span class="hljs-type">Object</span> <span class="hljs-variable">valueFromDB</span> <span class="hljs-operator">=</span> getFromDB(uid); <span class="hljs-comment">//从数据库中查询数据</span><br><span class="hljs-keyword">if</span> (valueFromDB == <span class="hljs-literal">null</span>) &#123;<br>cache.set(uid, nullValue, <span class="hljs-number">10</span>);   <span class="hljs-comment">//如果从数据库中查询到空值，就把空值写入缓存，设置较短的超时时间</span><br>&#125; <span class="hljs-keyword">else</span> &#123;<br>cache.set(uid, valueFromDB, <span class="hljs-number">1000</span>);<br>&#125;<br>&#125; <span class="hljs-keyword">catch</span>(Exception e) &#123;<br>cache.set(uid, nullValue, <span class="hljs-number">10</span>);<br>&#125;<br></code></pre></td></tr></table></figure>
+
 <p>回种空值虽然能够阻挡大量穿透的请求，但如果有大量获取未注册用户信息的请求，缓存内就会有有大量的空值缓存，也就会浪费缓存的存储空间，如果缓存空间被占满了，还会剔除掉一些已经被缓存的用户信息反而会造成缓存命中率的下降。</p>
 <p>所以这个方案，我建议你在使用的时候应该评估一下缓存容量是否能够支撑。如果需要大量的缓存节点来支持，那么就无法通过通过回种空值的方式来解决，这时你可以考虑使用布隆过滤器。</p>
 <h3 id="使用布隆过滤器"><a href="#使用布隆过滤器" class="headerlink" title="使用布隆过滤器"></a><font color = "dd0000">使用布隆过滤器</font></h3><p>1970 年布隆提出了一种布隆过滤器的算法，用来判断一个元素是否在一个集合中。这种算法由一个二进制数组和一个 Hash 算法组成。它的基本思路如下：</p>
@@ -51,14 +41,14 @@ cache.set(uid, nullValue, 10);
 <p>新注册的用户除了需要写入到数据库中之外，它也需要依照同样的算法更新布隆过滤器的数组中相应位置的值。那么当我们需要查询某一个用户的信息时，先查询这个 ID 在布隆过滤器中是否存在，如果不存在就直接返回空值，而不需要继续查询数据库和缓存，这样就可以极大地减少异常查询带来的缓存穿透。</p>
 <img src="/blog.io/img/布隆过滤器场景.png">
 
-<p>布隆过滤器拥有极高的性能，无论是写入操作还是读取操作，时间复杂度都是 O(1) 是常量值。在空间上，相对于其他数据结构它也有很大的优势，比如，20 亿的数组需要 2000000000/8/1024/1024 = 238M 的空间，而如果使用数组来存储，假设每个用户 ID 占用 4 个字节的空间，那么存储 20 亿用户需要 2000000000 * 4 / 1024 / 1024 = 7600M 的空间，是布隆过滤器的 32 倍。</p>
+<p>布隆过滤器拥有极高的性能，无论是写入操作还是读取操作，时间复杂度都是 O(1) 是常量值。在空间上，相对于其他数据结构它也有很大的优势，比如，20 亿的数组需要 2000000000&#x2F;8&#x2F;1024&#x2F;1024 &#x3D; 238M 的空间，而如果使用数组来存储，假设每个用户 ID 占用 4 个字节的空间，那么存储 20 亿用户需要 2000000000 * 4 &#x2F; 1024 &#x2F; 1024 &#x3D; 7600M 的空间，是布隆过滤器的 32 倍。</p>
 <p>不过任何事物都有两面性，布隆过滤器也不例外，它主要有两个缺陷：</p>
 <ol>
 <li>它在判断元素是否在集合中时是有一定错误几率的，比如它会把不是集合中的元素判断为处在集合中；</li>
 <li>不支持删除元素。</li>
 </ol>
 <p>关于第一个缺陷，主要是 Hash 算法的问题。因为布隆过滤器是由一个二进制数组和一个 Hash 算法组成的，Hash 算法存在着一定的碰撞几率。Hash 碰撞的含义是不同的输入值经过 Hash 运算后得到了相同的 Hash 结果。</p>
-<p>本来，Hash 的含义是不同的输入依据不同的算法映射成独一无二的固定长度的值，也就是我输入字符串“1”，根据 CRC32 算法，值是 2212294583。但是现实中 Hash 算法的输入值是无限的，输出值的值空间却是固定的，比如 16 位的 Hash 值的值空间是 65535，那么它的碰撞几率就是 1/65535，即如果输入值的个数超过 65535 就一定会发生碰撞。</p>
+<p>本来，Hash 的含义是不同的输入依据不同的算法映射成独一无二的固定长度的值，也就是我输入字符串“1”，根据 CRC32 算法，值是 2212294583。但是现实中 Hash 算法的输入值是无限的，输出值的值空间却是固定的，比如 16 位的 Hash 值的值空间是 65535，那么它的碰撞几率就是 1&#x2F;65535，即如果输入值的个数超过 65535 就一定会发生碰撞。</p>
 <p>你可能会问为什么不映射成更长的 Hash 值呢？<br>因为更长的 Hash 值会带来更高的存储成本和计算成本。即使使用 32 位的 Hash 算法，它的值空间长度是 2 的 32 次幂减一，约等于 42 亿，用来映射 20 亿的用户数据，碰撞几率依然有接近 50%。</p>
 <p>Hash 的碰撞就造成了两个用户 ID ，A 和 B 会计算出相同的 Hash 值，那么如果 A 是注册的用户，它的 Hash 值对应的数组中的值是 1，那么 B 即使不是注册用户，它在数组中的位置和 A 是相同的，对应的值也是 1，这就产生了误判。</p>
 <p>布隆过滤器的误判有一个特点，就是它只会出现“false positive”的情况。这是什么意思呢？当布隆过滤器判断元素在集合中时，这个元素可能不在集合中。但是一旦布隆过滤器判断这个元素不在集合中时，它一定不在集合中。这一点非常适合解决缓存穿透的问题。为什么呢？</p>
@@ -100,7 +90,7 @@ cache.set(uid, nullValue, 10);
  , appId: 's9ieIT2hA5ChVBjBufKhyfnK-gzGzoHsz'
  , appKey: 'a8LAJbmO7wJi6fj9T85KMJid'
  , placeholder: '此条评论委托企鹅物流发送'
-})</script></div></article><aside><div id="about"><a href="/blog.io/" id="logo"><img src="https://ak.hypergryph.com/assets/index/images/ak/pc/faction/1.png" alt="Logo"></a><h1 id="Dr"><a href="/"> Dr.Allen Feng</a></h1><section id="total"><a id="total-archives" href="/blog.io/archives"><span class="total-title">Archives Total:</span><span class="total-number">63</span></a><div id="total-tags"><span class="total-title">Tags:</span><span class="total-number">59</span></div><div id="total-categories"><span class="total-title">Categories:</span><span class="total-number">13</span></div></section></div><div id="aside-block"><h1>INDEX</h1><div id="post-index"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E7%BC%93%E5%AD%98%E7%A9%BF%E9%80%8F"><span class="toc-number">1.</span> <span class="toc-text">什么是缓存穿透</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BC%93%E5%AD%98%E7%A9%BF%E9%80%8F%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="toc-number">2.</span> <span class="toc-text">缓存穿透的解决方案</span></a></li><li class="toc-item toc-level-3"><a class="toc-link"><span class="toc-number">3.</span> <span class="toc-text">1. 回种空值</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8"><span class="toc-number">4.</span> <span class="toc-text">使用布隆过滤器</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link"><span class="toc-number">4.1.</span> <span class="toc-text">那么我们如何使用布隆过滤器来解决缓存穿透的问题呢？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link"><span class="toc-number">4.2.</span> <span class="toc-text">讲了这么多，关于布隆过滤器的使用上，我也给你几个建议：</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">5.</span> <span class="toc-text">总结</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link"><span class="toc-number"></span> <span class="toc-text">--------------减少对数据库的并发请求
+})</script></div></article><aside><div id="about"><a href="/blog.io/" id="logo"><img src="https://ak.hypergryph.com/assets/index/images/ak/pc/faction/1.png" alt="Logo"></a><h1 id="Dr"><a href="/"> Dr.Allen Feng</a></h1><section id="total"><a id="total-archives" href="/blog.io/archives"><span class="total-title">Archives Total:</span><span class="total-number">63</span></a><div id="total-tags"><span class="total-title">Tags:</span><span class="total-number">58</span></div><div id="total-categories"><span class="total-title">Categories:</span><span class="total-number">11</span></div></section></div><div id="aside-block"><h1>INDEX</h1><div id="post-index"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E7%BC%93%E5%AD%98%E7%A9%BF%E9%80%8F"><span class="toc-number">1.</span> <span class="toc-text">什么是缓存穿透</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BC%93%E5%AD%98%E7%A9%BF%E9%80%8F%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="toc-number">2.</span> <span class="toc-text">缓存穿透的解决方案</span></a></li><li class="toc-item toc-level-3"><a class="toc-link"><span class="toc-number">3.</span> <span class="toc-text">1. 回种空值</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8"><span class="toc-number">4.</span> <span class="toc-text">使用布隆过滤器</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link"><span class="toc-number">4.1.</span> <span class="toc-text">那么我们如何使用布隆过滤器来解决缓存穿透的问题呢？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link"><span class="toc-number">4.2.</span> <span class="toc-text">讲了这么多，关于布隆过滤器的使用上，我也给你几个建议：</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">5.</span> <span class="toc-text">总结</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link"><span class="toc-number"></span> <span class="toc-text">--------------减少对数据库的并发请求
 
 
 

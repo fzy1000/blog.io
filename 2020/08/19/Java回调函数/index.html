@@ -10,76 +10,16 @@
 <h1 id="异步回调"><a href="#异步回调" class="headerlink" title="异步回调"></a>异步回调</h1><p>异步回调指的是在A代码调用了B代码之后会继续运行，并不会陷入阻塞状态，B代码运行结束后会影响到A代码</p>
 <h1 id="同步回调例子"><a href="#同步回调例子" class="headerlink" title="同步回调例子"></a>同步回调例子</h1><p>我们举例说明，程序猿小冯在工作的时候，发现了一个程序猿小何写的bug，如果小何不修复这个bug，那么小冯就无法继续工作。这个时候小冯就去找小何帮忙修bug，等小何修完bug要告诉小冯的时候，这个时候就需要回调函数。小冯知道bug被修好了，那么就继续完成了自己的工作。</p>
 <h1 id="异步回调例子"><a href="#异步回调例子" class="headerlink" title="异步回调例子"></a>异步回调例子</h1><p>程序猿小冯在工作的时候，发现了一个程序猿小何写的bug，这个时候小冯就去找小何帮忙修bug。在小何工作的同时，优秀员工小冯没有摸鱼，而是继续完成自己的工作。等小何的bug修好之后。再继续完成之前的工作。</p>
-<h1 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h1><pre><code class="Java">//回调函数，如果小何修完了bug就告诉小冯继续干活
-interface callBack &#123;
-    void continueWork();
-&#125;
-</code></pre>
+<h1 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h1><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs Java"><span class="hljs-comment">//回调函数，如果小何修完了bug就告诉小冯继续干活</span><br><span class="hljs-keyword">interface</span> <span class="hljs-title class_">callBack</span> &#123;<br>    <span class="hljs-keyword">void</span> <span class="hljs-title function_">continueWork</span><span class="hljs-params">()</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
 <p>现在我们来实现小冯的代码</p>
-<pre><code class="Java">class Allen implements callBack &#123;
-    //因为需要和小何协调工作，所以小冯要认识小何这个对象
-    private Scott scott;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><code class="hljs Java"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Allen</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">callBack</span> &#123;<br>    <span class="hljs-comment">//因为需要和小何协调工作，所以小冯要认识小何这个对象</span><br>    <span class="hljs-keyword">private</span> Scott scott;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-title function_">Allen</span><span class="hljs-params">(Scott scott)</span> &#123;<br>        <span class="hljs-built_in">this</span>.scott = scott;<br>    &#125;<br><br>    <span class="hljs-comment">//同步回调，意味着单线程工作，小冯把锅甩给了小何，如果小何不解决bug就不干活</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">synwork</span><span class="hljs-params">()</span> &#123;<br>        System.out.println(<span class="hljs-string">&quot;小冯开始工作&quot;</span>);<br>        shuaiguo();<br>        System.out.println(<span class="hljs-string">&quot;小冯工作完成&quot;</span>);<br>    &#125;<br><br>    <span class="hljs-comment">//同步回调，意味着多线程完成，优秀员工小冯在小何修完bug之前就完成了自己这一部分的工作</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">asywork</span><span class="hljs-params">()</span> &#123;<br>        System.out.println(<span class="hljs-string">&quot;小冯开始工作&quot;</span>);<br>        <span class="hljs-keyword">new</span> <span class="hljs-title class_">Thread</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Runnable</span>() &#123;<br>            <span class="hljs-meta">@Override</span><br>            <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">run</span><span class="hljs-params">()</span> &#123;<br>                shuaiguo();<br>            &#125;<br>        &#125;).start();<br>        System.out.println(<span class="hljs-string">&quot;小冯工作完成&quot;</span>);<br>    &#125;<br><br>    <span class="hljs-comment">//这里就是甩锅的过程，小冯这里的特殊技能：叫小何干活</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">shuaiguo</span><span class="hljs-params">()</span> &#123;<br>        scott.work(<span class="hljs-built_in">this</span>);<br>    &#125;<br><br>    <span class="hljs-comment">//这里小冯实现了回调函数，等bug修好之后要继续干活，这个回调函数会通过类传给小何，这样小何就有了告诉小冯继续工作的方法了（小何本身并没有让小冯干活这项技能）</span><br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">continueWork</span><span class="hljs-params">()</span> &#123;<br>        System.out.println(<span class="hljs-string">&quot;小冯继续工作&quot;</span>);<br>    &#125;<br>&#125;<br><br></code></pre></td></tr></table></figure>
 
-    public Allen(Scott scott) &#123;
-        this.scott = scott;
-    &#125;
-
-    //同步回调，意味着单线程工作，小冯把锅甩给了小何，如果小何不解决bug就不干活
-    public void synwork() &#123;
-        System.out.println(&quot;小冯开始工作&quot;);
-        shuaiguo();
-        System.out.println(&quot;小冯工作完成&quot;);
-    &#125;
-
-    //同步回调，意味着多线程完成，优秀员工小冯在小何修完bug之前就完成了自己这一部分的工作
-    public void asywork() &#123;
-        System.out.println(&quot;小冯开始工作&quot;);
-        new Thread(new Runnable() &#123;
-            @Override
-            public void run() &#123;
-                shuaiguo();
-            &#125;
-        &#125;).start();
-        System.out.println(&quot;小冯工作完成&quot;);
-    &#125;
-
-    //这里就是甩锅的过程，小冯这里的特殊技能：叫小何干活
-    public void shuaiguo() &#123;
-        scott.work(this);
-    &#125;
-
-    //这里小冯实现了回调函数，等bug修好之后要继续干活，这个回调函数会通过类传给小何，这样小何就有了告诉小冯继续工作的方法了（小何本身并没有让小冯干活这项技能）
-    @Override
-    public void continueWork() &#123;
-        System.out.println(&quot;小冯继续工作&quot;);
-    &#125;
-&#125;
-</code></pre>
 <p>小冯的代码完成后，我们来写小何的代码</p>
-<pre><code class="Java">class Scott &#123;
-    //因为这个工作是被小冯通知要完成的，所以做完要告诉小冯，那么我们就把小冯这个对象传过来
-    public void work(Allen allen) &#123;
-        System.out.println(&quot;Scott 开始工作&quot;);
-        try &#123;
-            //scott完成工作需要的时间
-            Thread.sleep(3000);
-        &#125; catch (InterruptedException e) &#123;
-            e.printStackTrace();
-        &#125;
-        System.out.println(&quot;Scott 结束工作&quot;);
-        //这里我们利用传过来的小冯这个对象完成回调
-        allen.continueWork();
-    &#125;
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs Java"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Scott</span> &#123;<br>    <span class="hljs-comment">//因为这个工作是被小冯通知要完成的，所以做完要告诉小冯，那么我们就把小冯这个对象传过来</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">work</span><span class="hljs-params">(Allen allen)</span> &#123;<br>        System.out.println(<span class="hljs-string">&quot;Scott 开始工作&quot;</span>);<br>        <span class="hljs-keyword">try</span> &#123;<br>            <span class="hljs-comment">//scott完成工作需要的时间</span><br>            Thread.sleep(<span class="hljs-number">3000</span>);<br>        &#125; <span class="hljs-keyword">catch</span> (InterruptedException e) &#123;<br>            e.printStackTrace();<br>        &#125;<br>        System.out.println(<span class="hljs-string">&quot;Scott 结束工作&quot;</span>);<br>        <span class="hljs-comment">//这里我们利用传过来的小冯这个对象完成回调</span><br>        allen.continueWork();<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
 <p>这里我们来测试一下两种回调方法</p>
-<pre><code class="Java">public class test &#123;
-    public static void main(String[] args) &#123;
-        new Allen(new Scott()).synwork();
-        new Allen(new Scott()).ayswork();
-    &#125;
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs Java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">test</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> &#123;<br>        <span class="hljs-keyword">new</span> <span class="hljs-title class_">Allen</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Scott</span>()).synwork();<br>        <span class="hljs-keyword">new</span> <span class="hljs-title class_">Allen</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Scott</span>()).ayswork();<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
 <h2 id="异步回调结果"><a href="#异步回调结果" class="headerlink" title="异步回调结果"></a>异步回调结果</h2><p>小冯开始工作<br>小冯工作完成<br>Scott 开始工作<br>Scott 结束工作<br>小冯继续工作</p>
 <h2 id="同步回调结果"><a href="#同步回调结果" class="headerlink" title="同步回调结果"></a>同步回调结果</h2><p>小冯开始工作<br>Scott 开始工作<br>Scott 结束工作<br>小冯继续工作<br>小冯工作完成</p>
 <div id="paginator"></div></div><div id="post-footer"><hr><a href="/blog.io/2020/08/20/JVM%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%E5%92%8C%E5%8F%82%E6%95%B0%E9%85%8D%E7%BD%AE%E7%9A%84%E5%AD%A6%E4%B9%A0%EF%BC%88%E4%B8%80%EF%BC%89/">← Prev JVM内存模型和参数配置的学习（一）</a><span style="color: #fe2"> | </span><a href="/blog.io/2020/06/19/CyclicBarrier/">CyclicBarrier Next →</a><hr></div><div id="bottom-btn"><a id="to-index" href="#post-index" title="index">≡</a><a id="to-top" href="#post-title" title="to top">∧</a></div><div id="Valine"></div><script>new Valine({
@@ -87,4 +27,4 @@ interface callBack &#123;
  , appId: 's9ieIT2hA5ChVBjBufKhyfnK-gzGzoHsz'
  , appKey: 'a8LAJbmO7wJi6fj9T85KMJid'
  , placeholder: '此条评论委托企鹅物流发送'
-})</script></div></article><aside><div id="about"><a href="/blog.io/" id="logo"><img src="https://ak.hypergryph.com/assets/index/images/ak/pc/faction/1.png" alt="Logo"></a><h1 id="Dr"><a href="/"> Dr.Allen Feng</a></h1><section id="total"><a id="total-archives" href="/blog.io/archives"><span class="total-title">Archives Total:</span><span class="total-number">63</span></a><div id="total-tags"><span class="total-title">Tags:</span><span class="total-number">59</span></div><div id="total-categories"><span class="total-title">Categories:</span><span class="total-number">13</span></div></section></div><div id="aside-block"><h1>INDEX</h1><div id="post-index"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9E%E8%B0%83"><span class="toc-number">1.</span> <span class="toc-text">回调</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%90%8C%E6%AD%A5%E5%9B%9E%E8%B0%83"><span class="toc-number">2.</span> <span class="toc-text">同步回调</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83"><span class="toc-number">3.</span> <span class="toc-text">异步回调</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%90%8C%E6%AD%A5%E5%9B%9E%E8%B0%83%E4%BE%8B%E5%AD%90"><span class="toc-number">4.</span> <span class="toc-text">同步回调例子</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83%E4%BE%8B%E5%AD%90"><span class="toc-number">5.</span> <span class="toc-text">异步回调例子</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81"><span class="toc-number">6.</span> <span class="toc-text">代码</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83%E7%BB%93%E6%9E%9C"><span class="toc-number">6.1.</span> <span class="toc-text">异步回调结果</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%8C%E6%AD%A5%E5%9B%9E%E8%B0%83%E7%BB%93%E6%9E%9C"><span class="toc-number">6.2.</span> <span class="toc-text">同步回调结果</span></a></li></ol></li></ol></div></div><footer><nobr><span class="text-title">©</span><span class="text-content">1970 to 2020</span></nobr><wbr><nobr><span class="text-title">ICP</span><span class="text-content">——备案号——</span></nobr><wbr><wbr><nobr>published with&nbsp;<a target="_blank" rel="noopener" href="http://hexo.io">Hexo&nbsp;</a></nobr><wbr><nobr>Theme&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus/hexo-theme-arknights">Arknight&nbsp;</a></nobr><wbr><nobr>by&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus">Yue_plus</a></nobr></footer></aside></main><canvas id="canvas-dust"></canvas><script src="/blog.io/js/arknights.js"></script><script src="https://cdn.bootcdn.net/ajax/libs/highlight.js/10.1.2/highlight.min.js"></script></body></html>
+})</script></div></article><aside><div id="about"><a href="/blog.io/" id="logo"><img src="https://ak.hypergryph.com/assets/index/images/ak/pc/faction/1.png" alt="Logo"></a><h1 id="Dr"><a href="/"> Dr.Allen Feng</a></h1><section id="total"><a id="total-archives" href="/blog.io/archives"><span class="total-title">Archives Total:</span><span class="total-number">63</span></a><div id="total-tags"><span class="total-title">Tags:</span><span class="total-number">58</span></div><div id="total-categories"><span class="total-title">Categories:</span><span class="total-number">11</span></div></section></div><div id="aside-block"><h1>INDEX</h1><div id="post-index"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9E%E8%B0%83"><span class="toc-number">1.</span> <span class="toc-text">回调</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%90%8C%E6%AD%A5%E5%9B%9E%E8%B0%83"><span class="toc-number">2.</span> <span class="toc-text">同步回调</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83"><span class="toc-number">3.</span> <span class="toc-text">异步回调</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%90%8C%E6%AD%A5%E5%9B%9E%E8%B0%83%E4%BE%8B%E5%AD%90"><span class="toc-number">4.</span> <span class="toc-text">同步回调例子</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83%E4%BE%8B%E5%AD%90"><span class="toc-number">5.</span> <span class="toc-text">异步回调例子</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81"><span class="toc-number">6.</span> <span class="toc-text">代码</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BC%82%E6%AD%A5%E5%9B%9E%E8%B0%83%E7%BB%93%E6%9E%9C"><span class="toc-number">6.1.</span> <span class="toc-text">异步回调结果</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%8C%E6%AD%A5%E5%9B%9E%E8%B0%83%E7%BB%93%E6%9E%9C"><span class="toc-number">6.2.</span> <span class="toc-text">同步回调结果</span></a></li></ol></li></ol></div></div><footer><nobr><span class="text-title">©</span><span class="text-content">1970 to 2020</span></nobr><wbr><nobr><span class="text-title">ICP</span><span class="text-content">——备案号——</span></nobr><wbr><wbr><nobr>published with&nbsp;<a target="_blank" rel="noopener" href="http://hexo.io">Hexo&nbsp;</a></nobr><wbr><nobr>Theme&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus/hexo-theme-arknights">Arknight&nbsp;</a></nobr><wbr><nobr>by&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus">Yue_plus</a></nobr></footer></aside></main><canvas id="canvas-dust"></canvas><script src="/blog.io/js/arknights.js"></script><script src="https://cdn.bootcdn.net/ajax/libs/highlight.js/10.1.2/highlight.min.js"></script></body></html>

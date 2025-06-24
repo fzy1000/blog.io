@@ -20,25 +20,11 @@
 </ul>
 <p>以电商系统为例，你和你的团队在刚开始开发垂直电商系统时，为了加快产品的研发速度，大概率不会注意配置管理的问题，会自然而然地把配置项和代码写在一起。但是随着配置项越来越多，为了更好地对配置项进行管理，同时避免修改配置项后还要重新对代码做编译，你选择把配置项拆分成独立的文件（文件可以是 properties 格式、xml 格式或 yaml 格式）。不过，这些文件还是会和工程一起打包部署，只是更改配置后不需要重新编译代码了。</p>
 <p>随后，你很快发现了一个问题：虽然把配置拆分了出来，但是由于配置还是和代码打包在一起，如果要更改一个配置还是需要重新打包，这样无疑会增加打包的时间。于是，你考虑把配置写到单独的目录中，这样，修改配置就不需要再重新打包了（不过，由于配置并不能够实时生效，所以想让配置生效，还是需要重启服务）。</p>
-<p>我们一般使用的基础组件，比如 Tomcat、Nginx，都是采用上面这种配置文件的方式来管理配置项的，而在 Linux 系统中，我提到的 tcp_max_syn_backlog 就可以配置在 /etc/sysctl.conf 中。</p>
-<p>这里，我需要强调一点，我们通常会把配置文件存储的目录标准化为特定的目录。比如，都配置成 /data/confs 目录，然后把配置项使用 Git 等代码仓库管理起来。这样，在增加新的机器时，在机器初始化脚本中只需要创建这个目录，再从 Git 中拉取配置就可以了。这是一个标准化的过程，可以避免在启动应用时忘记部署配置文件。</p>
+<p>我们一般使用的基础组件，比如 Tomcat、Nginx，都是采用上面这种配置文件的方式来管理配置项的，而在 Linux 系统中，我提到的 tcp_max_syn_backlog 就可以配置在 &#x2F;etc&#x2F;sysctl.conf 中。</p>
+<p>这里，我需要强调一点，我们通常会把配置文件存储的目录标准化为特定的目录。比如，都配置成 &#x2F;data&#x2F;confs 目录，然后把配置项使用 Git 等代码仓库管理起来。这样，在增加新的机器时，在机器初始化脚本中只需要创建这个目录，再从 Git 中拉取配置就可以了。这是一个标准化的过程，可以避免在启动应用时忘记部署配置文件。</p>
 <p>再进一步说，如果你的服务是多机房部署的，那么不同机房的配置项中有可能是相同的，也有可能是不同的。这时候，你需要将相同的配置项放置在一个目录中给多个机房共用，再将不同的配置项放置在以机房名为名称的目录中。在读取配置的时候应该优先读取机房的配置，再读取公共配置，这样可以减少配置文件中的配置项的数量。</p>
 <p>我给你列了一个典型目录配置，如果你的系统也使用文件来管理配置，可以参考一下。</p>
-<pre><code>
-/data/confs/common/commerce //电商业务的公共配置
-
-/data/confs/commerce-zw //电商业务兆维机房配置
-
-/data/confs/commerce-yz //电商业务亦庄机房配置
-
-
-
-/data/confs/common/community //社区业务的公共配置
-
-/data/confs/community-zw //社区业务兆维机房配置
-
-/data/confs/community-yz //社区业务亦庄机房配置
-</code></pre>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs plaintext"><br>/data/confs/common/commerce //电商业务的公共配置<br><br>/data/confs/commerce-zw //电商业务兆维机房配置<br><br>/data/confs/commerce-yz //电商业务亦庄机房配置<br><br><br><br>/data/confs/common/community //社区业务的公共配置<br><br>/data/confs/community-zw //社区业务兆维机房配置<br><br>/data/confs/community-yz //社区业务亦庄机房配置<br></code></pre></td></tr></table></figure>
 <p>那么，这是不是配置管理的最终形态呢？当然不是，你不要忘了把配置放在文件中的方式还存在的问题（我上面也提到过了），那就是，我们必须将服务重启后才能让配置生效。有没有一种方法可以在不重启应用的前提下也能让配置生效呢？这就需要配置中心帮助我们实现了。</p>
 <h3 id="配置中心是如何实现的"><a href="#配置中心是如何实现的" class="headerlink" title="配置中心是如何实现的"></a><font color = "dd0000">配置中心是如何实现的</font></h3><p>配置中心可以算是微服务架构中的一个标配组件了。业界也提供了多种开源方案供你选择，比较出名的有携程开源的 Apollo、百度开源的 Disconf、360 开源的 QConf、Spring Cloud 的组件 Spring Cloud Config 等等。</p>
 <p>在我看来，Apollo 支持不同环境，不同集群的配置，有完善的管理功能，支持灰度发布、更改热发布等功能，在所有配置中心中功能比较齐全，推荐你使用。</p>
@@ -47,9 +33,9 @@
 <p>其实，配置中心和注册中心非常类似，其核心的功能就是配置项的存储和读取。所以，在设计配置中心的服务端时，我们需要选择合适的存储组件来存储大量的配置信息，这里可选择的组件有很多。</p>
 <p>事实上，不同的开源配置中心也使用了不同的组件，比如 Disconf、Apollo 使用的是 MySQL；QConf 使用的是 ZooKeeper。我之前维护和使用的配置中心就会使用不同的存储组件，比如微博的配置中心使用 Redis 来存储信息，而美图用的是 Etcd。</p>
 <p>无论使用哪一种存储组件，你所要做的就是规范配置项在其中的存储结构。比如，我之前使用的配置中心用 Etcd 作为存储组件，支持存储全局配置、机房配置和节点配置。其中，节点配置优先级高于机房配置，机房配置优先级高于全局配置。也就是说，我们会优先读取节点的配置，如果节点配置不存在，再读取机房配置，最后读取全局配置。它们的存储路径如下：</p>
-<p>/confs/global/{env}/{project}/{service}/{version}/{module}/{key} //全局配置</p>
-<p>/confs/regions/{env}/{project}/{service}/{version}/{region}/{module}/{key} //机房配置</p>
-<p>/confs/nodes/{env}/{project}/{service}/{version}/{region}/{node}/{module}/{key} //节点配置</p>
+<p>&#x2F;confs&#x2F;global&#x2F;{env}&#x2F;{project}&#x2F;{service}&#x2F;{version}&#x2F;{module}&#x2F;{key} &#x2F;&#x2F;全局配置</p>
+<p>&#x2F;confs&#x2F;regions&#x2F;{env}&#x2F;{project}&#x2F;{service}&#x2F;{version}&#x2F;{region}&#x2F;{module}&#x2F;{key} &#x2F;&#x2F;机房配置</p>
+<p>&#x2F;confs&#x2F;nodes&#x2F;{env}&#x2F;{project}&#x2F;{service}&#x2F;{version}&#x2F;{region}&#x2F;{node}&#x2F;{module}&#x2F;{key} &#x2F;&#x2F;节点配置</p>
 <p>变更推送如何实现</p>
 <p>配置信息存储之后，我们需要考虑如何将配置的变更推送给服务端，这样就可以实现配置的动态变更，也就是说不需要重启服务器就能让配置生效了。而我们一般会有两种思路来实现变更推送：一种是轮询查询的方式，一种是长连推送的方式。</p>
 <p>轮询查询很简单，就是应用程序向配置中心客户端注册一个监听器，配置中心的客户端，定期地（比如 1 分钟）查询所需要的配置是否有变化，如果有变化则通知触发监听器，让应用程序得到变更通知。</p>
@@ -77,4 +63,4 @@
  , appId: 's9ieIT2hA5ChVBjBufKhyfnK-gzGzoHsz'
  , appKey: 'a8LAJbmO7wJi6fj9T85KMJid'
  , placeholder: '此条评论委托企鹅物流发送'
-})</script></div></article><aside><div id="about"><a href="/blog.io/" id="logo"><img src="https://ak.hypergryph.com/assets/index/images/ak/pc/faction/1.png" alt="Logo"></a><h1 id="Dr"><a href="/"> Dr.Allen Feng</a></h1><section id="total"><a id="total-archives" href="/blog.io/archives"><span class="total-title">Archives Total:</span><span class="total-number">63</span></a><div id="total-tags"><span class="total-title">Tags:</span><span class="total-number">59</span></div><div id="total-categories"><span class="total-title">Categories:</span><span class="total-number">13</span></div></section></div><div id="aside-block"><h1>INDEX</h1><div id="post-index"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E5%AF%B9%E9%85%8D%E7%BD%AE%E8%BF%9B%E8%A1%8C%E7%AE%A1%E7%90%86"><span class="toc-number">1.</span> <span class="toc-text">如何对配置进行管理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE%E4%B8%AD%E5%BF%83%E6%98%AF%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0%E7%9A%84"><span class="toc-number">2.</span> <span class="toc-text">配置中心是如何实现的</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AF%BE%E7%A8%8B%E5%B0%8F%E7%BB%93"><span class="toc-number">3.</span> <span class="toc-text">课程小结</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E8%AF%BE%E4%B8%80%E6%80%9D"><span class="toc-number">4.</span> <span class="toc-text">一课一思</span></a></li></ol></div></div><footer><nobr><span class="text-title">©</span><span class="text-content">1970 to 2020</span></nobr><wbr><nobr><span class="text-title">ICP</span><span class="text-content">——备案号——</span></nobr><wbr><wbr><nobr>published with&nbsp;<a target="_blank" rel="noopener" href="http://hexo.io">Hexo&nbsp;</a></nobr><wbr><nobr>Theme&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus/hexo-theme-arknights">Arknight&nbsp;</a></nobr><wbr><nobr>by&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus">Yue_plus</a></nobr></footer></aside></main><canvas id="canvas-dust"></canvas><script src="/blog.io/js/arknights.js"></script><script src="https://cdn.bootcdn.net/ajax/libs/highlight.js/10.1.2/highlight.min.js"></script></body></html>
+})</script></div></article><aside><div id="about"><a href="/blog.io/" id="logo"><img src="https://ak.hypergryph.com/assets/index/images/ak/pc/faction/1.png" alt="Logo"></a><h1 id="Dr"><a href="/"> Dr.Allen Feng</a></h1><section id="total"><a id="total-archives" href="/blog.io/archives"><span class="total-title">Archives Total:</span><span class="total-number">63</span></a><div id="total-tags"><span class="total-title">Tags:</span><span class="total-number">58</span></div><div id="total-categories"><span class="total-title">Categories:</span><span class="total-number">11</span></div></section></div><div id="aside-block"><h1>INDEX</h1><div id="post-index"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E5%AF%B9%E9%85%8D%E7%BD%AE%E8%BF%9B%E8%A1%8C%E7%AE%A1%E7%90%86"><span class="toc-number">1.</span> <span class="toc-text">如何对配置进行管理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE%E4%B8%AD%E5%BF%83%E6%98%AF%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0%E7%9A%84"><span class="toc-number">2.</span> <span class="toc-text">配置中心是如何实现的</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AF%BE%E7%A8%8B%E5%B0%8F%E7%BB%93"><span class="toc-number">3.</span> <span class="toc-text">课程小结</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E8%AF%BE%E4%B8%80%E6%80%9D"><span class="toc-number">4.</span> <span class="toc-text">一课一思</span></a></li></ol></div></div><footer><nobr><span class="text-title">©</span><span class="text-content">1970 to 2020</span></nobr><wbr><nobr><span class="text-title">ICP</span><span class="text-content">——备案号——</span></nobr><wbr><wbr><nobr>published with&nbsp;<a target="_blank" rel="noopener" href="http://hexo.io">Hexo&nbsp;</a></nobr><wbr><nobr>Theme&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus/hexo-theme-arknights">Arknight&nbsp;</a></nobr><wbr><nobr>by&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus">Yue_plus</a></nobr></footer></aside></main><canvas id="canvas-dust"></canvas><script src="/blog.io/js/arknights.js"></script><script src="https://cdn.bootcdn.net/ajax/libs/highlight.js/10.1.2/highlight.min.js"></script></body></html>

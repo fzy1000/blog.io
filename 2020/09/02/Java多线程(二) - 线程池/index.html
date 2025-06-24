@@ -14,111 +14,20 @@
 <h4 id="Executors提供的四种线程池"><a href="#Executors提供的四种线程池" class="headerlink" title="Executors提供的四种线程池"></a>Executors提供的四种线程池</h4><p><strong>- newSingleThreadExecutor</strong><br>创建一个单线程化的线程池，它只会用唯一的工作线程来执行任务，保证所有任务按照指定顺序(FIFO, LIFO, 优先级)执行。</p>
 <p><strong>通俗</strong>：创建只有一个线程的线程池，且线程的存活时间是无限的；当该线程正繁忙时，对于新任务会进入阻塞队列中(无界的阻塞队列)</p>
 <p><strong>适用</strong>：一个任务一个任务执行的场景</p>
-<pre><code class="Java">        ExecutorService pool = Executors.newSingleThreadExecutor();
-        //函数式接口重写runnable方法
-        pool.execute(() -&gt; out.println(Thread.currentThread().getName()));
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs Java"><span class="hljs-type">ExecutorService</span> <span class="hljs-variable">pool</span> <span class="hljs-operator">=</span> Executors.newSingleThreadExecutor();<br><span class="hljs-comment">//函数式接口重写runnable方法</span><br>pool.execute(() -&gt; out.println(Thread.currentThread().getName()));<br></code></pre></td></tr></table></figure>
 <p><strong>- newFixedThreadPool</strong><br>创建一个定长线程池，可控制线程最大并发数，超出的线程会在队列中等待。</p>
 <p><strong>通俗</strong>：创建可容纳固定数量线程的池子，每个线程的存活时间是无限的，当池子满了就不在添加线程了；如果池中的所有线程均在繁忙状态，对于新任务会进入阻塞队列中(无界的阻塞队列)</p>
 <p><strong>适用</strong>：执行长期的任务，性能好很多</p>
-<pre><code class="Java">        /**
-        * 1.创建固定大小的线程池。每次提交一个任务就创建一个线程，直到线程达到线程池的最大大小&lt;br&gt;
-        * 2.线程池的大小一旦达到最大值就会保持不变，如果某个线程因为执行异常而结束，那么线程池会补充一个新线程&lt;br&gt;
-        * 3.因为线程池大小为3，每个任务输出index后sleep 2秒，所以每两秒打印3个数字，和线程名称&lt;br&gt;
-        */
-        public static void fixTheadPoolTest() &#123;
-            ExecutorService fixedThreadPool = Executors.newFixedThreadPool(3);
-            for (int i = 0; i &lt; 10; i++) &#123;
-                final int ii = i;
-                fixedThreadPool.execute(() -&gt; &#123;
-                    out.println(&quot;线程名称：&quot; + Thread.currentThread().getName() + &quot;，执行&quot; + ii);
-                    try &#123;
-                        Thread.sleep(2000);
-                    &#125; catch (InterruptedException e) &#123;
-                        e.printStackTrace();
-                    &#125;
-                &#125;);
-            &#125;
-        &#125;
-        ------output-------
-        线程名称：pool-1-thread-3，执行2
-        线程名称：pool-1-thread-1，执行0
-        线程名称：pool-1-thread-2，执行3
-        线程名称：pool-1-thread-3，执行4
-        线程名称：pool-1-thread-1，执行5
-        线程名称：pool-1-thread-2，执行6
-        线程名称：pool-1-thread-3，执行7
-        线程名称：pool-1-thread-1，执行8
-        线程名称：pool-1-thread-3，执行9
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><code class="hljs Java"><span class="hljs-comment">/**</span><br><span class="hljs-comment">* 1.创建固定大小的线程池。每次提交一个任务就创建一个线程，直到线程达到线程池的最大大小&lt;br&gt;</span><br><span class="hljs-comment">* 2.线程池的大小一旦达到最大值就会保持不变，如果某个线程因为执行异常而结束，那么线程池会补充一个新线程&lt;br&gt;</span><br><span class="hljs-comment">* 3.因为线程池大小为3，每个任务输出index后sleep 2秒，所以每两秒打印3个数字，和线程名称&lt;br&gt;</span><br><span class="hljs-comment">*/</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">fixTheadPoolTest</span><span class="hljs-params">()</span> &#123;<br>	<span class="hljs-type">ExecutorService</span> <span class="hljs-variable">fixedThreadPool</span> <span class="hljs-operator">=</span> Executors.newFixedThreadPool(<span class="hljs-number">3</span>);<br>	<span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> <span class="hljs-variable">i</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">10</span>; i++) &#123;<br>		<span class="hljs-keyword">final</span> <span class="hljs-type">int</span> <span class="hljs-variable">ii</span> <span class="hljs-operator">=</span> i;<br>		fixedThreadPool.execute(() -&gt; &#123;<br>			out.println(<span class="hljs-string">&quot;线程名称：&quot;</span> + Thread.currentThread().getName() + <span class="hljs-string">&quot;，执行&quot;</span> + ii);<br>			<span class="hljs-keyword">try</span> &#123;<br>				Thread.sleep(<span class="hljs-number">2000</span>);<br>			&#125; <span class="hljs-keyword">catch</span> (InterruptedException e) &#123;<br>				e.printStackTrace();<br>			&#125;<br>		&#125;);<br>	&#125;<br>&#125;<br>------output-------<br>线程名称：pool-<span class="hljs-number">1</span>-thread-<span class="hljs-number">3</span>，执行<span class="hljs-number">2</span><br>线程名称：pool-<span class="hljs-number">1</span>-thread-<span class="hljs-number">1</span>，执行<span class="hljs-number">0</span><br>线程名称：pool-<span class="hljs-number">1</span>-thread-<span class="hljs-number">2</span>，执行<span class="hljs-number">3</span><br>线程名称：pool-<span class="hljs-number">1</span>-thread-<span class="hljs-number">3</span>，执行<span class="hljs-number">4</span><br>线程名称：pool-<span class="hljs-number">1</span>-thread-<span class="hljs-number">1</span>，执行<span class="hljs-number">5</span><br>线程名称：pool-<span class="hljs-number">1</span>-thread-<span class="hljs-number">2</span>，执行<span class="hljs-number">6</span><br>线程名称：pool-<span class="hljs-number">1</span>-thread-<span class="hljs-number">3</span>，执行<span class="hljs-number">7</span><br>线程名称：pool-<span class="hljs-number">1</span>-thread-<span class="hljs-number">1</span>，执行<span class="hljs-number">8</span><br>线程名称：pool-<span class="hljs-number">1</span>-thread-<span class="hljs-number">3</span>，执行<span class="hljs-number">9</span><br><br></code></pre></td></tr></table></figure>
 <p><strong>- newScheduledThreadPool</strong><br>创建一个可定期或者延时执行任务的定长线程池，支持定时及周期性任务执行。 </p>
 <p><strong>通俗</strong>：创建一个固定大小的线程池，线程池内线程存活时间无限制，线程池可以支持定时及周期性任务执行，如果所有线程均处于繁忙状态，对于新任务会进入DelayedWorkQueue队列中，这是一种按照超时时间排序的队列结构</p>
 <p><strong>适用</strong>：周期性执行任务的场景</p>
-<pre><code class="Java">        /**
-         * 创建一个定长线程池，支持定时及周期性任务执行。延迟执行
-         */
-        public static void sceduleThreadPool() &#123;
-            ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(5);
-            Runnable r1 = () -&gt; out.println(&quot;线程名称：&quot; + Thread.currentThread().getName() + &quot;，执行:3秒后执行&quot;);
-            scheduledThreadPool.schedule(r1, 3, TimeUnit.SECONDS);
-            Runnable r2 = () -&gt; out.println(&quot;线程名称：&quot; + Thread.currentThread().getName() + &quot;，执行:延迟2秒后每3秒执行一次&quot;);
-            scheduledThreadPool.scheduleAtFixedRate(r2, 2, 3, TimeUnit.SECONDS);
-            Runnable r3 = () -&gt; out.println(&quot;线程名称：&quot; + Thread.currentThread().getName() + &quot;，执行:普通任务&quot;);
-            for (int i = 0; i &lt; 5; i++) &#123;
-                scheduledThreadPool.execute(r3);
-            &#125;
-        &#125;
-        ----output------
-        线程名称：pool-1-thread-1，执行:普通任务
-        线程名称：pool-1-thread-5，执行:普通任务
-        线程名称：pool-1-thread-4，执行:普通任务
-        线程名称：pool-1-thread-3，执行:普通任务
-        线程名称：pool-1-thread-2，执行:普通任务
-        线程名称：pool-1-thread-1，执行:延迟2秒后每3秒执行一次
-        线程名称：pool-1-thread-5，执行:3秒后执行
-        线程名称：pool-1-thread-4，执行:延迟2秒后每3秒执行一次
-        线程名称：pool-1-thread-4，执行:延迟2秒后每3秒执行一次
-        线程名称：pool-1-thread-4，执行:延迟2秒后每3秒执行一次
-        线程名称：pool-1-thread-4，执行:延迟2秒后每3秒执行一次
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><code class="hljs Java"><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 创建一个定长线程池，支持定时及周期性任务执行。延迟执行</span><br><span class="hljs-comment"> */</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">sceduleThreadPool</span><span class="hljs-params">()</span> &#123;<br>	<span class="hljs-type">ScheduledExecutorService</span> <span class="hljs-variable">scheduledThreadPool</span> <span class="hljs-operator">=</span> Executors.newScheduledThreadPool(<span class="hljs-number">5</span>);<br>	<span class="hljs-type">Runnable</span> <span class="hljs-variable">r1</span> <span class="hljs-operator">=</span> () -&gt; out.println(<span class="hljs-string">&quot;线程名称：&quot;</span> + Thread.currentThread().getName() + <span class="hljs-string">&quot;，执行:3秒后执行&quot;</span>);<br>	scheduledThreadPool.schedule(r1, <span class="hljs-number">3</span>, TimeUnit.SECONDS);<br>	<span class="hljs-type">Runnable</span> <span class="hljs-variable">r2</span> <span class="hljs-operator">=</span> () -&gt; out.println(<span class="hljs-string">&quot;线程名称：&quot;</span> + Thread.currentThread().getName() + <span class="hljs-string">&quot;，执行:延迟2秒后每3秒执行一次&quot;</span>);<br>	scheduledThreadPool.scheduleAtFixedRate(r2, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>, TimeUnit.SECONDS);<br>	<span class="hljs-type">Runnable</span> <span class="hljs-variable">r3</span> <span class="hljs-operator">=</span> () -&gt; out.println(<span class="hljs-string">&quot;线程名称：&quot;</span> + Thread.currentThread().getName() + <span class="hljs-string">&quot;，执行:普通任务&quot;</span>);<br>	<span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> <span class="hljs-variable">i</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">5</span>; i++) &#123;<br>		scheduledThreadPool.execute(r3);<br>	&#125;<br>&#125;<br>----output------<br>线程名称：pool-<span class="hljs-number">1</span>-thread-<span class="hljs-number">1</span>，执行:普通任务<br>线程名称：pool-<span class="hljs-number">1</span>-thread-<span class="hljs-number">5</span>，执行:普通任务<br>线程名称：pool-<span class="hljs-number">1</span>-thread-<span class="hljs-number">4</span>，执行:普通任务<br>线程名称：pool-<span class="hljs-number">1</span>-thread-<span class="hljs-number">3</span>，执行:普通任务<br>线程名称：pool-<span class="hljs-number">1</span>-thread-<span class="hljs-number">2</span>，执行:普通任务<br>线程名称：pool-<span class="hljs-number">1</span>-thread-<span class="hljs-number">1</span>，执行:延迟<span class="hljs-number">2</span>秒后每<span class="hljs-number">3</span>秒执行一次<br>线程名称：pool-<span class="hljs-number">1</span>-thread-<span class="hljs-number">5</span>，执行:<span class="hljs-number">3</span>秒后执行<br>线程名称：pool-<span class="hljs-number">1</span>-thread-<span class="hljs-number">4</span>，执行:延迟<span class="hljs-number">2</span>秒后每<span class="hljs-number">3</span>秒执行一次<br>线程名称：pool-<span class="hljs-number">1</span>-thread-<span class="hljs-number">4</span>，执行:延迟<span class="hljs-number">2</span>秒后每<span class="hljs-number">3</span>秒执行一次<br>线程名称：pool-<span class="hljs-number">1</span>-thread-<span class="hljs-number">4</span>，执行:延迟<span class="hljs-number">2</span>秒后每<span class="hljs-number">3</span>秒执行一次<br>线程名称：pool-<span class="hljs-number">1</span>-thread-<span class="hljs-number">4</span>，执行:延迟<span class="hljs-number">2</span>秒后每<span class="hljs-number">3</span>秒执行一次<br><br></code></pre></td></tr></table></figure>
 <p><strong>- newCachedThreadPool</strong><br>创建一个可缓存线程池，如果线程池长度超过处理需要，可灵活回收空闲线程，若无可回收，则新建线程。</p>
 <p><strong>通俗</strong>：当有新任务到来，则插入到SynchronousQueue中，由于SynchronousQueue是同步队列，因此会在池中寻找可用线程来执行，若有可以线程则执行，若没有可用线程则创建一个线程来执行该任务；若池中线程空闲时间超过指定大小，则该线程会被销毁。</p>
 <p><strong>适用</strong>：执行很多短期异步的小程序或者负载较轻的服务器</p>
-<pre><code class="Java">        /**
-         * 1.创建一个可缓存的线程池。如果线程池的大小超过了处理任务所需要的线程，那么就会回收部分空闲（60秒不执行任务）的线程&lt;br&gt;
-         * 2.当任务数增加时，此线程池又可以智能的添加新线程来处理任务&lt;br&gt;
-         * 3.此线程池不会对线程池大小做限制，线程池大小完全依赖于操作系统（或者说JVM）能够创建的最大线程大小&lt;br&gt;
-         * 
-         */
-        public static void cacheThreadPool() &#123;
-            ExecutorService cachedThreadPool = Executors.newCachedThreadPool();
-            for (int i = 1; i &lt;= 10; i++) &#123;
-                final int ii = i;
-                try &#123;
-                    Thread.sleep(ii * 1);
-                &#125; catch (InterruptedException e) &#123;
-                    e.printStackTrace();
-                &#125;
-                cachedThreadPool.execute(()-&gt;out.println(&quot;线程名称：&quot; + Thread.currentThread().getName() + &quot;，执行&quot; + ii));
-            &#125;
-        &#125;
-        -----output------
-        线程名称：pool-1-thread-1，执行1
-        线程名称：pool-1-thread-1，执行2
-        线程名称：pool-1-thread-1，执行3
-        线程名称：pool-1-thread-1，执行4
-        线程名称：pool-1-thread-1，执行5
-        线程名称：pool-1-thread-1，执行6
-        线程名称：pool-1-thread-1，执行7
-        线程名称：pool-1-thread-1，执行8
-        线程名称：pool-1-thread-1，执行9
-        线程名称：pool-1-thread-1，执行10
-</code></pre>
-<h4 id="线程池的主要参数"><a href="#线程池的主要参数" class="headerlink" title="线程池的主要参数"></a><a target="_blank" rel="noopener" href="https://blog.csdn.net/ye17186/article/details/89467919" title="线程池的主要参数">线程池的主要参数</a></h4><pre><code class="Java">    public ThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue&lt;Runnable&gt; workQueue) &#123;
-        this(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue,
-             Executors.defaultThreadFactory(), defaultHandler);
-    &#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><code class="hljs Java"><span class="hljs-comment">/**</span><br><span class="hljs-comment"> * 1.创建一个可缓存的线程池。如果线程池的大小超过了处理任务所需要的线程，那么就会回收部分空闲（60秒不执行任务）的线程&lt;br&gt;</span><br><span class="hljs-comment"> * 2.当任务数增加时，此线程池又可以智能的添加新线程来处理任务&lt;br&gt;</span><br><span class="hljs-comment"> * 3.此线程池不会对线程池大小做限制，线程池大小完全依赖于操作系统（或者说JVM）能够创建的最大线程大小&lt;br&gt;</span><br><span class="hljs-comment"> * </span><br><span class="hljs-comment"> */</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">cacheThreadPool</span><span class="hljs-params">()</span> &#123;<br>	<span class="hljs-type">ExecutorService</span> <span class="hljs-variable">cachedThreadPool</span> <span class="hljs-operator">=</span> Executors.newCachedThreadPool();<br>	<span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> <span class="hljs-variable">i</span> <span class="hljs-operator">=</span> <span class="hljs-number">1</span>; i &lt;= <span class="hljs-number">10</span>; i++) &#123;<br>		<span class="hljs-keyword">final</span> <span class="hljs-type">int</span> <span class="hljs-variable">ii</span> <span class="hljs-operator">=</span> i;<br>		<span class="hljs-keyword">try</span> &#123;<br>			Thread.sleep(ii * <span class="hljs-number">1</span>);<br>		&#125; <span class="hljs-keyword">catch</span> (InterruptedException e) &#123;<br>			e.printStackTrace();<br>		&#125;<br>		cachedThreadPool.execute(()-&gt;out.println(<span class="hljs-string">&quot;线程名称：&quot;</span> + Thread.currentThread().getName() + <span class="hljs-string">&quot;，执行&quot;</span> + ii));<br>	&#125;<br>&#125;<br>-----output------<br>线程名称：pool-<span class="hljs-number">1</span>-thread-<span class="hljs-number">1</span>，执行<span class="hljs-number">1</span><br>线程名称：pool-<span class="hljs-number">1</span>-thread-<span class="hljs-number">1</span>，执行<span class="hljs-number">2</span><br>线程名称：pool-<span class="hljs-number">1</span>-thread-<span class="hljs-number">1</span>，执行<span class="hljs-number">3</span><br>线程名称：pool-<span class="hljs-number">1</span>-thread-<span class="hljs-number">1</span>，执行<span class="hljs-number">4</span><br>线程名称：pool-<span class="hljs-number">1</span>-thread-<span class="hljs-number">1</span>，执行<span class="hljs-number">5</span><br>线程名称：pool-<span class="hljs-number">1</span>-thread-<span class="hljs-number">1</span>，执行<span class="hljs-number">6</span><br>线程名称：pool-<span class="hljs-number">1</span>-thread-<span class="hljs-number">1</span>，执行<span class="hljs-number">7</span><br>线程名称：pool-<span class="hljs-number">1</span>-thread-<span class="hljs-number">1</span>，执行<span class="hljs-number">8</span><br>线程名称：pool-<span class="hljs-number">1</span>-thread-<span class="hljs-number">1</span>，执行<span class="hljs-number">9</span><br>线程名称：pool-<span class="hljs-number">1</span>-thread-<span class="hljs-number">1</span>，执行<span class="hljs-number">10</span><br></code></pre></td></tr></table></figure>
+<h4 id="线程池的主要参数"><a href="#线程池的主要参数" class="headerlink" title="线程池的主要参数"></a><a target="_blank" rel="noopener" href="https://blog.csdn.net/ye17186/article/details/89467919" title="线程池的主要参数">线程池的主要参数</a></h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs Java"><span class="hljs-keyword">public</span> <span class="hljs-title function_">ThreadPoolExecutor</span><span class="hljs-params">(<span class="hljs-type">int</span> corePoolSize, <span class="hljs-type">int</span> maximumPoolSize, <span class="hljs-type">long</span> keepAliveTime, TimeUnit unit, BlockingQueue&lt;Runnable&gt; workQueue)</span> &#123;<br>	<span class="hljs-built_in">this</span>(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue,<br>		 Executors.defaultThreadFactory(), defaultHandler);<br>&#125;<br></code></pre></td></tr></table></figure>
 <ol>
 <li><p>corePoolSize 线程池核心线程大小</p>
 <p> 线程池中会维护一个最小的线程数量，即使这些线程处理空闲状态，他们也不会 被销毁，除非设置了allowCoreThreadTimeOut。这里的最小线程数量即是corePoolSize。</p>
@@ -162,23 +71,8 @@
 <p>a、若当前运行的线程少于corePoolSize,则创建新线程来执行任务(执行这一步需要获取全局锁)<br>b、若运行的线程多于或等于corePoolSize,则将任务加入BlockingQueue<br>c、若无法将任务加入BlockingQueue,则创建新的线程来处理任务(执行这一步需要获取全局锁)<br>d、若创建新线程将使当前运行的线程超出maximumPoolSize,任务将被拒绝,并调用RejectedExecutionHandler.rejectedExecution()</p>
 <p>采取上述思路,是为了在执行execute()时,尽可能避免获取全局锁<br>在ThreadPoolExecutor完成预热之后（当前运行的线程数大于等于corePoolSize),几乎所有的execute()方法调用都是执行步骤b,而步骤b不需要获取全局锁</p>
 <p><strong>源码分析</strong>：上面的流程分析让我们很直观的了解的线程池的工作原理，让我们再通过源代码来看看是如何实现的。线程池执行任务的方法如下：</p>
-<pre><code class="Java">    public void execute(Runnable command) &#123;
-        if (command == null)
-            throw new NullPointerException();
-        //如果线程数小于基本线程数，则创建线程并执行当前任务
-        if (poolSize &gt;= corePoolSize || !addIfUnderCorePoolSize(command)) &#123;
-            //如线程数大于等于基本线程数或线程创建失败，则将当前任务放到工作队列中。
-            if (runState == RUNNING &amp;&amp; workQueue.offer(command)) &#123;
-                if (runState != RUNNING || poolSize == 0)
-                    ensureQueuedTaskHandled(command);
-            &#125;
-            //如果线程池不处于运行中或任务无法放入队列，并且当前线程数量小于最大允许的线程数量，则创建一个线程执行任务。
-            else if (!addIfUnderMaximumPoolSize(command))
-                //抛出RejectedExecutionException异常
-                reject(command); // is shutdown or saturated
-        &#125;
-    &#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs Java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">execute</span><span class="hljs-params">(Runnable command)</span> &#123;<br>	<span class="hljs-keyword">if</span> (command == <span class="hljs-literal">null</span>)<br>		<span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">NullPointerException</span>();<br>	<span class="hljs-comment">//如果线程数小于基本线程数，则创建线程并执行当前任务</span><br>	<span class="hljs-keyword">if</span> (poolSize &gt;= corePoolSize || !addIfUnderCorePoolSize(command)) &#123;<br>		<span class="hljs-comment">//如线程数大于等于基本线程数或线程创建失败，则将当前任务放到工作队列中。</span><br>		<span class="hljs-keyword">if</span> (runState == RUNNING &amp;&amp; workQueue.offer(command)) &#123;<br>			<span class="hljs-keyword">if</span> (runState != RUNNING || poolSize == <span class="hljs-number">0</span>)<br>				ensureQueuedTaskHandled(command);<br>		&#125;<br>		<span class="hljs-comment">//如果线程池不处于运行中或任务无法放入队列，并且当前线程数量小于最大允许的线程数量，则创建一个线程执行任务。</span><br>		<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (!addIfUnderMaximumPoolSize(command))<br>			<span class="hljs-comment">//抛出RejectedExecutionException异常</span><br>			reject(command); <span class="hljs-comment">// is shutdown or saturated</span><br>	&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
 <h4 id="如何配置线程池"><a href="#如何配置线程池" class="headerlink" title="如何配置线程池"></a>如何配置线程池</h4><p><strong>CPU密集型任务</strong><br>尽量使用较小的线程池，一般为CPU核心数+1。 因为CPU密集型任务使得CPU使用率很高，若开过多的线程数，会造成CPU过度切换。</p>
 <p><strong>IO密集型任务</strong><br>可以使用稍大的线程池，一般为2*CPU核心数。 IO密集型任务CPU使用率并不高，因此可以让CPU在等待IO的时候有其他线程去处理别的任务，充分利用CPU时间。</p>
 <p><strong>混合型任务</strong><br>可以将任务分成IO密集型和CPU密集型任务，然后分别用不同的线程池去处理。 只要分完之后两个任务的执行时间相差不大，那么就会比串行执行来的高效。<br>因为如果划分之后两个任务执行时间有数据级的差距，那么拆分没有意义。<br>因为先执行完的任务就要等后执行完的任务，最终的时间仍然取决于后执行完的任务，而且还要加上任务拆分与合并的开销，得不偿失。</p>
@@ -195,82 +89,11 @@
 <p>线程池就是一个高明的消费者模式，新的线程“生产”的时候。如果没有到线程池的最大线程数量或者最内存，那么就直接创建一个线程并且把他“消费”掉，如果多了就扔到阻塞队列里。</p>
 <h4 id="线程池演示"><a href="#线程池演示" class="headerlink" title="线程池演示"></a>线程池演示</h4><p>实例化一个runnable或者callable的类，然后直接传进线程池，不需要new一个thread然后start，或者new一个FutureTask了。</p>
 <p>用runnable实现多线程（用的也算是pool.submit 但是没有返回值）</p>
-<pre><code class="Java">    /**
-     *
-     * 线程池
-     * 跟数据库连接池类似
-     * 避免了线程的创建和销毁造成的额外开销
-     *
-     * java.util.concurrent
-     *
-     * Executor    负责现成的使用和调度的根接口
-     *    |--ExecutorService    线程池的主要接口
-     *          |--ThreadPoolExecutor    线程池的实现类
-     *          |--ScheduledExecutorService    接口，负责线程的调度
-     *              |--ScheduledThreadPoolExecutor    (extends ThreadPoolExecutor implements ScheduledExecutorService)
-     *
-     * Executors工具类
-     * 提供了创建线程池的方法
-     *
-     */
-    public class ThreadPool &#123;
-        public static void main(String[] args)&#123;
-            //使用Executors工具类中的方法创建线程池
-            ExecutorService pool = Executors.newFixedThreadPool(5);
-            ThreadPoolDemo demo = new ThreadPoolDemo();
-            //为线程池中的线程分配任务,使用submit方法，传入的参数可以是Runnable的实现类，也可以是Callable的实现类
-            for(int i=1;i&lt;=5;i++)&#123;
-                pool.submit(demo);
-            &#125;
-            //关闭线程池
-            //shutdown ： 以一种平和的方式关闭线程池，在关闭线程池之前，会等待线程池中的所有的任务都结束，不在接受新任务
-            //shutdownNow ： 立即关闭线程池
-            pool.shutdown();
-        &#125;
-    &#125;
-    class ThreadPoolDemo implements Runnable&#123;
-        /**多线程的共享数据*/
-        private int i = 0;
-        @Override
-        public void run() &#123;
-            while(i&lt;=50)&#123;
-                System.out.println(Thread.currentThread().getName()+&quot;---&quot;+ i++);
-            &#125;
-        &#125;
-    &#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><code class="hljs Java"><span class="hljs-comment">/**</span><br><span class="hljs-comment"> *</span><br><span class="hljs-comment"> * 线程池</span><br><span class="hljs-comment"> * 跟数据库连接池类似</span><br><span class="hljs-comment"> * 避免了线程的创建和销毁造成的额外开销</span><br><span class="hljs-comment"> *</span><br><span class="hljs-comment"> * java.util.concurrent</span><br><span class="hljs-comment"> *</span><br><span class="hljs-comment"> * Executor    负责现成的使用和调度的根接口</span><br><span class="hljs-comment"> *    |--ExecutorService    线程池的主要接口</span><br><span class="hljs-comment"> *          |--ThreadPoolExecutor    线程池的实现类</span><br><span class="hljs-comment"> *          |--ScheduledExecutorService    接口，负责线程的调度</span><br><span class="hljs-comment"> *              |--ScheduledThreadPoolExecutor    (extends ThreadPoolExecutor implements ScheduledExecutorService)</span><br><span class="hljs-comment"> *</span><br><span class="hljs-comment"> * Executors工具类</span><br><span class="hljs-comment"> * 提供了创建线程池的方法</span><br><span class="hljs-comment"> *</span><br><span class="hljs-comment"> */</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">ThreadPool</span> &#123;<br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span>&#123;<br>		<span class="hljs-comment">//使用Executors工具类中的方法创建线程池</span><br>		<span class="hljs-type">ExecutorService</span> <span class="hljs-variable">pool</span> <span class="hljs-operator">=</span> Executors.newFixedThreadPool(<span class="hljs-number">5</span>);<br>		<span class="hljs-type">ThreadPoolDemo</span> <span class="hljs-variable">demo</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ThreadPoolDemo</span>();<br>		<span class="hljs-comment">//为线程池中的线程分配任务,使用submit方法，传入的参数可以是Runnable的实现类，也可以是Callable的实现类</span><br>		<span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> i=<span class="hljs-number">1</span>;i&lt;=<span class="hljs-number">5</span>;i++)&#123;<br>			pool.submit(demo);<br>		&#125;<br>		<span class="hljs-comment">//关闭线程池</span><br>		<span class="hljs-comment">//shutdown ： 以一种平和的方式关闭线程池，在关闭线程池之前，会等待线程池中的所有的任务都结束，不在接受新任务</span><br>		<span class="hljs-comment">//shutdownNow ： 立即关闭线程池</span><br>		pool.shutdown();<br>	&#125;<br>&#125;<br><span class="hljs-keyword">class</span> <span class="hljs-title class_">ThreadPoolDemo</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Runnable</span>&#123;<br>	<span class="hljs-comment">/**多线程的共享数据*/</span><br>	<span class="hljs-keyword">private</span> <span class="hljs-type">int</span> <span class="hljs-variable">i</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>;<br>	<span class="hljs-meta">@Override</span><br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">run</span><span class="hljs-params">()</span> &#123;<br>		<span class="hljs-keyword">while</span>(i&lt;=<span class="hljs-number">50</span>)&#123;<br>			System.out.println(Thread.currentThread().getName()+<span class="hljs-string">&quot;---&quot;</span>+ i++);<br>		&#125;<br>	&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
 <p>实现callable然后加入线程池</p>
-<pre><code class="Java">    public class ThreadPool2 &#123;
-
-        public static void main(String args[])&#123;
-            ExecutorService executorService = Executors.newFixedThreadPool(5);
-
-            for(int i=0;i&lt;5;i++)&#123;
-                //线程池执行submit之后直接返回一个Future
-                Future&lt;Integer&gt; future = executorService.submit(new Callable&lt;Integer&gt;() &#123;
-                //匿名内部类直接重写runnable方法
-                    @Override
-                    public Integer call() throws Exception &#123;
-                        int result = 0;
-                        for(int i=0;i&lt;=10;i++)&#123;
-                            result += i;
-                        &#125;
-                        return result;
-                    &#125;
-                &#125;);
-                try &#123;
-                    System.out.println(Thread.currentThread().getName()+&quot;--&quot;+future.get());
-                &#125; catch (InterruptedException | ExecutionException e) &#123;
-                    e.printStackTrace();
-                &#125;
-            &#125;
-            executorService.shutdown();
-        &#125;
-    &#125;
-</code></pre>
-<div id="paginator"></div></div><div id="post-footer"><hr><a href="/blog.io/2021/01/06/%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E7%9A%84%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/">← Prev 四种事务的隔离级别</a><span style="color: #fe2"> | </span><a href="/blog.io/2020/09/02/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B(%E4%B8%80)%20-%20%E4%B8%89%E7%A7%8D%E5%AE%9E%E7%8E%B0%E6%96%B9%E5%BC%8F%EF%BC%88%E4%B8%8D%E5%8C%85%E6%8B%AC%E7%BA%BF%E7%A8%8B%E6%B1%A0%EF%BC%89/">Java多线程(一) - 三种实现方式（不包括线程池） Next →</a><hr></div><div id="bottom-btn"><a id="to-index" href="#post-index" title="index">≡</a><a id="to-top" href="#post-title" title="to top">∧</a></div><div id="Valine"></div><script>new Valine({
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><code class="hljs Java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">ThreadPool2</span> &#123;<br><br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String args[])</span>&#123;<br>		<span class="hljs-type">ExecutorService</span> <span class="hljs-variable">executorService</span> <span class="hljs-operator">=</span> Executors.newFixedThreadPool(<span class="hljs-number">5</span>);<br><br>		<span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;<span class="hljs-number">5</span>;i++)&#123;<br>			<span class="hljs-comment">//线程池执行submit之后直接返回一个Future</span><br>			Future&lt;Integer&gt; future = executorService.submit(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Callable</span>&lt;Integer&gt;() &#123;<br>			<span class="hljs-comment">//匿名内部类直接重写runnable方法</span><br>				<span class="hljs-meta">@Override</span><br>				<span class="hljs-keyword">public</span> Integer <span class="hljs-title function_">call</span><span class="hljs-params">()</span> <span class="hljs-keyword">throws</span> Exception &#123;<br>					<span class="hljs-type">int</span> <span class="hljs-variable">result</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>;<br>					<span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;=<span class="hljs-number">10</span>;i++)&#123;<br>						result += i;<br>					&#125;<br>					<span class="hljs-keyword">return</span> result;<br>				&#125;<br>			&#125;);<br>			<span class="hljs-keyword">try</span> &#123;<br>				System.out.println(Thread.currentThread().getName()+<span class="hljs-string">&quot;--&quot;</span>+future.get());<br>			&#125; <span class="hljs-keyword">catch</span> (InterruptedException | ExecutionException e) &#123;<br>				e.printStackTrace();<br>			&#125;<br>		&#125;<br>		executorService.shutdown();<br>	&#125;<br>&#125;<br></code></pre></td></tr></table></figure><div id="paginator"></div></div><div id="post-footer"><hr><a href="/blog.io/2021/01/06/%E5%9B%9B%E7%A7%8D%E4%BA%8B%E5%8A%A1%E7%9A%84%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/">← Prev 四种事务的隔离级别</a><span style="color: #fe2"> | </span><a href="/blog.io/2020/09/02/Java%E5%A4%9A%E7%BA%BF%E7%A8%8B(%E4%B8%80)%20-%20%E4%B8%89%E7%A7%8D%E5%AE%9E%E7%8E%B0%E6%96%B9%E5%BC%8F%EF%BC%88%E4%B8%8D%E5%8C%85%E6%8B%AC%E7%BA%BF%E7%A8%8B%E6%B1%A0%EF%BC%89/">Java多线程(一) - 三种实现方式（不包括线程池） Next →</a><hr></div><div id="bottom-btn"><a id="to-index" href="#post-index" title="index">≡</a><a id="to-top" href="#post-title" title="to top">∧</a></div><div id="Valine"></div><script>new Valine({
  el: '#Valine'
  , appId: 's9ieIT2hA5ChVBjBufKhyfnK-gzGzoHsz'
  , appKey: 'a8LAJbmO7wJi6fj9T85KMJid'
  , placeholder: '此条评论委托企鹅物流发送'
-})</script></div></article><aside><div id="about"><a href="/blog.io/" id="logo"><img src="https://ak.hypergryph.com/assets/index/images/ak/pc/faction/1.png" alt="Logo"></a><h1 id="Dr"><a href="/"> Dr.Allen Feng</a></h1><section id="total"><a id="total-archives" href="/blog.io/archives"><span class="total-title">Archives Total:</span><span class="total-number">63</span></a><div id="total-tags"><span class="total-title">Tags:</span><span class="total-number">59</span></div><div id="total-categories"><span class="total-title">Categories:</span><span class="total-number">13</span></div></section></div><div id="aside-block"><h1>INDEX</h1><div id="post-index"><ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BA%BF%E7%A8%8B%E6%B1%A0%E7%9A%84%E7%9B%AE%E7%9A%84"><span class="toc-number">1.</span> <span class="toc-text">线程池的目的</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Executors%E6%8F%90%E4%BE%9B%E7%9A%84%E5%9B%9B%E7%A7%8D%E7%BA%BF%E7%A8%8B%E6%B1%A0"><span class="toc-number">2.</span> <span class="toc-text">Executors提供的四种线程池</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BA%BF%E7%A8%8B%E6%B1%A0%E7%9A%84%E4%B8%BB%E8%A6%81%E5%8F%82%E6%95%B0"><span class="toc-number">3.</span> <span class="toc-text">线程池的主要参数</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BA%BF%E7%A8%8B%E6%B1%A0%E6%B5%81%E7%A8%8B"><span class="toc-number">4.</span> <span class="toc-text">线程池流程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E9%85%8D%E7%BD%AE%E7%BA%BF%E7%A8%8B%E6%B1%A0"><span class="toc-number">5.</span> <span class="toc-text">如何配置线程池</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#LinkedBlockingQueue%E5%92%8CArrayBlockingQueue"><span class="toc-number">6.</span> <span class="toc-text">LinkedBlockingQueue和ArrayBlockingQueue</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#execute-%E5%92%8Csubmit-%E6%96%B9%E6%B3%95"><span class="toc-number">7.</span> <span class="toc-text">execute()和submit()方法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%94%9F%E4%BA%A7%E8%80%85%E5%92%8C%E6%B6%88%E8%B4%B9%E8%80%85%E6%A8%A1%E5%BC%8F"><span class="toc-number">8.</span> <span class="toc-text">生产者和消费者模式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BA%BF%E7%A8%8B%E6%B1%A0%E6%BC%94%E7%A4%BA"><span class="toc-number">9.</span> <span class="toc-text">线程池演示</span></a></li></ol></div></div><footer><nobr><span class="text-title">©</span><span class="text-content">1970 to 2020</span></nobr><wbr><nobr><span class="text-title">ICP</span><span class="text-content">——备案号——</span></nobr><wbr><wbr><nobr>published with&nbsp;<a target="_blank" rel="noopener" href="http://hexo.io">Hexo&nbsp;</a></nobr><wbr><nobr>Theme&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus/hexo-theme-arknights">Arknight&nbsp;</a></nobr><wbr><nobr>by&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus">Yue_plus</a></nobr></footer></aside></main><canvas id="canvas-dust"></canvas><script src="/blog.io/js/arknights.js"></script><script src="https://cdn.bootcdn.net/ajax/libs/highlight.js/10.1.2/highlight.min.js"></script></body></html>
+})</script></div></article><aside><div id="about"><a href="/blog.io/" id="logo"><img src="https://ak.hypergryph.com/assets/index/images/ak/pc/faction/1.png" alt="Logo"></a><h1 id="Dr"><a href="/"> Dr.Allen Feng</a></h1><section id="total"><a id="total-archives" href="/blog.io/archives"><span class="total-title">Archives Total:</span><span class="total-number">63</span></a><div id="total-tags"><span class="total-title">Tags:</span><span class="total-number">58</span></div><div id="total-categories"><span class="total-title">Categories:</span><span class="total-number">11</span></div></section></div><div id="aside-block"><h1>INDEX</h1><div id="post-index"><ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BA%BF%E7%A8%8B%E6%B1%A0%E7%9A%84%E7%9B%AE%E7%9A%84"><span class="toc-number">1.</span> <span class="toc-text">线程池的目的</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Executors%E6%8F%90%E4%BE%9B%E7%9A%84%E5%9B%9B%E7%A7%8D%E7%BA%BF%E7%A8%8B%E6%B1%A0"><span class="toc-number">2.</span> <span class="toc-text">Executors提供的四种线程池</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BA%BF%E7%A8%8B%E6%B1%A0%E7%9A%84%E4%B8%BB%E8%A6%81%E5%8F%82%E6%95%B0"><span class="toc-number">3.</span> <span class="toc-text">线程池的主要参数</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BA%BF%E7%A8%8B%E6%B1%A0%E6%B5%81%E7%A8%8B"><span class="toc-number">4.</span> <span class="toc-text">线程池流程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E9%85%8D%E7%BD%AE%E7%BA%BF%E7%A8%8B%E6%B1%A0"><span class="toc-number">5.</span> <span class="toc-text">如何配置线程池</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#LinkedBlockingQueue%E5%92%8CArrayBlockingQueue"><span class="toc-number">6.</span> <span class="toc-text">LinkedBlockingQueue和ArrayBlockingQueue</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#execute-%E5%92%8Csubmit-%E6%96%B9%E6%B3%95"><span class="toc-number">7.</span> <span class="toc-text">execute()和submit()方法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%94%9F%E4%BA%A7%E8%80%85%E5%92%8C%E6%B6%88%E8%B4%B9%E8%80%85%E6%A8%A1%E5%BC%8F"><span class="toc-number">8.</span> <span class="toc-text">生产者和消费者模式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BA%BF%E7%A8%8B%E6%B1%A0%E6%BC%94%E7%A4%BA"><span class="toc-number">9.</span> <span class="toc-text">线程池演示</span></a></li></ol></div></div><footer><nobr><span class="text-title">©</span><span class="text-content">1970 to 2020</span></nobr><wbr><nobr><span class="text-title">ICP</span><span class="text-content">——备案号——</span></nobr><wbr><wbr><nobr>published with&nbsp;<a target="_blank" rel="noopener" href="http://hexo.io">Hexo&nbsp;</a></nobr><wbr><nobr>Theme&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus/hexo-theme-arknights">Arknight&nbsp;</a></nobr><wbr><nobr>by&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus">Yue_plus</a></nobr></footer></aside></main><canvas id="canvas-dust"></canvas><script src="/blog.io/js/arknights.js"></script><script src="https://cdn.bootcdn.net/ajax/libs/highlight.js/10.1.2/highlight.min.js"></script></body></html>

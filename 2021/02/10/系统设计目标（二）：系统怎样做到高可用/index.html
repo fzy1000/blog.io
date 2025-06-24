@@ -11,7 +11,7 @@
 <p>MTBF(Mean Time Between Failture)是平均故障间隔，代表两次故障的间隔时间，也就是系统正常运转的平均时间。这个时间越长系统稳定性越高；</p>
 <p>MTTR(Mean Time To Repair)表示故障的平均恢复时间，也可以理解为平均故障时间，这个时间越小表示故障对用户影响越小。</p>
 <p>可用性与他们的关系是：</p>
-<p>Availability = MTBF/(MTBF + MTTR)</p>
+<p>Availability &#x3D; MTBF&#x2F;(MTBF + MTTR)</p>
 <p>这个比例代表了系统的可用性。一般来说，我们会使用几个九来描述系统的可用性。</p>
 <img src="/blog.io/img/系统可用性.png">
 
@@ -32,21 +32,24 @@
 <p><br/>在对等的节点之间做failover相对来说简单些。在这类系统中所有节点都承担读写流量，并且都不保存状态。每一个节点都可以作为另一个节点的镜像（ZooKeeper？）。<br> 这种情况一下如果有一个节点挂了，那么随机访问另一个就好了。Nginx就可以配置当某一个Tomcat出现大于500的请求时，重试请求另一个Tomcat节点。</p>
 <img src="/blog.io/img/Nginx连接Tomcat.png">
 
-<p>针对不对等节点的failover机制会复杂很多。比方说我们有一个主节点和很多备用节点，这些备用节点有可能是是热备（同样提供在线服务），也可能是冷备（只是备份使用），<br>那么我们就需要在代码中控制如何检测主备机器是否故障以及如何做主备切换。</p>
-<p>使用最广泛的故障检测机制就是“心跳”。你可以在客户端定期向主节点发送心跳包，也可以从备份节点上定期发送心跳包。如果一段时间内未收到心跳包，如果一段时间内未收到心跳包，<br>就可以认为主节点挂了。触发选主的操作。</p>
-<p>选主的结果需要在多个备份节点上达成一致，所以会使用某一种分布式一致性算法，比如<font color = dddd>Paxos，Raft</font>。</p>
-<p><br/>除了故障转移意外，对于系统间调用超时的控制也是高可用系统设计的一个重要考虑方面。</p>
-<p>复杂的高并发系统会有很多系统模块组成。同时他会依赖很多组件和服务。比如缓存，队列服务等。他们之间的调用最怕的是延迟而不是失败，因为失败通常是瞬时的，<br>可以通过重试解决。而一旦调用某模块或者应用服务时发生大延迟，调用就会阻塞在这次调用上。它占用的资源得不到释放，当存在大量这样的阻塞的时候，调用发就会因为<br>用尽资源而挂掉。</p>
-<p>系统开发的初期，超时控制通常不被重视，或者没有方式确定正常的超时时间。</p>
-<p>举例来说，一个项目，模块之间通过<br><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/25536695">RPC(Remote Procedure Call)</a><br>框架调用,默认的超时时间是30s。正常情况下运行良好，可是一旦遇到大流量，RPC服务端出现一定数量慢请求的时候，RPC客户端线程就会大量阻塞在这些满请求上长达30s，<br>造成RPC客户端用尽调用线程而挂掉。后面开发人员在故障复盘的时候发现这个问题，调整了RPC，数据库，缓存以及第三方服务的超时时间，就不会造成整体系统雪崩。</p>
-<p><br/>那么问题就来了，我们怎么确定超时时间呢？</p>
-<p>如果时间短了，会造成大量错误，对用户体验产生影响；时间长了，又起不到作用。建议时通过收集系统之间的调用日志，统计比如99%的响应时间，然后按照这个时间来定。<br>如果没有日志，只能靠经验。不论那种，超时时间都不是一成不变的。需要在后面的系统维护过程中不断的修改。</p>
-<p><font color= dd00>超时控制的本质时不让请求一直保持，而是经过一段时间后让请求失败，释放资源给后面的请求使用。</font>这对于用户来说时有损的，但是时必要的。我们还有另外两种有损的方案<br>能保证系统的可用性，他们就是降级和限流。</p>
-<p><br/>降级是为了保证核心服务的稳定而牺牲非核心的做法。</p>
-<p>比如我们发微博会先过反垃圾服务检测，通过后才会完成写数据库等逻辑。反垃圾检测是一个相对较重的操作，<br>因为很多的匹配策略，在日常的流量下虽然耗时但还能可以正常相应。但是一旦高并发，它就可能成为瓶颈，因为它不是必须的，所以可以暂时关闭反垃圾，这样就能保证主体的流程更加稳定。</p>
-<p><br/>限流完全时另一种思路，它通过对并发的请求进行限速来保护系统。</p>
-<p>比如对于Web应用，我先至单机只能处理每秒1000次请求，超过的部分直接返回错误给客户端。虽然这样的做法损害了用户的体验，但是这在高并发的极端情况下属于<br>无耐之举，时短暂的行为，因此可以被接受。</p>
+<p>针对不对等节点的failover机制会复杂很多。比方说我们有一个主节点和很多备用节点，这些备用节点有可能是是热备（同样提供在线服务），也可能是冷备（只是备份使用），</p>
 </li>
+</ol>
+<p>那么我们就需要在代码中控制如何检测主备机器是否故障以及如何做主备切换。</p>
+<p>   使用最广泛的故障检测机制就是“心跳”。你可以在客户端定期向主节点发送心跳包，也可以从备份节点上定期发送心跳包。如果一段时间内未收到心跳包，如果一段时间内未收到心跳包，<br>就可以认为主节点挂了。触发选主的操作。</p>
+<p>   选主的结果需要在多个备份节点上达成一致，所以会使用某一种分布式一致性算法，比如<font color = dddd>Paxos，Raft</font>。</p>
+<p>   <br/>除了故障转移意外，对于系统间调用超时的控制也是高可用系统设计的一个重要考虑方面。</p>
+<p>   复杂的高并发系统会有很多系统模块组成。同时他会依赖很多组件和服务。比如缓存，队列服务等。他们之间的调用最怕的是延迟而不是失败，因为失败通常是瞬时的，<br>可以通过重试解决。而一旦调用某模块或者应用服务时发生大延迟，调用就会阻塞在这次调用上。它占用的资源得不到释放，当存在大量这样的阻塞的时候，调用发就会因为<br>   用尽资源而挂掉。</p>
+<p>   系统开发的初期，超时控制通常不被重视，或者没有方式确定正常的超时时间。</p>
+<p>   举例来说，一个项目，模块之间通过<br>   <a target="_blank" rel="noopener" href="https://www.zhihu.com/question/25536695">RPC(Remote Procedure Call)</a><br>   框架调用,默认的超时时间是30s。正常情况下运行良好，可是一旦遇到大流量，RPC服务端出现一定数量慢请求的时候，RPC客户端线程就会大量阻塞在这些满请求上长达30s，<br>   造成RPC客户端用尽调用线程而挂掉。后面开发人员在故障复盘的时候发现这个问题，调整了RPC，数据库，缓存以及第三方服务的超时时间，就不会造成整体系统雪崩。</p>
+<p>   <br/>那么问题就来了，我们怎么确定超时时间呢？</p>
+<p>   如果时间短了，会造成大量错误，对用户体验产生影响；时间长了，又起不到作用。建议时通过收集系统之间的调用日志，统计比如99%的响应时间，然后按照这个时间来定。<br>如果没有日志，只能靠经验。不论那种，超时时间都不是一成不变的。需要在后面的系统维护过程中不断的修改。</p>
+<p>   <font color= dd00>超时控制的本质时不让请求一直保持，而是经过一段时间后让请求失败，释放资源给后面的请求使用。</font>这对于用户来说时有损的，但是时必要的。我们还有另外两种有损的方案<br>能保证系统的可用性，他们就是降级和限流。</p>
+<p>   <br/>降级是为了保证核心服务的稳定而牺牲非核心的做法。</p>
+<p>   比如我们发微博会先过反垃圾服务检测，通过后才会完成写数据库等逻辑。反垃圾检测是一个相对较重的操作，<br>   因为很多的匹配策略，在日常的流量下虽然耗时但还能可以正常相应。但是一旦高并发，它就可能成为瓶颈，因为它不是必须的，所以可以暂时关闭反垃圾，这样就能保证主体的流程更加稳定。</p>
+<p>   <br/>限流完全时另一种思路，它通过对并发的请求进行限速来保护系统。</p>
+<p>   比如对于Web应用，我先至单机只能处理每秒1000次请求，超过的部分直接返回错误给客户端。虽然这样的做法损害了用户的体验，但是这在高并发的极端情况下属于<br>无耐之举，时短暂的行为，因此可以被接受。</p>
+<ol start="2">
 <li><p>系统运维</p>
 <p>从灰度发布，故障演练两个方面来考虑如何提升系统的可用性。</p>
 <ol>
@@ -67,4 +70,4 @@
  , appId: 's9ieIT2hA5ChVBjBufKhyfnK-gzGzoHsz'
  , appKey: 'a8LAJbmO7wJi6fj9T85KMJid'
  , placeholder: '此条评论委托企鹅物流发送'
-})</script></div></article><aside><div id="about"><a href="/blog.io/" id="logo"><img src="https://ak.hypergryph.com/assets/index/images/ak/pc/faction/1.png" alt="Logo"></a><h1 id="Dr"><a href="/"> Dr.Allen Feng</a></h1><section id="total"><a id="total-archives" href="/blog.io/archives"><span class="total-title">Archives Total:</span><span class="total-number">63</span></a><div id="total-tags"><span class="total-title">Tags:</span><span class="total-number">59</span></div><div id="total-categories"><span class="total-title">Categories:</span><span class="total-number">13</span></div></section></div><div id="aside-block"><h1>INDEX</h1><div id="post-index"><ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%AB%98%E5%8F%AF%E7%94%A8%E6%80%A7%EF%BC%88High-Availability%EF%BC%8C-HA%EF%BC%89"><span class="toc-number">1.</span> <span class="toc-text">高可用性（High Availability， HA）</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%AF%E7%94%A8%E6%80%A7%E7%9A%84%E5%BA%A6%E9%87%8F"><span class="toc-number"></span> <span class="toc-text">可用性的度量 </span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%AB%98%E5%8F%AF%E7%94%A8%E7%B3%BB%E7%BB%9F%E7%9A%84%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF"><span class="toc-number"></span> <span class="toc-text"> 高可用系统的设计思路</span></a></div></div><footer><nobr><span class="text-title">©</span><span class="text-content">1970 to 2020</span></nobr><wbr><nobr><span class="text-title">ICP</span><span class="text-content">——备案号——</span></nobr><wbr><wbr><nobr>published with&nbsp;<a target="_blank" rel="noopener" href="http://hexo.io">Hexo&nbsp;</a></nobr><wbr><nobr>Theme&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus/hexo-theme-arknights">Arknight&nbsp;</a></nobr><wbr><nobr>by&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus">Yue_plus</a></nobr></footer></aside></main><canvas id="canvas-dust"></canvas><script src="/blog.io/js/arknights.js"></script><script src="https://cdn.bootcdn.net/ajax/libs/highlight.js/10.1.2/highlight.min.js"></script></body></html>
+})</script></div></article><aside><div id="about"><a href="/blog.io/" id="logo"><img src="https://ak.hypergryph.com/assets/index/images/ak/pc/faction/1.png" alt="Logo"></a><h1 id="Dr"><a href="/"> Dr.Allen Feng</a></h1><section id="total"><a id="total-archives" href="/blog.io/archives"><span class="total-title">Archives Total:</span><span class="total-number">63</span></a><div id="total-tags"><span class="total-title">Tags:</span><span class="total-number">58</span></div><div id="total-categories"><span class="total-title">Categories:</span><span class="total-number">11</span></div></section></div><div id="aside-block"><h1>INDEX</h1><div id="post-index"><ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%AB%98%E5%8F%AF%E7%94%A8%E6%80%A7%EF%BC%88High-Availability%EF%BC%8C-HA%EF%BC%89"><span class="toc-number">1.</span> <span class="toc-text">高可用性（High Availability， HA）</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%AF%E7%94%A8%E6%80%A7%E7%9A%84%E5%BA%A6%E9%87%8F"><span class="toc-number"></span> <span class="toc-text">可用性的度量 </span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%AB%98%E5%8F%AF%E7%94%A8%E7%B3%BB%E7%BB%9F%E7%9A%84%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF"><span class="toc-number"></span> <span class="toc-text"> 高可用系统的设计思路</span></a></div></div><footer><nobr><span class="text-title">©</span><span class="text-content">1970 to 2020</span></nobr><wbr><nobr><span class="text-title">ICP</span><span class="text-content">——备案号——</span></nobr><wbr><wbr><nobr>published with&nbsp;<a target="_blank" rel="noopener" href="http://hexo.io">Hexo&nbsp;</a></nobr><wbr><nobr>Theme&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus/hexo-theme-arknights">Arknight&nbsp;</a></nobr><wbr><nobr>by&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus">Yue_plus</a></nobr></footer></aside></main><canvas id="canvas-dust"></canvas><script src="/blog.io/js/arknights.js"></script><script src="https://cdn.bootcdn.net/ajax/libs/highlight.js/10.1.2/highlight.min.js"></script></body></html>

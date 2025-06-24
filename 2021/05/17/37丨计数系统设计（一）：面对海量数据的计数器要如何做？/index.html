@@ -23,7 +23,7 @@
 <p>那么，面临着高并发、大数据量、数据强一致要求的挑战，微博的计数系统是如何设计和演进的呢？你又能从中借鉴什么经验呢？</p>
 <h3 id="支撑高并发的计数系统要如何设计"><a href="#支撑高并发的计数系统要如何设计" class="headerlink" title="支撑高并发的计数系统要如何设计"></a><font color = "dd0000">支撑高并发的计数系统要如何设计</font></h3><p>刚开始设计计数系统的时候，微博的流量还没有现在这么夸张，我们本着 KISS（Keep It Simple and Stupid）原则，尽量将系统设计的简单易维护，所以，我们使用 MySQL 存储计数的数据，因为它是我们最熟悉的，团队在运维上经验也会比较丰富。举个具体的例子。</p>
 <p>假如要存储微博维度（微博的计数，转发数、赞数等等）的数据，你可以这么设计表结构：以微博 ID 为主键，转发数、评论数、点赞数和浏览数分别为单独一列，这样在获取计数时用一个 SQL 语句就搞定了。</p>
-<p>select repost_count, comment_count, praise_count, view_count from t_weibo_count where weibo_id = ?</p>
+<p>select repost_count, comment_count, praise_count, view_count from t_weibo_count where weibo_id &#x3D; ?</p>
 <p>在数据量级和访问量级都不大的情况下，这种方式最简单，所以如果你的系统量级不大，你可以直接采用这种方式来实现。</p>
 <p>后来，随着微博的不断壮大，之前的计数系统面临了很多的问题和挑战。</p>
 <p>比如微博用户量和发布的微博量增加迅猛，计数存储数据量级也飞速增长，而 MySQL 数据库单表的存储量级达到几千万的时候，性能上就会有损耗。所以我们考虑使用分库分表的方式分散数据量，提升读取计数的性能。</p>
@@ -43,56 +43,31 @@
 
 <p>除了考虑计数的读取性能之外，由于热门微博的计数变化频率相当高，也需要考虑如何提升计数的写入性能。比如，每次在转发一条微博的时候，都需要增加这条微博的转发数，那么如果明星发布结婚、离婚的微博，瞬时就可能会产生几万甚至几十万的转发。如果是你的话，要如何降低写压力呢？</p>
 <p>你可能已经想到用消息队列来削峰填谷了，也就是说，我们在转发微博的时候向消息队列写入一条消息，然后在消息处理程序中给这条微博的转发计数加 1。这里需要注意的一点， 我们可以通过批量处理消息的方式进一步减小 Redis 的写压力，比如像下面这样连续更改三次转发数（我用 SQL 来表示来方便你理解）：</p>
-<pre><code>UPDATE t_weibo_count SET repost_count = repost_count + 1 WHERE weibo_id = 1;
-
-UPDATE t_weibo_count SET repost_count = repost_count + 1 WHERE weibo_id = 1;
-
-UPDATE t_weibo_count SET repost_count = repost_count +1 WHERE weibo_id = 1;
-</code></pre>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs plaintext">UPDATE t_weibo_count SET repost_count = repost_count + 1 WHERE weibo_id = 1;<br><br>UPDATE t_weibo_count SET repost_count = repost_count + 1 WHERE weibo_id = 1;<br><br>UPDATE t_weibo_count SET repost_count = repost_count +1 WHERE weibo_id = 1;<br></code></pre></td></tr></table></figure>
 <p>这个时候，你可以把它们合并成一次更新：</p>
-<pre><code>
-UPDATE t_weibo_count SET repost_count = repost_count + 3 WHERE weibo_id = 1;
-</code></pre>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs plaintext"><br>UPDATE t_weibo_count SET repost_count = repost_count + 3 WHERE weibo_id = 1;<br></code></pre></td></tr></table></figure>
 <h3 id="如何降低计数系统的存储成本"><a href="#如何降低计数系统的存储成本" class="headerlink" title="如何降低计数系统的存储成本"></a><font color = "dd0000">如何降低计数系统的存储成本</font></h3><p>讲到这里，我其实已经告诉你一个支撑高并发查询请求的计数系统是如何实现的了。但是在微博的场景下，计数的量级是万亿的级别，这也给我们提了更高的要求，就是如何在有限的存储成本下实现对于全量计数数据的存取。</p>
 <p>你知道，Redis 是使用内存来存储信息，相比于使用磁盘存储数据的 MySQL 来说，存储的成本不可同日而语，比如一台服务器磁盘可以挂载到 2 个 T，但是内存可能只有 128G，这样磁盘的存储空间就是内存的 16 倍。而 Redis 基于通用性的考虑，对于内存的使用比较粗放，存在大量的指针以及额外数据结构的开销，如果要存储一个 KV 类型的计数信息，Key 是 8 字节 Long 类型的 weibo_id，Value 是 4 字节 int 类型的转发数，存储在 Redis 中之后会占用超过 70 个字节的空间，空间的浪费是巨大的。如果你面临这个问题，要如何优化呢？</p>
 <p>我建议你先对原生 Redis 做一些改造，采用新的数据结构和数据类型来存储计数数据。我在改造时，主要涉及了两点：</p>
 <ul>
-<li><p>一是原生的 Redis 在存储 Key 时是按照字符串类型来存储的，比如一个 8 字节的 Long 类型的数据，需要 8（sdshdr 数据结构长度）+ 19（8 字节数字的长度）+1（’\0’）=28 个字节，如果我们使用 Long 类型来存储就只需要 8 个字节，会节省 20 个字节的空间；</p>
+<li><p>一是原生的 Redis 在存储 Key 时是按照字符串类型来存储的，比如一个 8 字节的 Long 类型的数据，需要 8（sdshdr 数据结构长度）+ 19（8 字节数字的长度）+1（’\0’）&#x3D;28 个字节，如果我们使用 Long 类型来存储就只需要 8 个字节，会节省 20 个字节的空间；</p>
 </li>
-<li><p>二是去除了原生 Redis 中多余的指针，如果要存储一个 KV 信息就只需要 8（weibo_id）+4（转发数）=12 个字节，相比之前有很大的改进。</p>
+<li><p>二是去除了原生 Redis 中多余的指针，如果要存储一个 KV 信息就只需要 8（weibo_id）+4（转发数）&#x3D;12 个字节，相比之前有很大的改进。</p>
 </li>
 </ul>
 <p>同时，我们也会使用一个大的数组来存储计数信息，存储的位置是基于 weibo_id 的哈希值来计算出来的，具体的算法像下面展示的这样：</p>
 <p>插入时:</p>
-<pre><code>h1 = hash1(weibo_id) //根据微博ID计算Hash
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs plaintext">h1 = hash1(weibo_id) //根据微博ID计算Hash<br><br>h2 = hash2(weibo_id) //根据微博ID计算另一个Hash，用以解决前一个Hash算法带来的冲突<br><br>for s in 0,1000<br><br>pos = (h1 + h2*s) % tsize //如果发生冲突，就多算几次Hash2<br><br>if(isempty(pos) || isdelete(pos))<br><br>t[ pos ] = item //写入数组<br></code></pre></td></tr></table></figure>
 
-h2 = hash2(weibo_id) //根据微博ID计算另一个Hash，用以解决前一个Hash算法带来的冲突
 
-for s in 0,1000
-
-pos = (h1 + h2*s) % tsize //如果发生冲突，就多算几次Hash2
-
-if(isempty(pos) || isdelete(pos))
-
-t[ pos ] = item //写入数组
-</code></pre>
 <p>查询时:</p>
-<pre><code>for s in 0,1000
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs plaintext">for s in 0,1000<br><br>pos = (h1 + h2*s) % tsize //依照插入数据时候的逻辑，计算出存储在数组中的位置<br><br>if(!isempty(pos) &amp;&amp; t[pos]==weibo_id)<br><br>return t[pos]<br><br>return 0<br></code></pre></td></tr></table></figure>
 
-pos = (h1 + h2*s) % tsize //依照插入数据时候的逻辑，计算出存储在数组中的位置
-
-if(!isempty(pos) &amp;&amp; t[pos]==weibo_id)
-
-return t[pos]
-
-return 0
-</code></pre>
 <p>删除时:</p>
-<pre><code>insert(FFFF) //插入一个特殊的标
-</code></pre>
-<p>在对原生的 Redis 做了改造之后，你还需要进一步考虑如何节省内存的使用。比如，微博的计数有转发数、评论数、浏览数、点赞数等等，如果每一个计数都需要存储 weibo_id，那么总共就需要 8（weibo_id）*4（4 个微博 ID）+4（转发数） + 4（评论数） + 4（点赞数） + 4（浏览数）= 48 字节。但是我们可以把相同微博 ID 的计数存储在一起，这样就只需要记录一个微博 ID，省掉了多余的三个微博 ID 的存储开销，存储空间就进一步减少了。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs plaintext">insert(FFFF) //插入一个特殊的标<br></code></pre></td></tr></table></figure>
+<p>在对原生的 Redis 做了改造之后，你还需要进一步考虑如何节省内存的使用。比如，微博的计数有转发数、评论数、浏览数、点赞数等等，如果每一个计数都需要存储 weibo_id，那么总共就需要 8（weibo_id）*4（4 个微博 ID）+4（转发数） + 4（评论数） + 4（点赞数） + 4（浏览数）&#x3D; 48 字节。但是我们可以把相同微博 ID 的计数存储在一起，这样就只需要记录一个微博 ID，省掉了多余的三个微博 ID 的存储开销，存储空间就进一步减少了。</p>
 <p>不过，即使经过上面的优化，由于计数的量级实在是太过巨大，并且还在以极快的速度增长，所以如果我们以全内存的方式来存储计数信息，就需要使用非常多的机器来支撑。</p>
-<p>然而微博计数的数据具有明显的热点属性：越是最近的微博越是会被访问到，时间上久远的微博被访问的几率很小。所以为了尽量减少服务器的使用，我们考虑给计数服务增加 SSD 磁盘，然后将时间上比较久远的数据 dump 到磁盘上，内存中只保留最近的数据。当我们要读取冷数据的时候，使用单独的 I/O 线程异步地将冷数据从 SSD 磁盘中加载到一块儿单独的 Cold Cache 中。</p>
+<p>然而微博计数的数据具有明显的热点属性：越是最近的微博越是会被访问到，时间上久远的微博被访问的几率很小。所以为了尽量减少服务器的使用，我们考虑给计数服务增加 SSD 磁盘，然后将时间上比较久远的数据 dump 到磁盘上，内存中只保留最近的数据。当我们要读取冷数据的时候，使用单独的 I&#x2F;O 线程异步地将冷数据从 SSD 磁盘中加载到一块儿单独的 Cold Cache 中。</p>
 <img src="/blog.io/img/37计数服务存储示意图.png">
 
 
@@ -109,4 +84,4 @@ return 0
  , appId: 's9ieIT2hA5ChVBjBufKhyfnK-gzGzoHsz'
  , appKey: 'a8LAJbmO7wJi6fj9T85KMJid'
  , placeholder: '此条评论委托企鹅物流发送'
-})</script></div></article><aside><div id="about"><a href="/blog.io/" id="logo"><img src="https://ak.hypergryph.com/assets/index/images/ak/pc/faction/1.png" alt="Logo"></a><h1 id="Dr"><a href="/"> Dr.Allen Feng</a></h1><section id="total"><a id="total-archives" href="/blog.io/archives"><span class="total-title">Archives Total:</span><span class="total-number">63</span></a><div id="total-tags"><span class="total-title">Tags:</span><span class="total-number">59</span></div><div id="total-categories"><span class="total-title">Categories:</span><span class="total-number">13</span></div></section></div><div id="aside-block"><h1>INDEX</h1><div id="post-index"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%A1%E6%95%B0%E5%9C%A8%E4%B8%9A%E5%8A%A1%E4%B8%8A%E7%9A%84%E7%89%B9%E7%82%B9"><span class="toc-number">1.</span> <span class="toc-text">计数在业务上的特点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%94%AF%E6%92%91%E9%AB%98%E5%B9%B6%E5%8F%91%E7%9A%84%E8%AE%A1%E6%95%B0%E7%B3%BB%E7%BB%9F%E8%A6%81%E5%A6%82%E4%BD%95%E8%AE%BE%E8%AE%A1"><span class="toc-number">2.</span> <span class="toc-text">支撑高并发的计数系统要如何设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E9%99%8D%E4%BD%8E%E8%AE%A1%E6%95%B0%E7%B3%BB%E7%BB%9F%E7%9A%84%E5%AD%98%E5%82%A8%E6%88%90%E6%9C%AC"><span class="toc-number">3.</span> <span class="toc-text">如何降低计数系统的存储成本</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AF%BE%E7%A8%8B%E5%B0%8F%E7%BB%93"><span class="toc-number">4.</span> <span class="toc-text">课程小结</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E8%AF%BE%E4%B8%80%E6%80%9D"><span class="toc-number">5.</span> <span class="toc-text">一课一思</span></a></li></ol></div></div><footer><nobr><span class="text-title">©</span><span class="text-content">1970 to 2020</span></nobr><wbr><nobr><span class="text-title">ICP</span><span class="text-content">——备案号——</span></nobr><wbr><wbr><nobr>published with&nbsp;<a target="_blank" rel="noopener" href="http://hexo.io">Hexo&nbsp;</a></nobr><wbr><nobr>Theme&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus/hexo-theme-arknights">Arknight&nbsp;</a></nobr><wbr><nobr>by&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus">Yue_plus</a></nobr></footer></aside></main><canvas id="canvas-dust"></canvas><script src="/blog.io/js/arknights.js"></script><script src="https://cdn.bootcdn.net/ajax/libs/highlight.js/10.1.2/highlight.min.js"></script></body></html>
+})</script></div></article><aside><div id="about"><a href="/blog.io/" id="logo"><img src="https://ak.hypergryph.com/assets/index/images/ak/pc/faction/1.png" alt="Logo"></a><h1 id="Dr"><a href="/"> Dr.Allen Feng</a></h1><section id="total"><a id="total-archives" href="/blog.io/archives"><span class="total-title">Archives Total:</span><span class="total-number">63</span></a><div id="total-tags"><span class="total-title">Tags:</span><span class="total-number">58</span></div><div id="total-categories"><span class="total-title">Categories:</span><span class="total-number">11</span></div></section></div><div id="aside-block"><h1>INDEX</h1><div id="post-index"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%A1%E6%95%B0%E5%9C%A8%E4%B8%9A%E5%8A%A1%E4%B8%8A%E7%9A%84%E7%89%B9%E7%82%B9"><span class="toc-number">1.</span> <span class="toc-text">计数在业务上的特点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%94%AF%E6%92%91%E9%AB%98%E5%B9%B6%E5%8F%91%E7%9A%84%E8%AE%A1%E6%95%B0%E7%B3%BB%E7%BB%9F%E8%A6%81%E5%A6%82%E4%BD%95%E8%AE%BE%E8%AE%A1"><span class="toc-number">2.</span> <span class="toc-text">支撑高并发的计数系统要如何设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E9%99%8D%E4%BD%8E%E8%AE%A1%E6%95%B0%E7%B3%BB%E7%BB%9F%E7%9A%84%E5%AD%98%E5%82%A8%E6%88%90%E6%9C%AC"><span class="toc-number">3.</span> <span class="toc-text">如何降低计数系统的存储成本</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AF%BE%E7%A8%8B%E5%B0%8F%E7%BB%93"><span class="toc-number">4.</span> <span class="toc-text">课程小结</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E8%AF%BE%E4%B8%80%E6%80%9D"><span class="toc-number">5.</span> <span class="toc-text">一课一思</span></a></li></ol></div></div><footer><nobr><span class="text-title">©</span><span class="text-content">1970 to 2020</span></nobr><wbr><nobr><span class="text-title">ICP</span><span class="text-content">——备案号——</span></nobr><wbr><wbr><nobr>published with&nbsp;<a target="_blank" rel="noopener" href="http://hexo.io">Hexo&nbsp;</a></nobr><wbr><nobr>Theme&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus/hexo-theme-arknights">Arknight&nbsp;</a></nobr><wbr><nobr>by&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus">Yue_plus</a></nobr></footer></aside></main><canvas id="canvas-dust"></canvas><script src="/blog.io/js/arknights.js"></script><script src="https://cdn.bootcdn.net/ajax/libs/highlight.js/10.1.2/highlight.min.js"></script></body></html>

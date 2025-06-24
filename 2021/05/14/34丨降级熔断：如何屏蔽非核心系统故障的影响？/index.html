@@ -40,128 +40,16 @@
 <img src="/blog.io/img/34熔断状态.png">
 
 <p>其实，不仅仅微服务之间调用需要熔断的机制，我们在调用 Redis、Memcached 等资源的时候也可以引入这套机制。在我的团队自己封装的 Redis 客户端中，就实现了一套简单的熔断机制。首先，在系统初始化的时候，我们定义了一个定时器，当熔断器处于 Open 状态时，定期地检测 Redis 组件是否可用：</p>
-<pre><code class="java">new Timer(“RedisPort-Recover”, true).scheduleAtFixedRate(new TimerTask() &#123;
-
-@Override
-
-public void run() &#123;
-
-if (breaker.isOpen()) &#123;
-
-Jedis jedis = null;
-
-try &#123;
-
-jedis = connPool.getResource();
-
-jedis.ping(); //验证redis是否可用
-
-successCount.set(0); //重置连续成功的计数
-
-breaker.setHalfOpen(); //设置为半打开态
-
-&#125; catch (Exception ignored) &#123;
-
-&#125; finally &#123;
-
-if (jedis != null) &#123;
-
-jedis.close();
-
-&#125;
-
-&#125;
-
-&#125;
-
-&#125;
-
-&#125;, 0, recoverInterval); //初始化定时器定期检测redis是否可用
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">new</span> <span class="hljs-title class_">Timer</span>(“RedisPort-Recover”, <span class="hljs-literal">true</span>).scheduleAtFixedRate(<span class="hljs-keyword">new</span> <span class="hljs-title class_">TimerTask</span>() &#123;<br><br><span class="hljs-meta">@Override</span><br><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">run</span><span class="hljs-params">()</span> &#123;<br><br><span class="hljs-keyword">if</span> (breaker.isOpen()) &#123;<br><br><span class="hljs-type">Jedis</span> <span class="hljs-variable">jedis</span> <span class="hljs-operator">=</span> <span class="hljs-literal">null</span>;<br><br><span class="hljs-keyword">try</span> &#123;<br><br>jedis = connPool.getResource();<br><br>jedis.ping(); <span class="hljs-comment">//验证redis是否可用</span><br><br>successCount.set(<span class="hljs-number">0</span>); <span class="hljs-comment">//重置连续成功的计数</span><br><br>breaker.setHalfOpen(); <span class="hljs-comment">//设置为半打开态</span><br><br>&#125; <span class="hljs-keyword">catch</span> (Exception ignored) &#123;<br><br>&#125; <span class="hljs-keyword">finally</span> &#123;<br><br><span class="hljs-keyword">if</span> (jedis != <span class="hljs-literal">null</span>) &#123;<br><br>jedis.close();<br><br>&#125;<br><br>&#125;<br><br>&#125;<br><br>&#125;<br><br>&#125;, <span class="hljs-number">0</span>, recoverInterval); <span class="hljs-comment">//初始化定时器定期检测redis是否可用</span><br></code></pre></td></tr></table></figure>
 <p>在通过 Redis 客户端操作 Redis 中的数据时，我们会在其中加入熔断器的逻辑。比如，当节点处于熔断状态时，直接返回空值以及熔断器三种状态之间的转换，具体的示例代码像下面这样：</p>
-<pre><code class="java">
-if (breaker.isOpen()) &#123;
-
-        return null; // 断路器打开则直接返回空值
-
-        &#125;
-
-
-        K value = null;
-
-        Jedis jedis = null;
-
-
-        try &#123;
-
-        jedis = connPool.getResource();
-
-        value = callback.call(jedis);
-
-        if (breaker.isHalfOpen()) &#123; //如果是半打开状态
-
-        if (successCount.incrementAndGet() &gt;= SUCCESS_THRESHOLD) &#123;//成功次数超过阈值
-
-        failCount.set(0); //清空失败数
-
-        breaker.setClose(); //设置为关闭态
-
-        &#125;
-
-        &#125;
-
-        return value;
-
-        &#125; catch (JedisException je) &#123;
-
-        if (breaker.isClose()) &#123; //如果是关闭态
-
-        if (failCount.incrementAndGet() &gt;= FAILS_THRESHOLD) &#123; //失败次数超过阈值
-
-        breaker.setOpen(); //设置为打开态
-
-        &#125;
-
-        &#125; else if (breaker.isHalfOpen()) &#123; //如果是半打开态
-
-        breaker.setOpen(); //直接设置为打开态
-
-        &#125;
-
-        throw je;
-
-        &#125; finally &#123;
-
-        if (jedis != null) &#123;
-
-        jedis.close();
-
-        &#125;
-
-        &#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><code class="hljs java"><br><span class="hljs-keyword">if</span> (breaker.isOpen()) &#123;<br><br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>; <span class="hljs-comment">// 断路器打开则直接返回空值</span><br><br>        &#125;<br><br><br>        <span class="hljs-type">K</span> <span class="hljs-variable">value</span> <span class="hljs-operator">=</span> <span class="hljs-literal">null</span>;<br><br>        <span class="hljs-type">Jedis</span> <span class="hljs-variable">jedis</span> <span class="hljs-operator">=</span> <span class="hljs-literal">null</span>;<br><br><br>        <span class="hljs-keyword">try</span> &#123;<br><br>        jedis = connPool.getResource();<br><br>        value = callback.call(jedis);<br><br>        <span class="hljs-keyword">if</span> (breaker.isHalfOpen()) &#123; <span class="hljs-comment">//如果是半打开状态</span><br><br>        <span class="hljs-keyword">if</span> (successCount.incrementAndGet() &gt;= SUCCESS_THRESHOLD) &#123;<span class="hljs-comment">//成功次数超过阈值</span><br><br>        failCount.set(<span class="hljs-number">0</span>); <span class="hljs-comment">//清空失败数</span><br><br>        breaker.setClose(); <span class="hljs-comment">//设置为关闭态</span><br><br>        &#125;<br><br>        &#125;<br><br>        <span class="hljs-keyword">return</span> value;<br><br>        &#125; <span class="hljs-keyword">catch</span> (JedisException je) &#123;<br><br>        <span class="hljs-keyword">if</span> (breaker.isClose()) &#123; <span class="hljs-comment">//如果是关闭态</span><br><br>        <span class="hljs-keyword">if</span> (failCount.incrementAndGet() &gt;= FAILS_THRESHOLD) &#123; <span class="hljs-comment">//失败次数超过阈值</span><br><br>        breaker.setOpen(); <span class="hljs-comment">//设置为打开态</span><br><br>        &#125;<br><br>        &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (breaker.isHalfOpen()) &#123; <span class="hljs-comment">//如果是半打开态</span><br><br>        breaker.setOpen(); <span class="hljs-comment">//直接设置为打开态</span><br><br>        &#125;<br><br>        <span class="hljs-keyword">throw</span> je;<br><br>        &#125; <span class="hljs-keyword">finally</span> &#123;<br><br>        <span class="hljs-keyword">if</span> (jedis != <span class="hljs-literal">null</span>) &#123;<br><br>        jedis.close();<br><br>        &#125;<br><br>        &#125;<br><br></code></pre></td></tr></table></figure>
 <p>这样，当某一个 Redis 节点出现问题，Redis 客户端中的熔断器就会实时监测到，并且不再请求有问题的 Redis 节点，避免单个节点的故障导致整体系统的雪崩。</p>
 <p>降级机制要如何做</p>
 <p>除了熔断之外，我们在听业内分享的时候，听到最多的服务容错方式就是降级，那么降级又是怎么做的呢？它和熔断有什么关系呢？</p>
 <p>其实在我看来，相比熔断来说，降级是一个更大的概念。因为它是站在整体系统负载的角度上，放弃部分非核心功能或者服务，保证整体的可用性的方法，是一种有损的系统容错方式。这样看来，熔断也是降级的一种，除此之外还有限流降级、开关降级等等（限流降级我会在下一节课中提到，这节课主要讲一下开关降级）。</p>
 <p>开关降级指的是在代码中预先埋设一些“开关”，用来控制服务调用的返回值。比方说，开关关闭的时候正常调用远程服务，开关打开时则执行降级的策略。这些开关的值可以存储在配置中心中，当系统出现问题需要降级时，只需要通过配置中心动态更改开关的值，就可以实现不重启服务快速地降级远程服务了。</p>
 <p>还是以电商系统为例，你的电商系统在商品详情页面除了展示商品数据以外，还需要展示评论的数据，但是主体还是商品数据，在必要时可以降级评论数据。所以，你可以定义这个开关为“degrade.comment”，写入到配置中心中，具体的代码也比较简单，就像下面这样：</p>
-<pre><code class="java">    boolean switcherValue = getFromConfigCenter(“degrade.comment”); //从配置中心获取开关的值
-
-        if(!switcherValue)
-
-        &#123;
-
-        List&lt;Comment&gt; comments = getCommentList(); //开关关闭则获取评论数据
-
-        &#125; else
-
-        &#123;
-
-        List&lt;Comment&gt; comments = new ArrayList(); //开关打开，则直接返回空评论数据
-
-        &#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-type">boolean</span> <span class="hljs-variable">switcherValue</span> <span class="hljs-operator">=</span> getFromConfigCenter(“degrade.comment”); <span class="hljs-comment">//从配置中心获取开关的值</span><br><br>    <span class="hljs-keyword">if</span>(!switcherValue)<br><br>    &#123;<br><br>    List&lt;Comment&gt; comments = getCommentList(); <span class="hljs-comment">//开关关闭则获取评论数据</span><br><br>    &#125; <span class="hljs-keyword">else</span><br><br>    &#123;<br><br>    List&lt;Comment&gt; comments = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ArrayList</span>(); <span class="hljs-comment">//开关打开，则直接返回空评论数据</span><br><br>    &#125;<br></code></pre></td></tr></table></figure>
 <p>当然了，我们在设计开关降级预案的时候，首先要区分哪些是核心服务，哪些是非核心服务。因为我们只能针对非核心服务来做降级处理，然后就可以针对具体的业务，制定不同的降级策略了。我给你列举一些常见场景下的降级策略，你在实际的工作中可以参考借鉴。</p>
 <p>针对读取数据的场景，我们一般采用的策略是直接返回降级数据。比如，如果数据库的压力比较大，我们在降级的时候，可以考虑只读取缓存的数据，而不再读取数据库中的数据；如果非核心接口出现问题，可以直接返回服务繁忙或者返回固定的降级数据。</p>
 <p>对于一些轮询查询数据的场景，比如每隔 30 秒轮询获取未读数，可以降低获取数据的频率（将获取频率下降到 10 分钟一次）。</p>
@@ -179,4 +67,4 @@ if (breaker.isOpen()) &#123;
  , appId: 's9ieIT2hA5ChVBjBufKhyfnK-gzGzoHsz'
  , appKey: 'a8LAJbmO7wJi6fj9T85KMJid'
  , placeholder: '此条评论委托企鹅物流发送'
-})</script></div></article><aside><div id="about"><a href="/blog.io/" id="logo"><img src="https://ak.hypergryph.com/assets/index/images/ak/pc/faction/1.png" alt="Logo"></a><h1 id="Dr"><a href="/"> Dr.Allen Feng</a></h1><section id="total"><a id="total-archives" href="/blog.io/archives"><span class="total-title">Archives Total:</span><span class="total-number">63</span></a><div id="total-tags"><span class="total-title">Tags:</span><span class="total-number">59</span></div><div id="total-categories"><span class="total-title">Categories:</span><span class="total-number">13</span></div></section></div><div id="aside-block"><h1>INDEX</h1><div id="post-index"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9B%AA%E5%B4%A9%E6%98%AF%E5%A6%82%E4%BD%95%E5%8F%91%E7%94%9F%E7%9A%84"><span class="toc-number">1.</span> <span class="toc-text">雪崩是如何发生的</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%86%94%E6%96%AD%E6%9C%BA%E5%88%B6%E6%98%AF%E5%A6%82%E4%BD%95%E5%81%9A%E7%9A%84"><span class="toc-number">2.</span> <span class="toc-text">熔断机制是如何做的</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AF%BE%E7%A8%8B%E5%B0%8F%E7%BB%93"><span class="toc-number">3.</span> <span class="toc-text">课程小结</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E8%AF%BE%E4%B8%80%E6%80%9D"><span class="toc-number">4.</span> <span class="toc-text">一课一思</span></a></li></ol></div></div><footer><nobr><span class="text-title">©</span><span class="text-content">1970 to 2020</span></nobr><wbr><nobr><span class="text-title">ICP</span><span class="text-content">——备案号——</span></nobr><wbr><wbr><nobr>published with&nbsp;<a target="_blank" rel="noopener" href="http://hexo.io">Hexo&nbsp;</a></nobr><wbr><nobr>Theme&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus/hexo-theme-arknights">Arknight&nbsp;</a></nobr><wbr><nobr>by&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus">Yue_plus</a></nobr></footer></aside></main><canvas id="canvas-dust"></canvas><script src="/blog.io/js/arknights.js"></script><script src="https://cdn.bootcdn.net/ajax/libs/highlight.js/10.1.2/highlight.min.js"></script></body></html>
+})</script></div></article><aside><div id="about"><a href="/blog.io/" id="logo"><img src="https://ak.hypergryph.com/assets/index/images/ak/pc/faction/1.png" alt="Logo"></a><h1 id="Dr"><a href="/"> Dr.Allen Feng</a></h1><section id="total"><a id="total-archives" href="/blog.io/archives"><span class="total-title">Archives Total:</span><span class="total-number">63</span></a><div id="total-tags"><span class="total-title">Tags:</span><span class="total-number">58</span></div><div id="total-categories"><span class="total-title">Categories:</span><span class="total-number">11</span></div></section></div><div id="aside-block"><h1>INDEX</h1><div id="post-index"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9B%AA%E5%B4%A9%E6%98%AF%E5%A6%82%E4%BD%95%E5%8F%91%E7%94%9F%E7%9A%84"><span class="toc-number">1.</span> <span class="toc-text">雪崩是如何发生的</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%86%94%E6%96%AD%E6%9C%BA%E5%88%B6%E6%98%AF%E5%A6%82%E4%BD%95%E5%81%9A%E7%9A%84"><span class="toc-number">2.</span> <span class="toc-text">熔断机制是如何做的</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AF%BE%E7%A8%8B%E5%B0%8F%E7%BB%93"><span class="toc-number">3.</span> <span class="toc-text">课程小结</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E8%AF%BE%E4%B8%80%E6%80%9D"><span class="toc-number">4.</span> <span class="toc-text">一课一思</span></a></li></ol></div></div><footer><nobr><span class="text-title">©</span><span class="text-content">1970 to 2020</span></nobr><wbr><nobr><span class="text-title">ICP</span><span class="text-content">——备案号——</span></nobr><wbr><wbr><nobr>published with&nbsp;<a target="_blank" rel="noopener" href="http://hexo.io">Hexo&nbsp;</a></nobr><wbr><nobr>Theme&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus/hexo-theme-arknights">Arknight&nbsp;</a></nobr><wbr><nobr>by&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus">Yue_plus</a></nobr></footer></aside></main><canvas id="canvas-dust"></canvas><script src="/blog.io/js/arknights.js"></script><script src="https://cdn.bootcdn.net/ajax/libs/highlight.js/10.1.2/highlight.min.js"></script></body></html>
