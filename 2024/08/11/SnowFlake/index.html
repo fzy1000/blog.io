@@ -1,0 +1,78 @@
+<!DOCTYPE html><html lang="zh-Hans"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>SnowFlake | 如何做到年薪百万</title><script src="https://cdn.bootcss.com/valine/1.4.4/Valine.min.js"></script><link rel="stylesheet" href="/blog.io/css/arknights.css"><link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/highlight.js/10.1.2/styles/atom-one-dark-reasonable.min.css"><style>@font-face {
+ font-family: BenderLight;
+ src: local('Bender'), url("/blog.io/font/BenderLight.ttf");
+}
+@font-face {
+ font-family: 'JetBrains Mono';
+ src: local('JetBrains Mono'), url('/blog.io/font/JetBrainsMono-Regular.woff2') format('woff2');
+}</style><meta name="generator" content="Hexo 7.3.0"></head><body><header><nav><a href="/blog.io/">Home</a><a href="/blog.io/archives/">Archives</a></nav></header><main><article><div id="post-bg"><div id="post-title"><h1>SnowFlake</h1><hr></div><div id="post-content"><h1 id="Key-Concepts-Architecture"><a href="#Key-Concepts-Architecture" class="headerlink" title="Key Concepts &amp; Architecture"></a>Key Concepts &amp; Architecture</h1><p>Snowflake’s Data Cloud is powered by an advanced data platform provided as a self-managed service. Snowflake enables data storage, processing, and analytic solutions that are faster, easier to use, and far more flexible than traditional offerings.</p>
+<p>The Snowflake data platform is not built on any existing database technology or “big data” software platforms such as Hadoop. Instead, Snowflake combines a completely new SQL query engine with an innovative architecture natively designed for the cloud. To the user, Snowflake provides all of the functionality of an enterprise analytic database, along with many additional special features and unique capabilities.</p>
+<h2 id="Data-Platform-as-a-Self-managed-Service¶"><a href="#Data-Platform-as-a-Self-managed-Service¶" class="headerlink" title="Data Platform as a Self-managed Service¶"></a>Data Platform as a Self-managed Service¶</h2><p>Snowflake is a true self-managed service, meaning:</p>
+<ul>
+<li><p>There is no hardware (virtual or physical) to select, install, configure, or manage.</p>
+</li>
+<li><p>There is virtually no software to install, configure, or manage.</p>
+</li>
+<li><p>Ongoing maintenance, management, upgrades, and tuning are handled by Snowflake.</p>
+</li>
+</ul>
+<p>Snowflake runs completely on cloud infrastructure. All components of Snowflake’s service (other than optional command line clients, drivers, and connectors), run in public cloud infrastructures.</p>
+<p>Snowflake uses virtual compute instances for its compute needs and a storage service for persistent storage of data. Snowflake cannot be run on private cloud infrastructures (on-premises or hosted).</p>
+<p>Snowflake is not a packaged software offering that can be installed by a user. Snowflake manages all aspects of software installation and updates.</p>
+<h2 id="Snowflake-Architecture"><a href="#Snowflake-Architecture" class="headerlink" title="Snowflake Architecture"></a>Snowflake Architecture</h2><p>Snowflake’s architecture is a hybrid of traditional shared-disk and shared-nothing database architectures. Similar to shared-disk architectures, Snowflake uses a central data repository for persisted data that is accessible from all compute nodes in the platform. But similar to shared-nothing architectures, Snowflake processes queries using MPP (massively parallel processing) compute clusters where each node in the cluster stores a portion of the entire data set locally. This approach offers the data management simplicity of a shared-disk architecture, but with the performance and scale-out benefits of a shared-nothing architecture.</p>
+<img src="/blog.io/img/Snow Flake.png">
+
+<p>Snowflake’s unique architecture consists of three key layers:</p>
+<ul>
+<li><p>Database Storage</p>
+</li>
+<li><p>Query Processing</p>
+</li>
+<li><p>Cloud Services</p>
+</li>
+</ul>
+<h2 id="Database-Storage"><a href="#Database-Storage" class="headerlink" title="Database Storage"></a>Database Storage</h2><p>When data is loaded into Snowflake, Snowflake reorganizes that data into its internal optimized, compressed, columnar format. Snowflake stores this optimized data in cloud storage.</p>
+<p>Snowflake manages all aspects of how this data is stored — the organization, file size, structure, compression, metadata, statistics, and other aspects of data storage are handled by Snowflake. The data objects stored by Snowflake are not directly visible nor accessible by customers; they are only accessible through SQL query operations run using Snowflake.</p>
+<h2 id="Query-Processing"><a href="#Query-Processing" class="headerlink" title="Query Processing"></a>Query Processing</h2><p>Query execution is performed in the processing layer. Snowflake processes queries using “virtual warehouses”. Each virtual warehouse is an MPP compute cluster composed of multiple compute nodes allocated by Snowflake from a cloud provider.</p>
+<p>Each virtual warehouse is an independent compute cluster that does not share compute resources with other virtual warehouses. As a result, each virtual warehouse has no impact on the performance of other virtual warehouses.</p>
+<p>For more information, see Virtual warehouses.</p>
+<h2 id="Cloud-Services"><a href="#Cloud-Services" class="headerlink" title="Cloud Services"></a>Cloud Services</h2><p>The cloud services layer is a collection of services that coordinate activities across Snowflake. These services tie together all of the different components of Snowflake in order to process user requests, from login to query dispatch. The cloud services layer also runs on compute instances provisioned by Snowflake from the cloud provider.</p>
+<p>Services managed in this layer include:</p>
+<ul>
+<li><p>Authentication</p>
+</li>
+<li><p>Infrastructure management</p>
+</li>
+<li><p>Metadata management</p>
+</li>
+<li><p>Query parsing and optimization</p>
+</li>
+<li><p>Access control</p>
+</li>
+</ul>
+<h2 id="Connecting-to-Snowflake"><a href="#Connecting-to-Snowflake" class="headerlink" title="Connecting to Snowflake"></a>Connecting to Snowflake</h2><p>Snowflake supports multiple ways of connecting to the service:</p>
+<ul>
+<li><p>A web-based user interface from which all aspects of managing and using Snowflake can be accessed.</p>
+</li>
+<li><p>Command line clients (e.g. SnowSQL) which can also access all aspects of managing and using Snowflake.</p>
+</li>
+<li><p>ODBC and JDBC drivers that can be used by other applications (e.g. Tableau) to connect to Snowflake.</p>
+</li>
+<li><p>Native connectors (e.g. Python, Spark) that can be used to develop applications for connecting to Snowflake.</p>
+</li>
+<li><p>Third-party connectors that can be used to connect applications such as ETL tools (e.g. Informatica) and BI tools (e.g. ThoughtSpot) to Snowflake.</p>
+</li>
+</ul>
+<p><a target="_blank" rel="noopener" href="https://docs.snowflake.com/en/user-guide/intro-key-concepts">https://docs.snowflake.com/en/user-guide/intro-key-concepts</a></p>
+<p>Mysql VS SnowFlake</p>
+<p><a target="_blank" rel="noopener" href="https://portable.io/learn/snowflake-vs-mysql-comparison">https://portable.io/learn/snowflake-vs-mysql-comparison</a><br><a target="_blank" rel="noopener" href="https://stackshare.io/stackups/mysql-vs-snowflake">https://stackshare.io/stackups/mysql-vs-snowflake</a></p>
+<p>HBase VS SnowFlake</p>
+<p><a target="_blank" rel="noopener" href="https://community.snowflake.com/s/article/Hadoop-Vs-Snowflake">https://community.snowflake.com/s/article/Hadoop-Vs-Snowflake</a></p>
+<p>MSSQL VS SnowFlake </p>
+<p><a target="_blank" rel="noopener" href="https://www.mssqltips.com/sqlservertip/7170/snowflake-sql-server-data-warehouse/">https://www.mssqltips.com/sqlservertip/7170/snowflake-sql-server-data-warehouse/</a><br><a target="_blank" rel="noopener" href="https://www.mssqltips.com/sqlservertip/7651/compare-data-warehouse-concepts-in-snowflake-versus-sql-server/">https://www.mssqltips.com/sqlservertip/7651/compare-data-warehouse-concepts-in-snowflake-versus-sql-server/</a></p>
+<div id="paginator"></div></div><div id="post-footer"><hr><a href="/blog.io/2024/07/21/Docker/">Docker简述 Next →</a><hr></div><div id="bottom-btn"><a id="to-index" href="#post-index" title="index">≡</a><a id="to-top" href="#post-title" title="to top">∧</a></div><div id="Valine"></div><script>new Valine({
+ el: '#Valine'
+ , appId: 's9ieIT2hA5ChVBjBufKhyfnK-gzGzoHsz'
+ , appKey: 'a8LAJbmO7wJi6fj9T85KMJid'
+ , placeholder: '此条评论委托企鹅物流发送'
+})</script></div></article><aside><div id="about"><a href="/blog.io/" id="logo"><img src="https://ak.hypergryph.com/assets/index/images/ak/pc/faction/1.png" alt="Logo"></a><h1 id="Dr"><a href="/"> Dr.Allen Feng</a></h1><section id="total"><a id="total-archives" href="/blog.io/archives"><span class="total-title">Archives Total:</span><span class="total-number">63</span></a><div id="total-tags"><span class="total-title">Tags:</span><span class="total-number">58</span></div><div id="total-categories"><span class="total-title">Categories:</span><span class="total-number">12</span></div></section></div><div id="aside-block"><h1>INDEX</h1><div id="post-index"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Key-Concepts-Architecture"><span class="toc-number">1.</span> <span class="toc-text">Key Concepts &amp; Architecture</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Data-Platform-as-a-Self-managed-Service%C2%B6"><span class="toc-number">1.1.</span> <span class="toc-text">Data Platform as a Self-managed Service¶</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Snowflake-Architecture"><span class="toc-number">1.2.</span> <span class="toc-text">Snowflake Architecture</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Database-Storage"><span class="toc-number">1.3.</span> <span class="toc-text">Database Storage</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Query-Processing"><span class="toc-number">1.4.</span> <span class="toc-text">Query Processing</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Cloud-Services"><span class="toc-number">1.5.</span> <span class="toc-text">Cloud Services</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Connecting-to-Snowflake"><span class="toc-number">1.6.</span> <span class="toc-text">Connecting to Snowflake</span></a></li></ol></li></ol></div></div><footer><nobr><span class="text-title">©</span><span class="text-content">1970 to 2020</span></nobr><wbr><nobr><span class="text-title">ICP</span><span class="text-content">——备案号——</span></nobr><wbr><wbr><nobr>published with&nbsp;<a target="_blank" rel="noopener" href="http://hexo.io">Hexo&nbsp;</a></nobr><wbr><nobr>Theme&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus/hexo-theme-arknights">Arknight&nbsp;</a></nobr><wbr><nobr>by&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus">Yue_plus</a></nobr></footer></aside></main><canvas id="canvas-dust"></canvas><script src="/blog.io/js/arknights.js"></script><script src="https://cdn.bootcdn.net/ajax/libs/highlight.js/10.1.2/highlight.min.js"></script></body></html>

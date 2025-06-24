@@ -1,0 +1,382 @@
+<!DOCTYPE html><html lang="zh-Hans"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Docker简述 | 如何做到年薪百万</title><script src="https://cdn.bootcss.com/valine/1.4.4/Valine.min.js"></script><link rel="stylesheet" href="/blog.io/css/arknights.css"><link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/highlight.js/10.1.2/styles/atom-one-dark-reasonable.min.css"><style>@font-face {
+ font-family: BenderLight;
+ src: local('Bender'), url("/blog.io/font/BenderLight.ttf");
+}
+@font-face {
+ font-family: 'JetBrains Mono';
+ src: local('JetBrains Mono'), url('/blog.io/font/JetBrainsMono-Regular.woff2') format('woff2');
+}</style><meta name="generator" content="Hexo 7.3.0"></head><body><header><nav><a href="/blog.io/">Home</a><a href="/blog.io/archives/">Archives</a></nav></header><main><article><div id="post-bg"><div id="post-title"><h1>Docker简述</h1><hr></div><div id="post-content"><h2>Docker的基本概念</h2>
+
+
+<h3>解决的问题<h3/>
+1. 统一标准
+
+<pre><code>应用构建将统一通过docker build来打包成镜像文件，无论是什么语言，java python C++ 都可以通过Docker构建出同样的软件包
+</code></pre>
+<ol start="2">
+<li><p>应用分享</p>
+<p> 所有的docker景象都会被放在统一的地方 Docker hub。 这就类似于安卓的应用商城，所有的镜像文件都可以在一个地方下载</p>
+</li>
+<li><p>应用运行</p>
+<p> 因为我们拥有了统一的镜像文件，那么不过是什么语言构建的应用，都可以通过 Docker run命令来运行，解决了不同语言需要通过不同步骤运行的问题</p>
+</li>
+</ol>
+<h2>Docker的容器化</h2>
+
+
+
+<h3>虚拟化技术<h3/>
+我们可以通过安装虚拟机的方式，将一台高配置的主机分割成多台小主机，这样可以将主机的性能最大化，并且防止一些小程序崩溃或者内存泄漏影响所有应用
+
+
+<p>但是同样虚拟机也会有一些问题，如下：</p>
+<br>
+<img src="/blog.io/img/虚拟化技术.png">
+<br>
+
+
+<p>为了更轻量级的使用，doker提供了更为轻量的服务，首先Doker提供了公用的OS，每个镜像里只需要带上自己额外需要的依赖。同时如果需要移植，只需要把镜像文件移植到新的Docker机器里就可以了</p>
+<br>
+<img src="/blog.io/img/容器化技术.png">
+<br>
+
+
+
+
+<h2>Docker的架构</h2>
+
+<p>Docker的架构十分简单，首先你需要在你本地客户端使用dicker命令来进行操作。其次在你的远程主机上你需要下载一个Docker并且运行他的后台进程Docker Daemon。<br>然后你就可以在Docker Hub里找到你想要使用的软件，并且将它下载到你的远程主机 Docker Host上。这时你的Docker Host上就会拥有了各种镜像，使用命令行将这些镜像<br>运行在每一个不同的容器Container里就可以了</p>
+<br>
+<img src="/blog.io/img/Docker架构.png">
+<br>
+
+
+<h2>Docker中的命令</h2>
+
+
+<br>
+<img src="/blog.io/img/Docker命令.png">
+<br>
+
+
+<ol>
+<li><p>下载docker镜像</p>
+<p>Docker pull nginx<br>(latest version)</p>
+<p>Docker pull nginx:1.20.1</p>
+</li>
+<li><p>查看本地中的镜像</p>
+<p>docker images</p>
+</li>
+<li><p>删除镜像</p>
+<p>docker rmi redis:6.2.4</p>
+</li>
+<li><p>启动容器</p>
+<p>docker run 设置项 镜像名 镜像启动的命令（Args）</p>
+<p>docker run –name&#x3D;myngix -d nginx:latest</p>
+<p>(-d是后台运行)<br>(注意已经使用过的名字不能再次使用，哪怕之前的容器已经停止运行了（docker stop id），还是需要运行docker rm id 来删除掉之前的容器)</p>
+<p>再次启动 docker start id</p>
+</li>
+<li><p>查看那些程序在运行</p>
+<p>docker ps 查看在运行的<br>docker ps -a查看所有</p>
+</li>
+<li><p>更新启动项</p>
+<p>docker update id&#x2F;名字 –restart&#x3D;always</p>
+<p>将容器的启动项更新成每次docker启动容器也会自动重启</p>
+</li>
+<li><p>将容器端口和主机端口进行映射</p>
+<p>docker run –name&#x3D;myngix -d –restart&#x3D;always -p 88:80 nginx</p>
+<p>这里 -p就是端口映射， 主机端口：容器的端口</p>
+</li>
+</ol>
+<div id="paginator"></div></div><div id="post-footer"><hr><a href="/blog.io/2024/08/11/SnowFlake/">← Prev SnowFlake</a><span style="color: #fe2"> | </span><a href="/blog.io/2024/07/04/K8S-1/">Kubernetes 一 Next →</a><hr></div><div id="bottom-btn"><a id="to-index" href="#post-index" title="index">≡</a><a id="to-top" href="#post-title" title="to top">∧</a></div><div id="Valine"></div><script>new Valine({
+ el: '#Valine'
+ , appId: 's9ieIT2hA5ChVBjBufKhyfnK-gzGzoHsz'
+ , appKey: 'a8LAJbmO7wJi6fj9T85KMJid'
+ , placeholder: '此条评论委托企鹅物流发送'
+})</script></div></article><aside><div id="about"><a href="/blog.io/" id="logo"><img src="https://ak.hypergryph.com/assets/index/images/ak/pc/faction/1.png" alt="Logo"></a><h1 id="Dr"><a href="/"> Dr.Allen Feng</a></h1><section id="total"><a id="total-archives" href="/blog.io/archives"><span class="total-title">Archives Total:</span><span class="total-number">63</span></a><div id="total-tags"><span class="total-title">Tags:</span><span class="total-number">58</span></div><div id="total-categories"><span class="total-title">Categories:</span><span class="total-number">12</span></div></section></div><div id="aside-block"><h1>INDEX</h1><div id="post-index"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">Docker的基本概念</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link"><span class="toc-number">1.1.</span> <span class="toc-text">解决的问题
+1. 统一标准
+
+应用构建将统一通过docker build来打包成镜像文件，无论是什么语言，java python C++ 都可以通过Docker构建出同样的软件包
+
+
+应用分享
+ 所有的docker景象都会被放在统一的地方 Docker hub。 这就类似于安卓的应用商城，所有的镜像文件都可以在一个地方下载
+
+应用运行
+ 因为我们拥有了统一的镜像文件，那么不过是什么语言构建的应用，都可以通过 Docker run命令来运行，解决了不同语言需要通过不同步骤运行的问题
+
+
+Docker的容器化
+
+
+
+虚拟化技术
+我们可以通过安装虚拟机的方式，将一台高配置的主机分割成多台小主机，这样可以将主机的性能最大化，并且防止一些小程序崩溃或者内存泄漏影响所有应用
+
+
+但是同样虚拟机也会有一些问题，如下：
+
+
+
+
+
+为了更轻量级的使用，doker提供了更为轻量的服务，首先Doker提供了公用的OS，每个镜像里只需要带上自己额外需要的依赖。同时如果需要移植，只需要把镜像文件移植到新的Docker机器里就可以了
+
+
+
+
+
+
+
+Docker的架构
+
+Docker的架构十分简单，首先你需要在你本地客户端使用dicker命令来进行操作。其次在你的远程主机上你需要下载一个Docker并且运行他的后台进程Docker Daemon。然后你就可以在Docker Hub里找到你想要使用的软件，并且将它下载到你的远程主机 Docker Host上。这时你的Docker Host上就会拥有了各种镜像，使用命令行将这些镜像运行在每一个不同的容器Container里就可以了
+
+
+
+
+
+Docker中的命令
+
+
+
+
+
+
+
+
+下载docker镜像
+Docker pull nginx(latest version)
+Docker pull nginx:1.20.1
+
+查看本地中的镜像
+docker images
+
+删除镜像
+docker rmi redis:6.2.4
+
+启动容器
+docker run 设置项 镜像名 镜像启动的命令（Args）
+docker run –name&#x3D;myngix -d nginx:latest
+(-d是后台运行)(注意已经使用过的名字不能再次使用，哪怕之前的容器已经停止运行了（docker stop id），还是需要运行docker rm id 来删除掉之前的容器)
+再次启动 docker start id
+
+查看那些程序在运行
+docker ps 查看在运行的docker ps -a查看所有
+
+更新启动项
+docker update id&#x2F;名字 –restart&#x3D;always
+将容器的启动项更新成每次docker启动容器也会自动重启
+
+将容器端口和主机端口进行映射
+docker run –name&#x3D;myngix -d –restart&#x3D;always -p 88:80 nginx
+这里 -p就是端口映射， 主机端口：容器的端口
+
+
+</span></a></li><li class="toc-item toc-level-3"><a class="toc-link"><span class="toc-number">1.2.</span> <span class="toc-text">
+1. 统一标准
+
+应用构建将统一通过docker build来打包成镜像文件，无论是什么语言，java python C++ 都可以通过Docker构建出同样的软件包
+
+
+应用分享
+ 所有的docker景象都会被放在统一的地方 Docker hub。 这就类似于安卓的应用商城，所有的镜像文件都可以在一个地方下载
+
+应用运行
+ 因为我们拥有了统一的镜像文件，那么不过是什么语言构建的应用，都可以通过 Docker run命令来运行，解决了不同语言需要通过不同步骤运行的问题
+
+
+Docker的容器化
+
+
+
+虚拟化技术
+我们可以通过安装虚拟机的方式，将一台高配置的主机分割成多台小主机，这样可以将主机的性能最大化，并且防止一些小程序崩溃或者内存泄漏影响所有应用
+
+
+但是同样虚拟机也会有一些问题，如下：
+
+
+
+
+
+为了更轻量级的使用，doker提供了更为轻量的服务，首先Doker提供了公用的OS，每个镜像里只需要带上自己额外需要的依赖。同时如果需要移植，只需要把镜像文件移植到新的Docker机器里就可以了
+
+
+
+
+
+
+
+Docker的架构
+
+Docker的架构十分简单，首先你需要在你本地客户端使用dicker命令来进行操作。其次在你的远程主机上你需要下载一个Docker并且运行他的后台进程Docker Daemon。然后你就可以在Docker Hub里找到你想要使用的软件，并且将它下载到你的远程主机 Docker Host上。这时你的Docker Host上就会拥有了各种镜像，使用命令行将这些镜像运行在每一个不同的容器Container里就可以了
+
+
+
+
+
+Docker中的命令
+
+
+
+
+
+
+
+
+下载docker镜像
+Docker pull nginx(latest version)
+Docker pull nginx:1.20.1
+
+查看本地中的镜像
+docker images
+
+删除镜像
+docker rmi redis:6.2.4
+
+启动容器
+docker run 设置项 镜像名 镜像启动的命令（Args）
+docker run –name&#x3D;myngix -d nginx:latest
+(-d是后台运行)(注意已经使用过的名字不能再次使用，哪怕之前的容器已经停止运行了（docker stop id），还是需要运行docker rm id 来删除掉之前的容器)
+再次启动 docker start id
+
+查看那些程序在运行
+docker ps 查看在运行的docker ps -a查看所有
+
+更新启动项
+docker update id&#x2F;名字 –restart&#x3D;always
+将容器的启动项更新成每次docker启动容器也会自动重启
+
+将容器端口和主机端口进行映射
+docker run –name&#x3D;myngix -d –restart&#x3D;always -p 88:80 nginx
+这里 -p就是端口映射， 主机端口：容器的端口
+
+
+</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link"><span class="toc-number">2.</span> <span class="toc-text">Docker的容器化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link"><span class="toc-number">2.1.</span> <span class="toc-text">虚拟化技术
+我们可以通过安装虚拟机的方式，将一台高配置的主机分割成多台小主机，这样可以将主机的性能最大化，并且防止一些小程序崩溃或者内存泄漏影响所有应用
+
+
+但是同样虚拟机也会有一些问题，如下：
+
+
+
+
+
+为了更轻量级的使用，doker提供了更为轻量的服务，首先Doker提供了公用的OS，每个镜像里只需要带上自己额外需要的依赖。同时如果需要移植，只需要把镜像文件移植到新的Docker机器里就可以了
+
+
+
+
+
+
+
+Docker的架构
+
+Docker的架构十分简单，首先你需要在你本地客户端使用dicker命令来进行操作。其次在你的远程主机上你需要下载一个Docker并且运行他的后台进程Docker Daemon。然后你就可以在Docker Hub里找到你想要使用的软件，并且将它下载到你的远程主机 Docker Host上。这时你的Docker Host上就会拥有了各种镜像，使用命令行将这些镜像运行在每一个不同的容器Container里就可以了
+
+
+
+
+
+Docker中的命令
+
+
+
+
+
+
+
+
+下载docker镜像
+Docker pull nginx(latest version)
+Docker pull nginx:1.20.1
+
+查看本地中的镜像
+docker images
+
+删除镜像
+docker rmi redis:6.2.4
+
+启动容器
+docker run 设置项 镜像名 镜像启动的命令（Args）
+docker run –name&#x3D;myngix -d nginx:latest
+(-d是后台运行)(注意已经使用过的名字不能再次使用，哪怕之前的容器已经停止运行了（docker stop id），还是需要运行docker rm id 来删除掉之前的容器)
+再次启动 docker start id
+
+查看那些程序在运行
+docker ps 查看在运行的docker ps -a查看所有
+
+更新启动项
+docker update id&#x2F;名字 –restart&#x3D;always
+将容器的启动项更新成每次docker启动容器也会自动重启
+
+将容器端口和主机端口进行映射
+docker run –name&#x3D;myngix -d –restart&#x3D;always -p 88:80 nginx
+这里 -p就是端口映射， 主机端口：容器的端口
+
+
+</span></a></li><li class="toc-item toc-level-3"><a class="toc-link"><span class="toc-number">2.2.</span> <span class="toc-text">
+我们可以通过安装虚拟机的方式，将一台高配置的主机分割成多台小主机，这样可以将主机的性能最大化，并且防止一些小程序崩溃或者内存泄漏影响所有应用
+
+
+但是同样虚拟机也会有一些问题，如下：
+
+
+
+
+
+为了更轻量级的使用，doker提供了更为轻量的服务，首先Doker提供了公用的OS，每个镜像里只需要带上自己额外需要的依赖。同时如果需要移植，只需要把镜像文件移植到新的Docker机器里就可以了
+
+
+
+
+
+
+
+Docker的架构
+
+Docker的架构十分简单，首先你需要在你本地客户端使用dicker命令来进行操作。其次在你的远程主机上你需要下载一个Docker并且运行他的后台进程Docker Daemon。然后你就可以在Docker Hub里找到你想要使用的软件，并且将它下载到你的远程主机 Docker Host上。这时你的Docker Host上就会拥有了各种镜像，使用命令行将这些镜像运行在每一个不同的容器Container里就可以了
+
+
+
+
+
+Docker中的命令
+
+
+
+
+
+
+
+
+下载docker镜像
+Docker pull nginx(latest version)
+Docker pull nginx:1.20.1
+
+查看本地中的镜像
+docker images
+
+删除镜像
+docker rmi redis:6.2.4
+
+启动容器
+docker run 设置项 镜像名 镜像启动的命令（Args）
+docker run –name&#x3D;myngix -d nginx:latest
+(-d是后台运行)(注意已经使用过的名字不能再次使用，哪怕之前的容器已经停止运行了（docker stop id），还是需要运行docker rm id 来删除掉之前的容器)
+再次启动 docker start id
+
+查看那些程序在运行
+docker ps 查看在运行的docker ps -a查看所有
+
+更新启动项
+docker update id&#x2F;名字 –restart&#x3D;always
+将容器的启动项更新成每次docker启动容器也会自动重启
+
+将容器端口和主机端口进行映射
+docker run –name&#x3D;myngix -d –restart&#x3D;always -p 88:80 nginx
+这里 -p就是端口映射， 主机端口：容器的端口
+
+
+</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link"><span class="toc-number">3.</span> <span class="toc-text">Docker的架构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link"><span class="toc-number">4.</span> <span class="toc-text">Docker中的命令</span></a></li></ol></div></div><footer><nobr><span class="text-title">©</span><span class="text-content">1970 to 2020</span></nobr><wbr><nobr><span class="text-title">ICP</span><span class="text-content">——备案号——</span></nobr><wbr><wbr><nobr>published with&nbsp;<a target="_blank" rel="noopener" href="http://hexo.io">Hexo&nbsp;</a></nobr><wbr><nobr>Theme&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus/hexo-theme-arknights">Arknight&nbsp;</a></nobr><wbr><nobr>by&nbsp;<a target="_blank" rel="noopener" href="https://github.com/Yue-plus">Yue_plus</a></nobr></footer></aside></main><canvas id="canvas-dust"></canvas><script src="/blog.io/js/arknights.js"></script><script src="https://cdn.bootcdn.net/ajax/libs/highlight.js/10.1.2/highlight.min.js"></script></body></html>
